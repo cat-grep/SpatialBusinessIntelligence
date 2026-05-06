@@ -2,6 +2,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  --nav-h:     52px;
   --forest:    #264132;
   --forest-dk: #1a2d22;
   --gold:      #c0944c;
@@ -21,7 +22,7 @@
   --mono:      'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
-html { scroll-behavior: smooth; font-size: 16px; }
+html { scroll-behavior: smooth; font-size: 16px; scroll-padding-top: var(--nav-h); }
 
 body {
   font-family: var(--font);
@@ -67,6 +68,65 @@ code {
 }
 a { color: var(--gold-dk); text-decoration: none; }
 a:hover { text-decoration: underline; color: var(--forest); }
+
+/* ── Navigation Bar ─────────────────────────────────────────────────── */
+#site-nav {
+  position: sticky;
+  top: 0;
+  height: var(--nav-h);
+  background: rgba(13, 22, 15, .96);
+  border-bottom: 1px solid rgba(192, 148, 76, .22);
+  z-index: 8000;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.nav-brand {
+  font-family: var(--font-hd);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+  margin-right: 1.25rem;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: .1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-links::-webkit-scrollbar { display: none; }
+
+.nav-links a {
+  display: block;
+  font-family: var(--font-hd);
+  font-size: .67rem;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .55);
+  padding: .38rem .65rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  transition: color .2s, background .2s;
+  text-decoration: none;
+}
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--white);
+  background: rgba(192, 148, 76, .15);
+  text-decoration: none;
+}
+.nav-links a.active { color: var(--gold); }
 
 /* ── Hero ────────────────────────────────────────────────────────────── */
 #hero {
@@ -257,9 +317,9 @@ a:hover { text-decoration: underline; color: var(--forest); }
 
 #viz-panel {
   position: sticky;
-  top: 0;
+  top: var(--nav-h);
   width: 55%;
-  height: 100vh;
+  height: calc(100vh - var(--nav-h));
   background: var(--forest-dk);
   display: flex;
   flex-direction: column;
@@ -709,7 +769,7 @@ a:hover { text-decoration: underline; color: var(--forest); }
 /* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   #story-wrapper    { flex-direction: column; }
-  #viz-panel        { position: sticky; top: 0; width: 100%; height: 50vh; z-index: 10; }
+  #viz-panel        { position: sticky; top: var(--nav-h); width: 100%; height: calc(50vh - var(--nav-h)); z-index: 10; }
   #img-container    { flex: 1; height: auto; min-height: 0; }
   #chart-container  { padding: 1rem; }
   #chart-container canvas,

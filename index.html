@@ -29,6 +29,21 @@
     </div>
   </header>
 
+  <!-- ── NAVIGATION ───────────────────────────────────────────────────── -->
+  <nav id="site-nav" aria-label="Page navigation">
+    <span class="nav-brand">Spatial Business Intelligence</span>
+    <ul class="nav-links">
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#intro">The Question</a></li>
+      <li><a href="#ch1">Client Tiers</a></li>
+      <li><a href="#ch2">Market Map</a></li>
+      <li><a href="#ch3">Over Time</a></li>
+      <li><a href="#ch4">Operations</a></li>
+      <li><a href="#findings">Key Findings</a></li>
+      <li><a href="#methodology">Methodology</a></li>
+    </ul>
+  </nav>
+
   <!-- ── INTRO ─────────────────────────────────────────────────────────── -->
   <section id="intro" class="full-section bg-light">
     <div class="prose">
@@ -90,7 +105,7 @@
     <div id="scroll-sections">
 
       <!-- ── CHAPTER 1 · Overview ──────────────────────────────────────── -->
-      <section class="story-section" data-viz="tier-us">
+      <section id="ch1" class="story-section" data-viz="tier-us">
         <div class="chapter-label">Chapter 1</div>
         <h2>Defining Value: The Client Tier System</h2>
         <p>
@@ -265,7 +280,7 @@ WHERE c.isclient = true;</code></pre>
       </section>
 
       <!-- ── CHAPTER 2 ────────────────────────────────────────────────── -->
-      <section class="story-section" data-viz="quality">
+      <section id="ch2" class="story-section" data-viz="quality">
         <div class="chapter-label">Chapter 2</div>
         <h2>Mapping the Territory: Volume × Quality</h2>
         <p>
@@ -329,7 +344,7 @@ FROM counts;</code></pre>
       </section>
 
       <!-- ── CHAPTER 3 · All Clients ──────────────────────────────────── -->
-      <section class="story-section" data-viz="temporal-all">
+      <section id="ch3" class="story-section" data-viz="temporal-all">
         <div class="chapter-label">Chapter 3</div>
         <h2>The Story Over Time: Shifting Geography</h2>
         <p>
@@ -547,7 +562,7 @@ ORDER BY cohort_year;</code></pre>
       </section>
 
       <!-- ── CHAPTER 4 · § 4.1 Revenue Chart ─────────────────────────── -->
-      <section class="story-section" data-viz="practice-revenue">
+      <section id="ch4" class="story-section" data-viz="practice-revenue">
         <div class="chapter-label">Chapter 4 · § 4.1</div>
         <h2>Total Revenue by Practice Area</h2>
         <p>
@@ -1486,6 +1501,26 @@ ORDER BY revenue_per_hour DESC;</code></pre>
   <!-- Libraries — for offline: download files and update these paths -->
   <script src="lib/chart.min.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    (function () {
+      const navLinks = Array.from(document.querySelectorAll('.nav-links a'));
+      const targets  = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+      function setActive() {
+        const scrollY = window.scrollY + 80;
+        let current = targets[0];
+        for (const el of targets) {
+          if (el.getBoundingClientRect().top + window.scrollY <= scrollY) current = el;
+        }
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + current.id);
+        });
+      }
+
+      window.addEventListener('scroll', setActive, { passive: true });
+      setActive();
+    })();
+  </script>
 </body>
 
 </html>
