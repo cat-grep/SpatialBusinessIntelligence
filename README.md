@@ -90,8 +90,17 @@ See [data/README.md](data/README.md) for GeoJSON export instructions if you want
 - **QGIS** — map rendering, Temporal Controller animation, Bivariate Renderer plugin
 - **Chart.js** — client-side interactive charts
 - **Google Fonts** — Oswald & Roboto typefaces
-- Data: proprietary law firm records (anonymized)
 
+---
+
+## Data Source
+- Proprietary law firm records (anonymized)  
+- [US Census - 2020 ZIP Code Tabulation Areas (ZCTAs)](https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_zcta520_500k.zip)  
+- [California Department of Technology - California City Boundaries](https://gis.data.ca.gov/datasets/California::california-city-boundaries-and-identifiers/)  
+- Other Tutorials:  
+   - [Animated GIF Maker](https://ezgif.com/maker)  
+   - [Animating Time Series Data (QGIS3) — QGIS Tutorials and Tips](https://www.qgistutorials.com/en/docs/3/animating_time_series.html)  
+   - [Bivariate choropleth maps in QGIS - BNHR](https://bnhr.xyz/2019/09/15/bivariate-choropleths-in-qgis.html)  
 ---
 
 *Geog 574 · Advanced GIS Applications · University of Wisconsin–Madison · Spring 2026*
