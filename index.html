@@ -22,7 +22,7 @@
       <h1>Where Are Your Best Clients?</h1>
       <p class="hero-sub">
         A PostGIS-driven spatial analysis of client value, geography, and
-        growth strategy for a California law firm.
+        growth strategy for a Southern California-based civil law firm.
       </p>
       <p class="hero-authors">Eugenie Huang &amp; Reid Osborn</p>
       <a href="#intro" class="scroll-cue">&#8595; Begin</a>
@@ -49,29 +49,31 @@
     <div class="prose">
       <h2>The Question</h2>
       <p>
-        A law firm's client list is not created equal. Some clients generate
-        consistent, high-margin revenue. Others consume time without a
-        proportionate return. And many fall somewhere in between.
+        Not all of a business's clients are, financially, created equal. 
+        Some of them are stars that bring in all of the revenue with comparatively little hassle, 
+        some bring more trouble than the time was worth, and the rest fall somewhere in the middle.
       </p>
       <p>
         This project uses <strong>PostGIS spatial analysis</strong> to answer
         five business-critical questions:
       </p>
       <ol class="question-list">
-        <li>Who are the high-value clients — and where do they live?</li>
-        <li>Which ZIP code markets have the most untapped potential for growth?</li>
-        <li>How has the firm's client geography shifted over time — and which intake cohorts produced the most value?
+        <li>Who are the high-value clients and where do they live?</li>
+        <li>Which ZIP codes have the most untapped growth potential?</li>
+        <li>How has the firm's client geography shifted over time, and which characteristics does each year's client base possess?
         </li>
-        <li>Which practice areas, billing structures, and acquisition channels generate the highest revenue per hour?
+        <li>Which practice areas, billing structures and acquisition channels generate the highest revenue per hour?
         </li>
-        <li>Which valuable clients are going silent — and which attorneys drive the most business?</li>
+        <li>Which valuable clients are going silent and which attorneys drive the most business?</li>
       </ol>
       <p>
         The analysis connects four database tables —
         <code>contact</code>, <code>matter</code>,
         <code>transaction</code>, and <code>activity</code> — with a
-        ZIP Code Tabulation Area (<code>zcta</code>) geometry layer via
+        <strong>ZIP Code Tabulation Area</strong> (<code>zcta</code>) geometry layer via
         spatial joins.
+        <i>ZIP code boundaries are changed frequently. 
+          ZIP Code Tabulation Areas were created by the U.S. Census Bureau to better study the people living in each ZIP code.</i>
       </p>
     </div>
     <div class="schema-diagram">
@@ -109,9 +111,9 @@
         <div class="chapter-label">Chapter 1</div>
         <h2>Defining Value: The Client Tier System</h2>
         <p>
-          Raw revenue alone is a poor measure of client value — a client who
-          pays $50,000 but requires 800 billable hours may be less profitable
-          than one who pays $20,000 in 60 hours.
+          Revenue alone is a poor measure of client value. A client who
+          pays $50,000 but requires 800 billable hours may be significantly less profitable
+          than one who pays $20,000 for 60 hours of work.
         </p>
         <p>
           We combine <strong>net revenue</strong> (funds_in − funds_out) with
@@ -132,8 +134,8 @@
           </div>
           <div class="tier-card high-value">
             <strong style="color:#cc586f">High Value</strong>
-            <p>Top-quartile total revenue but time-intensive — cases that pay
-              well in absolute terms yet consume more billable hours.</p>
+            <p>Top-quartile revenue but time-intensive — cases that pay
+              well, yet consume more billable hours.</p>
             <div class="tier-stats">
               <span>182 clients</span>
               <span>avg $20K revenue</span>
@@ -162,10 +164,10 @@
           </div>
         </div>
         <p>
-          <em>Star + High Value + Efficient</em> together are called
-          <strong>Lucrative</strong> clients — <strong>450 of 1,071 clients
-            (42 %)</strong> in this dataset qualify. The national overview shows
-          how that population is distributed across the continental US before
+          All clients who are not designated as "Standard" are considered
+          <strong>Lucrative</strong> — 450 of 1,071 clients 
+            (42%) in this dataset qualify. This national overview shows
+          how clients are distributed across the continental US before
           we zoom into the firm's three core markets.
         </p>
         <details class="sql-block">
@@ -220,9 +222,9 @@ WHERE c.isclient = true;</code></pre>
           shows exactly how the four tiers separate in practice.
         </p>
         <div class="insight-box">
-          <strong>Classification thresholds:</strong> the top 25 % by revenue
-          begins at <strong>$6,095</strong>; the top 25 % by hourly rate begins
-          at <strong>$261/hr</strong>. Clients above both lines are Star.
+          <strong>Classification Thresholds:</strong> the top 25% by revenue
+          begins at <strong>$6,095</strong>; the top 25% by hourly rate begins
+          at <strong>$261/hr</strong>. Clients above both lines are considered <strong style="color:#434b8b">Star</strong>.
         </div>
         <!-- <div class="note">
           248 clients with no recorded activity hours are excluded from this
@@ -236,9 +238,9 @@ WHERE c.isclient = true;</code></pre>
         <h2>Los Angeles: The Core Market</h2>
         <p>
           The <strong>Los Angeles</strong> basin holds the largest share of
-          the firm's clients by revenue. Lucrative clients concentrate in the
+          the firm's clients by revenue. Lucrative clients are concentrated in the
           South Los Angeles area, while Standard clients
-          are distributed more broadly across the metro.
+          are distributed more broadly across the region.
         </p>
       </section>
 
@@ -248,10 +250,9 @@ WHERE c.isclient = true;</code></pre>
         <h2>Ontario &amp; the Inland Empire</h2>
         <p>
           The Inland Empire is the firm's highest-volume market.
-          <strong style="color:#cc586f">High Value</strong> clients spread from
+          <strong style="color:#cc586f">High Value</strong> clients are spread from
           Pomona and Rancho Cucamonga through Fontana, San Bernardino and
-          Moreno Valley — driven by the region's active real estate pipeline
-          (probate, partition quiet title). Unlike Los Angeles, where fewer
+          Moreno Valley. Unlike Los Angeles, where fewer
           but larger <strong style="color:#434b8b">Star</strong> clients
           dominate, Ontario's growth comes from breadth: more cases, more
           consistently, across a wider area.
@@ -263,19 +264,17 @@ WHERE c.isclient = true;</code></pre>
         <div class="chapter-label">Chapter 1 · San Diego</div>
         <h2>San Diego: A Market to Develop</h2>
         <p>
-          San Diego is the firm's least saturated office market. Dots are
+          San Diego is the firm's least-saturated office market. Dots are
           sparse and scattered from Escondido in the north through downtown
           to Chula Vista — and all four tiers appear in roughly equal measure,
-          with no single color dominating. That even spread signals an
-          underdeveloped client base rather than a clear profile.
+          with no single type dominating. This distribution signals a potentially
+          underdeveloped client base.
         </p>
         <p>
-          The upside: large portions of San Diego county have no existing
-          clients at all, leaving room for targeted outreach. Given the
-          county's active real estate market and growing population in the
+          The upside: large portions of San Diego county could be ripe for targeted outreach. 
+          Given the county's active real estate market and growing population in the
           south (Chula Vista, National City), a structured marketing push
-          could replicate the High Value density the firm already sees in
-          Ontario.
+          could replicate the High-Value density the firm already sees in Ontario.
         </p>
       </section>
 
@@ -292,12 +291,13 @@ WHERE c.isclient = true;</code></pre>
           <li><strong>Quality rank (1–3)</strong> — what share of those clients are Lucrative.</li>
         </ul>
         <p>
-          This 3 × 3 matrix produces nine bivariate classes. The legend
-          below matches the map colors exactly — <strong style="color:#be64ac">purple</strong> tones indicate high
-          lucrative share, <strong style="color:#5ac8c8">teal</strong> tones indicate high client volume:
+          This 3 × 3 grid shows nine values from two variables: volume and quality. 
+          <strong style="color:#be64ac">Purple</strong> areas are more 
+          lucrative, <strong style="color:#5ac8c8">teal</strong> areas have more client volume, 
+          <strong style="color:#5a64ac">blue</strong> areas have the best of both worlds, more of each.
         </p>
         <div class="bivariate-legend">
-          <div class="bv-y-label">→ Quality (lucrative %)</div>
+          <div class="bv-y-label">→ Quality (lucrative%)</div>
           <div class="bv-grid-wrap">
             <div class="bv-grid">
               <div class="bv-cell bv-corner" style="background:#be64ac" title="Low volume · High quality">Hidden<br>gems
@@ -311,8 +311,7 @@ WHERE c.isclient = true;</code></pre>
               <div class="bv-cell bv-corner" style="background:#e8e8e8;color:rgba(0,0,0,.55)"
                 title="Low volume · Low quality">Low<br>priority</div>
               <div class="bv-cell" style="background:#ace4e4" title="Mid volume · Low quality"></div>
-              <div class="bv-cell bv-corner" style="background:#5ac8c8" title="High volume · Low quality">Vol
-                w/o<br>conversion</div>
+              <div class="bv-cell bv-corner" style="background:#5ac8c8" title="High volume · Low quality">High<br>volume</div>
             </div>
             <div class="bv-x-label">→ Volume (clients per ZCTA)</div>
           </div>
@@ -348,9 +347,9 @@ FROM counts;</code></pre>
         <div class="chapter-label">Chapter 3</div>
         <h2>The Story Over Time: Shifting Geography</h2>
         <p>
-          Where were clients coming from in 2021 — and has that changed by
-          2025? By grouping new matters by year and ZCTA we can animate the
-          spatial distribution of case activity across the full client base.
+          Where did clients come from in 2021? Did that change by 2025? 
+          By grouping new matters by year and ZIP Code Tabulation Area (ZCTA), we can animate the
+          spatial distribution of case activity across the years.
         </p>
         <div class="choropleth-legend">
           <div class="cl-item">
@@ -369,14 +368,13 @@ FROM counts;</code></pre>
         <p>
           Two trends emerge across 2021–2025. First, a gradual shift
           <strong>outward from downtown cores to suburban corridors</strong>:
-          early years show activity concentrated in established urban ZCTAs,
-          while by 2024–2025 deeper-teal cells spread into the Inland Empire
-          and outer rings of Los Angeles. Second, the
+          early business was concentrated in city center ZCTAs.
+          By 2024–2025, growth spread into the Inland Empire
+          and throughout Los Angeles. Second, the
           <strong>total geographic footprint grows larger each year</strong>
-          — more ZCTAs light up and the colored area expands outward as the
-          firm reaches communities it had no presence in before. Together
-          these trends signal organic, area-wide growth rather than simple
-          densification of existing markets.
+          — the firm continually reaches new communities. 
+          Business isn't just growing out from the office sites, 
+          it's developing corridors into a regional network.
         </p>
         <details class="sql-block">
           <summary>View SQL — Temporal Query (All Clients)</summary>
@@ -399,10 +397,9 @@ ORDER BY year_date, new_matters DESC;</code></pre>
         <div class="chapter-label">Chapter 3 · Lucrative Clients</div>
         <h2>Do High-Value Clients Follow the Same Pattern?</h2>
         <p>
-          Running the same animation for <strong>Lucrative clients only</strong>
-          reveals whether Star, High Value, and Efficient clients are growing
-          from the same geographies as the broader base — or concentrating
-          in a different set of ZCTAs.
+          Running the same animation for <strong>Lucrative</strong> clients 
+          reveals whether <strong style="color:#434b8b">Star</strong>, <strong style="color:#cc586f">High Value</strong> 
+          and/or <strong style="color:#368acc">Efficient</strong> clients show similar or different distributions.
         </p>
         <details class="sql-block">
           <summary>View SQL — Lucrative Clients</summary>
@@ -424,12 +421,11 @@ ORDER BY year_date, new_matters DESC;</code></pre>
       <!-- ── CHAPTER 3 · § 3.3 Churn Risk ────────────────────────────── -->
       <section class="story-section" data-viz="churn">
         <div class="chapter-label">Chapter 3 · § 3.3</div>
-        <h2>Churn Risk: Who Has Gone Silent?</h2>
+        <h2>Who Has Gone Silent?</h2>
         <p>
-          New intake matters, but so does keeping the clients we already
-          have. Flagging Lucrative clients with no activity in over
-          <strong>730 days</strong> gives us a priority list for
-          re-engagement before they go cold permanently.
+          New client matters, but client retention is everything. 
+          Flagging Lucrative clients with no activity in over
+          <strong>730 days</strong> could give us a priority list for re-engagement.
         </p>
         <p>
           In total, <strong>313 Lucrative clients</strong> have gone silent,
@@ -440,7 +436,7 @@ ORDER BY year_date, new_matters DESC;</code></pre>
           <div class="tier-card star">
             <strong style="color:#434b8b">Star — At Risk</strong>
             <p>Our highest-value dormant clients. Each averaged $30K in
-              their last engagement — the most urgent re-engagement target.</p>
+              their last engagement — the most urgent re-engagement targets.</p>
             <div class="tier-stats">
               <span>63 clients</span>
               <span>avg $30K last revenue</span>
@@ -469,15 +465,10 @@ ORDER BY year_date, new_matters DESC;</code></pre>
           </div>
         </div>
         <p>
-          The at-risk clients concentrate <strong>around the urban cores</strong>
-          — heaviest near the LA office and through the Pomona–Ontario
-          corridor. Worth noting: these are also areas that have seen heavy
-          redevelopment and property turnover in recent years. Some of these
-          clients may have wrapped up a specific matter and simply haven't
-          had a new need yet — not lost, just dormant. A quick outreach pass
-          to check in, remind them of the firm's services, and ask about
-          upcoming transactions could reactivate a meaningful share of this
-          list at low cost.
+          The at-risk clients concentrate <strong>around the urban cores</strong>, 
+          where the earliest cases came from. 
+          This is most evident near the LA office and through the Pomona–Ontario
+          corridor. Even limited outreach could entrench repeat business.
         </p>
         <details class="sql-block">
           <summary>View SQL — At-Risk Lucrative Clients</summary>
@@ -510,15 +501,15 @@ ORDER BY ct.net_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 3 · § 3.4</div>
         <h2>Cohort Analysis: Long-Term Value by Intake Year</h2>
         <p>
-          Grouping clients by the year of their <strong>first matter</strong>
-          reveals which intake cohorts ultimately generated the most revenue
-          and the highest share of Lucrative clients — letting the firm
-          reverse-engineer what made a given year's intake so productive.
+          Grouping clients by the year of their <strong>earliest matter</strong>
+          reveals which intake cohorts (2021, 2022, ... 2025, etc.) generated the most revenue
+          and the highest percentage of lucrative clients. This could allow the firm
+          to reverse-engineer the causes of the year's productivity.
         </p>
         <p>
           The 2021 cohort leads on both average revenue ($9,719) and lucrative
-          rate (56 %). More recent cohorts appear weaker, but this is expected:
-          cases opened in 2024–2026 have not yet fully matured.
+          client rate (56%). More recent cohorts appear weaker, but these numbers may be deceiving:
+          cases opened in 2024–2026 may not have yet fully matured.
         </p>
         <div class="note">
           2025* and 2026* are partial cohorts — many matters are still active
@@ -567,7 +558,7 @@ ORDER BY cohort_year;</code></pre>
         <h2>Total Revenue by Practice Area</h2>
         <p>
           <strong style="color: #6bdb7a;">Civil Litigation</strong> dominates total revenue at
-          $1.98B — nearly six times the next largest group. <strong style="color: #d4d738;">Probate</strong>
+          $1.98M — nearly six times the next largest group. <strong style="color: #d4d738;">Probate</strong>
           ($218M) and <strong style="color: #888888;">Other</strong> ($309M) follow, driven by a smaller
           number of high-value cases. <strong style="color: #637def;">Negotiations</strong> brings in
           $91M across 213 clients, making it the highest-volume mid-tier practice.
@@ -821,16 +812,16 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.3</div>
         <h2>Revenue Efficiency: Corporate vs. Individual</h2>
         <p>
-          <strong style="color: #47c597;">Individual</strong> clients make up <strong>99.2 %</strong> of the client
-          base (855 vs. 7). Yet revenue per hour is nearly identical —
+          <strong style="color: #47c597;">Individual</strong> clients make up <strong>99.2%</strong> of the client
+          base (855 vs. 7). Yet revenue per hour is strikingly similar —
           $4,038 for <strong style="color: #47c597;">individuals</strong> vs. $3,770 for <strong
             style="color: #7b6df7;">corporate</strong> clients — meaning
-          the firm's pricing model is consistent across both segments.
+          the firm's pricing model is largely consistent across both segments.
         </p>
         <p>
-          The implication is that growing the <strong style="color: #7b6df7;">corporate</strong> segment would not
-          come at the cost of hourly efficiency, making it a viable
-          diversification strategy without requiring a change in how matters
+          The implication is that growing the <strong style="color: #7b6df7;">corporate</strong> segment might not
+          come at the cost of hourly efficiency, potentially making it a viable
+          diversification strategy without neccessarily requiring excessive changes to how matters
           are priced or staffed.
         </p>
         <details class="sql-block">
@@ -915,7 +906,7 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         <p>
           <strong style="color: #888888;">Others</strong> is the weakest channel at $2,833/hr,
           worth auditing to understand what sources it captures and whether
-          any deserve their own tracking category.
+          any deserve their own tracking categories.
         </p>
         <details class="sql-block">
           <summary>View SQL — Acquisition Channel Summary</summary>
@@ -969,15 +960,15 @@ ORDER BY total_revenue DESC;</code></pre>
         <p>
           Total client volume alone is misleading — what matters is the
           share of those clients who are <strong>Lucrative</strong>.
-          <strong style="color: #7cc8e6;">RERM</strong> converts 75 % of its intake to Lucrative
+          <strong style="color: #7cc8e6;">RERM</strong> converts 75% of its intake to Lucrative
           status, and <strong style="color: #33a442;">Official Website</strong> and
-          <strong style="color: #dfc750;">Yelp</strong> both hit 50 %, despite low absolute counts.
+          <strong style="color: #dfc750;">Yelp</strong> both hit 50%, despite low absolute counts.
         </p>
         <p>
-          <strong style="color: #ba6aba;">Referral</strong> (43 %) and <strong style="color: #ea8424;">Google</strong>
-          (43 %) are virtually tied on lucrative rate while delivering the
+          <strong style="color: #ba6aba;">Referral</strong> (43%) and <strong style="color: #ea8424;">Google</strong>
+          (43%) are virtually tied on lucrative rate while delivering the
           largest client volumes — reinforcing them as the firm's twin
-          workhorses. <strong style="color: #df505a;">Spanish Google</strong> trails at 33 %,
+          workhorses. <strong style="color: #df505a;">Spanish Google</strong> trails at 33%,
           suggesting room to improve intake quality from that channel.
         </p>
         <details class="sql-block">
@@ -1109,7 +1100,7 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
           segment is equally, if not more, profitable per attorney hour.
         </p>
         <p>
-          With 288 <strong style="color:#8966d1">Spanish</strong>-speaking clients (24 % of the client base), the
+          With 288 <strong style="color:#8966d1">Spanish</strong>-speaking clients (24% of the client base), the
           <strong style="color:#8966d1">Spanish</strong>-speaking segment is far from a niche. It represents a
           material share of revenue and operates at premium efficiency,
           making it a top priority for retention and growth investment.
@@ -1147,7 +1138,7 @@ ORDER BY total_revenue DESC;</code></pre>
           the demographics of those neighbourhoods.
         </p>
         <p>
-          Scroll to see how that pattern holds at the ZIP code level.
+          Scroll to see how this pattern holds at the ZIP code level.
         </p>
         <details class="sql-block">
           <summary>View SQL — Client Language Summary</summary>
@@ -1288,18 +1279,16 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.7</div>
         <h2>Attorney Performance: Revenue Originated</h2>
         <p>
-          The originating attorney view answers <em>"who brought in the
-            business?"</em> <strong>Attorney #2</strong> dominates with 733
+          The originating attorney is the one who brought in the client. 
+          <strong>Attorney #2</strong> leads with 733
           clients and $4.83M in generated revenue, followed by
           <strong>Attorney #4</strong> at 389 clients and $3.77M.
           Together they account for the vast majority of the firm's
           client acquisition.
         </p>
         <p>
-          The long tail of attorneys with fewer than 10 clients originated
-          suggests that business development is highly concentrated —
-          a risk worth addressing through structured referral incentives
-          for the wider team.
+          The long list of attorneys with fewer than 10 clients originated
+          suggests that business development is highly concentrated.
         </p>
         <details class="sql-block">
           <summary>View SQL — Originating Attorney</summary>
@@ -1321,17 +1310,11 @@ ORDER BY total_revenue_generated DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.7</div>
         <h2>Attorney Performance: Execution Efficiency</h2>
         <p>
-          The responsible attorney view answers <em>"who works most
-            efficiently?"</em> <strong>Attorney #18</strong> leads at
-          $5,592/hr, though on only 5 matters. Among high-volume
+          The responsible attorney is the one tasked to get the case done.
+          <strong>Attorney #18</strong> leads at
+          $5,592/hr, though from only 5 matters. Among high-volume
           attorneys, <strong>#2</strong> ($4,384/hr, 606 matters) and
-          <strong>#7</strong> ($4,350/hr, 132 matters) combine strong
-          volume with excellent efficiency.
-        </p>
-        <p>
-          <strong>Attorney #5</strong> manages 124 matters but yields
-          the lowest rate at $2,232/hr — a meaningful gap from the
-          firm average that warrants a caseload or billing review.
+          <strong>#7</strong> ($4,350/hr, 132 matters) combine volume and efficiency.
         </p>
         <details class="sql-block">
           <summary>View SQL — Responsible Attorney</summary>
@@ -1360,49 +1343,46 @@ ORDER BY revenue_per_hour DESC;</code></pre>
     <div class="findings-grid">
       <div class="finding-card">
         <div class="finding-num">01</div>
-        <h3>42 % of clients are Lucrative — but they cluster</h3>
+        <h3>42% of clients are Lucrative — but they cluster</h3>
         <p>The four-tier model separates 450 of 1,071 clients into Star,
           High Value, or Efficient tiers. These clients are not evenly spread:
           they concentrate in South Los Angeles, the Pomona–Ontario corridor,
-          and a handful of San Diego ZCTAs. Geography-blind marketing wastes
-          budget on areas where conversion is structurally low.</p>
+          and a handful of San Diego ZCTAs.</p>
       </div>
       <div class="finding-card">
         <div class="finding-num">02</div>
         <h3>Target quality over volume in geographic markets</h3>
         <p>Bivariate Volume × Quality analysis reveals "hidden gem" ZCTAs
-          with a high Lucrative share but still-low client count — the firm's
-          most underpenetrated premium markets. These areas, not the already-dense
-          urban cores, are the highest-priority outreach zones for new matter
-          intake. San Diego shows the most untapped room.</p>
+          with a high Lucrative share but still-low client count — ripe for further exploration. 
+          These areas, not the already-dense urban cores, 
+          could be the highest-priority outreach zones for new business. 
+          San Diego shows great potential.</p>
       </div>
       <div class="finding-card">
         <div class="finding-num">03</div>
-        <h3>Client geography is expanding — 2021 was the best vintage</h3>
+        <h3>Client geography is expanding</h3>
         <p>New matter intake has shifted steadily outward from downtown cores
           into suburban corridors since 2021, and the total geographic footprint
-          grows each year. The 2021 cohort remains the strongest on record —
-          56 % Lucrative rate and $9,719 average revenue per client — making
-          the intake strategy of that year worth reverse-engineering.</p>
+          grows each year. The 2021 cohort remains the strongest —
+          56% Lucrative and $9,719 average revenue per client.</p>
       </div>
       <div class="finding-card">
         <div class="finding-num">04</div>
         <h3>$4.73M in recoverable revenue is sitting dormant</h3>
         <p>313 Lucrative clients have gone silent for 2+ years. Star clients
           alone averaged $30K in their last matter. The dormant population
-          concentrates around the LA core and the Pomona–Ontario corridor —
-          areas with high recent redevelopment activity, where a brief
-          re-engagement outreach could reactivate meaningful volume at low cost.</p>
+          concentrates around the LA core and the Pomona–Ontario corridor.
+          Targeted outreach could reactivate meaningful volume at low cost.</p>
       </div>
       <div class="finding-card">
         <div class="finding-num">05</div>
-        <h3>Referral and the Spanish-speaking segment deserve first priority</h3>
-        <p>Referral delivers $4,258/hr and 43 % Lucrative conversion — the
-          top channel by both efficiency and volume. RERM converts 75 % of
-          intake to Lucrative, the highest rate of any channel. Meanwhile,
-          Spanish-speaking clients match English at $4,144/hr and represent
-          24 % of the client base, with clear spatial clustering in specific
-          communities — a retention and growth opportunity hiding in plain sight.</p>
+        <h3>Referral and the Spanish-speaking segment merit prioritization</h3>
+        <p>Referrals deliver $4,258/hr and are 43% lucrative — the
+          top channel by both efficiency and volume. RERM converts 75% of
+          intake to lucrative, the highest rate of any channel. Meanwhile,
+          Spanish-speaking clients rival English at $4,144/hr and represent
+          24% of the client base, with clear spatial clustering in specific
+          communities — a growth opportunity.</p>
       </div>
       <div class="finding-card">
         <div class="finding-num">06</div>
@@ -1462,7 +1442,7 @@ ORDER BY revenue_per_hour DESC;</code></pre>
           net revenue and revenue-per-hour across all 1,071 clients.
           Star = top quartile on <em>both</em> dimensions; High Value = top
           revenue quartile only; Efficient = top hourly-yield quartile only;
-          Standard = all others. Results are materialized as the
+          Standard = all others. Results are displayed as the
           <code>v_client_tier</code> view, which underpins every subsequent
           analysis.
         </p>
@@ -1487,7 +1467,7 @@ ORDER BY revenue_per_hour DESC;</code></pre>
     <p>Eugenie Huang &amp; Reid Osborn</p>
     <p class="footer-note">
       Built with PostGIS, QGIS, and Chart.js.
-      Data: law firm client records (anonymised).
+      Data: proprietary law firm records (anonymized).
     </p>
   </footer>
 

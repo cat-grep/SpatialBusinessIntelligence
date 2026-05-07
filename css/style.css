@@ -361,11 +361,11 @@ a:hover { text-decoration: underline; color: var(--forest); }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 0.5rem 2rem;
 }
 
-#chart-container canvas { max-width: 100%; max-height: 360px; }
-#chart-container.tall canvas { max-height: 720px; }
+#chart-container canvas { max-width: 100%; max-height: min(360px, calc(100vh - var(--nav-h) - 6rem)); }
+#chart-container.tall canvas { max-height: min(720px, calc(100vh - var(--nav-h) - 6rem)); }
 
 #viz-caption {
   padding: .75rem 1.25rem;

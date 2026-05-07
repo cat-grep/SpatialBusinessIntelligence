@@ -10,6 +10,9 @@ const LEGEND_BOX     = isMobile ? 6  : 12;
 
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.layout.padding.bottom = 16;
+  }
   initLightbox();
   initScrollObserver();
 });
@@ -104,10 +107,10 @@ function showViz(name) {
         'tier-on': 'data/LucrativeCustomerTier_ON.png'
       };
       const captions = {
-        'tier-us': 'Continental US — lucrative client locations by tier',
-        'tier-sd': 'San Diego — client locations coloured by tier',
-        'tier-la': 'Los Angeles — client locations coloured by tier',
-        'tier-on': 'Inland Empire / Ontario — client locations coloured by tier'
+        'tier-us': 'Continental US — Lucrative Client Locations by Tier',
+        'tier-sd': 'San Diego — Client Locations Colored by Tier',
+        'tier-la': 'Los Angeles — Client Locations Colored by Tier',
+        'tier-on': 'Inland Empire / Ontario — Client Locations Colored by Tier'
       };
       setVizImage(srcs[name], captions[name]);
       caption.classList.remove('hidden');
