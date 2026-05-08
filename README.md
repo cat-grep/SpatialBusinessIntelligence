@@ -80,8 +80,6 @@ All SQL queries are documented in [PostGIS_Functions.md](PostGIS_Functions.md), 
 3. Export spatial views as PNG/GIF from QGIS and place them in `data/`.
 4. Update the inline data arrays in `js/main.js` with fresh aggregated values.
 
-See [data/README.md](data/README.md) for GeoJSON export instructions if you want to replace the static images with a live Leaflet/MapLibre layer.
-
 ---
 
 ## Acknowledgements
