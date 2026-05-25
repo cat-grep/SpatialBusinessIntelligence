@@ -558,35 +558,58 @@ ORDER BY cohort_year;</code></pre>
         <h2>Total Revenue by Practice Area</h2>
         <p>
           <strong style="color: #6bdb7a;">Civil Litigation</strong> dominates total revenue at
-          $1.98M — nearly six times the next largest group. <strong style="color: #d4d738;">Probate</strong>
-          ($218M) and <strong style="color: #888888;">Other</strong> ($309M) follow, driven by a smaller
-          number of high-value cases. <strong style="color: #637def;">Negotiations</strong> brings in
-          $91M across 213 clients, making it the highest-volume mid-tier practice.
+          $5.02M across 457 clients, making it the firm's largest practice-area
+          revenue engine. <strong style="color: #888888;">Other</strong> follows at $1.24M, while <strong style="color: #d4d738;">Probate</strong> contributes
+          $708.6K from 108 clients.
         </p>
         <p>
-          <strong style="color: #d41f73;">Estate Planning</strong> ($4.3M) and <strong
-            style="color: #f08f35;">Drafting</strong> ($4.0M) generate modest total
-          revenue — but as the efficiency chart on the next section reveals, their hourly yield tells a different story.
+          <strong style="color: #637def;">Negotiations</strong> brings in $622.6K
+          across 331 clients, the highest client count in the mid-tier practices.
+          <strong style="color: #d41f73;">Estate Planning</strong> ($220.4K),
+          <strong style="color: #f08f35;">Drafting</strong> ($167.5K), and
+          <strong style="color: #d67dff;">Case Review</strong> ($164.6K) are smaller
+          by total revenue, but their hourly yield tells a different story.
         </p>
         <details class="sql-block">
           <summary>View SQL — Practice Area Summary</summary>
-          <pre><code>SELECT
-  CASE
-    WHEN TRIM(practice_area) IN (
-      'Civil Litigation', 'Negotiations', 'Drafting',
-      'Estate Planning', 'Case Review', 'Probate'
-    ) THEN TRIM(practice_area)
-    ELSE 'Other'
-  END AS practice_area_group,
-  COUNT(DISTINCT m.client_id)                               AS client_count,
-  ROUND(SUM(t.funds_in - t.funds_out)::numeric, 2)          AS total_revenue,
-  ROUND(SUM(a.hours)::numeric, 2)                           AS total_hours,
-  ROUND((SUM(t.funds_in - t.funds_out)
-         / NULLIF(SUM(a.hours), 0))::numeric, 2)            AS revenue_per_hour
-FROM matter m
-JOIN transaction t ON t.matter_id = m.id
-JOIN activity    a ON a.matter_id = m.id
-WHERE m.practice_area IS NOT NULL
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+matter_metrics AS (
+  SELECT
+    m.id,
+    m.client_id,
+    CASE
+      WHEN TRIM(m.practice_area) IN (
+        'Civil Litigation', 'Negotiations', 'Drafting',
+        'Estate Planning', 'Case Review', 'Probate'
+      ) THEN TRIM(m.practice_area)
+      ELSE 'Other'
+    END AS practice_area_group,
+    COALESCE(r.net_revenue, 0) AS net_revenue,
+    COALESCE(h.total_hours, 0) AS total_hours
+  FROM matter m
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
+  WHERE m.practice_area IS NOT NULL
+)
+SELECT
+  practice_area_group,
+  COUNT(DISTINCT client_id)                                AS client_count,
+  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
+  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
+  ROUND((SUM(net_revenue)
+         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
+FROM matter_metrics
 GROUP BY practice_area_group
 ORDER BY total_revenue DESC;</code></pre>
         </details>
@@ -597,15 +620,17 @@ ORDER BY total_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.1</div>
         <h2>Revenue Efficiency by Practice Area</h2>
         <p>
-          Revenue per hour isolates true profitability — a practice area
+          Revenue per hour isolates true profitability - a practice area
           with high total revenue but low hourly yield may be consuming
           disproportionate attorney time.
         </p>
         <p>
-          <strong style="color: #d67dff;">Case Review</strong> leads at $4,869/hr despite being only
-          the 6th largest practice by client count. <strong style="color: #6bdb7a;">Civil
-            Litigation</strong> combines volume (321 clients) with strong
-          efficiency ($4,035/hr), making it the firm's core engine.
+          <strong style="color: #d67dff;">Case Review</strong> leads at $229.82/hr,
+          followed closely by <strong style="color: #f08f35;">Drafting</strong>
+          ($221.17/hr) and <strong style="color: #637def;">Negotiations</strong>
+          ($220.74/hr). <strong style="color: #6bdb7a;">Civil Litigation</strong>
+          remains the scale leader, but its $195.77/hr yield is closer to the
+          middle of the practice mix.
         </p>
       </section>
 
@@ -654,7 +679,7 @@ SELECT
 FROM contact c
 JOIN revenue_per_area r ON c.id = r.client_id
 LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.practice_area = h.practice_area
+    AND r.practice_area IS NOT DISTINCT FROM h.practice_area
 ORDER BY c.id, net_revenue DESC;</code></pre>
         </details>
       </section>
@@ -705,33 +730,55 @@ ORDER BY month, matter_count DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.2</div>
         <h2>Total Revenue by Scope of Representation</h2>
         <p>
-          <strong style="color: #888;">Unspecified</strong> matters — those with no scope recorded —
-          account for the largest share at $1.67B across 752 clients, signaling
+          <strong style="color: #888;">Unspecified</strong> matters - those with no scope recorded -
+          account for the largest share at $4.93M across 938 clients, signaling
           a data quality gap worth closing. Among labeled scopes,
-          <strong style="color: #5571d7;">Full Litigation</strong> leads at $973M (195 clients),
-          followed by <strong style="color: #d65296;">Full Litigation – Sub into Case</strong> at $349M.
-          <strong style="color: #64efe3;">Negotiations</strong> contributes $144M from 157 clients —
-          a meaningful mid-tier volume driver.
+          <strong style="color: #5571d7;">Full Litigation</strong> leads at $2.73M
+          (299 clients), followed by
+          <strong style="color: #d65296;">Full Litigation - Sub into Case</strong>
+          at $818.3K. <strong style="color: #64efe3;">Negotiations</strong>
+          contributes $684.6K from 277 clients.
         </p>
         <p>
-          <strong style="color: #a6c91a;">Flat Fee</strong> ($7.6M) and <strong style="color: #9110db;">Estate
-            Planning</strong>
-          ($2.0M) generate modest total revenue, but their hourly efficiency
-          tells a very different story on the next chart.
+          <strong style="color: #a6c91a;">Flat Fee</strong> ($318.3K) and
+          <strong style="color: #9110db;">Estate Planning</strong> ($59.7K)
+          generate modest total revenue, but their hourly efficiency tells a
+          different story on the next chart.
         </p>
         <details class="sql-block">
           <summary>View SQL — Scope of Representation Summary</summary>
-          <pre><code>SELECT
-  COALESCE(m.scope_of_representation, 'Unspecified')        AS scope_of_representation,
-  COUNT(DISTINCT m.client_id)                               AS client_count,
-  ROUND(SUM(t.funds_in - t.funds_out)::numeric, 2)          AS total_revenue,
-  ROUND(SUM(a.hours)::numeric, 2)                           AS total_hours,
-  ROUND((SUM(t.funds_in - t.funds_out)
-         / NULLIF(SUM(a.hours), 0))::numeric, 2)            AS revenue_per_hour
-FROM matter m
-JOIN transaction t ON t.matter_id = m.id
-JOIN activity    a ON a.matter_id = m.id
-GROUP BY m.scope_of_representation
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+matter_metrics AS (
+  SELECT
+    m.id,
+    m.client_id,
+    COALESCE(m.scope_of_representation, 'Unspecified') AS scope_of_representation,
+    COALESCE(r.net_revenue, 0) AS net_revenue,
+    COALESCE(h.total_hours, 0) AS total_hours
+  FROM matter m
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
+)
+SELECT
+  scope_of_representation,
+  COUNT(DISTINCT client_id)                                AS client_count,
+  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
+  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
+  ROUND((SUM(net_revenue)
+         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
+FROM matter_metrics
+GROUP BY scope_of_representation
 ORDER BY revenue_per_hour DESC;</code></pre>
         </details>
       </section>
@@ -741,19 +788,18 @@ ORDER BY revenue_per_hour DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.2</div>
         <h2>Revenue Efficiency by Scope of Representation</h2>
         <p>
-          <strong style="color: #9110db;">Estate Planning</strong> scope leads at $9,455/hr — its
-          high yield reflects structured, low-hour engagements. Among
-          high-volume categories, <strong style="color: #a6c91a;">Flat Fee</strong> ($4,938/hr)
-          and <strong style="color: #d65296;">Full Litigation – Sub into Case</strong> ($4,596/hr)
-          outperform standard Full Litigation ($3,849/hr). Notably,
-          <strong style="color: #888;">Unspecified</strong> matters average $4,177/hr —
-          above Full Litigation — suggesting the unlabeled caseload
-          is not low-value work and deserves proper classification.
+          <strong style="color: #9110db;">Estate Planning</strong> scope leads at $295.39/hr,
+          reflecting structured, low-hour work. Among higher-volume categories,
+          <strong style="color: #64efe3;">Negotiations</strong> ($235.12/hr),
+          <strong style="color: #a6c91a;">Flat Fee</strong> ($227.24/hr), and
+          <strong style="color: #d65296;">Full Litigation - Sub into Case</strong>
+          ($198.95/hr) outperform standard Full Litigation ($187.05/hr).
         </p>
         <p>
-          <strong style="color: #56cf5c;">Limited Scope Litigation</strong> is the least efficient
-          at $1,993/hr. With only 5 clients, it may not justify the
-          operational overhead unless it serves a strategic referral purpose.
+          <strong style="color: #888;">Unspecified</strong> matters average $188.69/hr,
+          close to Full Litigation, which suggests the unlabeled caseload is not
+          low-value work and deserves proper classification. <strong style="color: #56cf5c;">Limited Scope Litigation</strong>
+          performs well at $233.07/hr, but only across 7 clients.
         </p>
       </section>
 
@@ -802,7 +848,7 @@ SELECT
 FROM contact c
 JOIN revenue_per_area r ON c.id = r.client_id
 LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.scope_of_representation = h.scope_of_representation
+    AND r.scope_of_representation IS NOT DISTINCT FROM h.scope_of_representation
 ORDER BY c.id, net_revenue DESC;</code></pre>
         </details>
       </section>
@@ -812,32 +858,52 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.3</div>
         <h2>Revenue Efficiency: Corporate vs. Individual</h2>
         <p>
-          <strong style="color: #47c597;">Individual</strong> clients make up <strong>99.2%</strong> of the client
-          base (855 vs. 7). Yet revenue per hour is strikingly similar —
-          $4,038 for <strong style="color: #47c597;">individuals</strong> vs. $3,770 for <strong
-            style="color: #7b6df7;">corporate</strong> clients — meaning
-          the firm's pricing model is largely consistent across both segments.
+          <strong style="color: #47c597;">Individual</strong> clients make up <strong>99.3%</strong> of the client
+          base (1,060 vs. 8). Revenue per hour remains similar -
+          $192.32 for <strong style="color: #47c597;">individuals</strong> vs. $175.26 for <strong
+            style="color: #7b6df7;">corporate</strong> clients - meaning
+          the firm's pricing model is broadly consistent across both segments.
         </p>
         <p>
-          The implication is that growing the <strong style="color: #7b6df7;">corporate</strong> segment might not
-          come at the cost of hourly efficiency, potentially making it a viable
-          diversification strategy without neccessarily requiring excessive changes to how matters
-          are priced or staffed.
+          Corporate work is still a very small sample, with $59.4K in total revenue
+          compared with $7.09M from individual clients. Growth here may diversify the
+          client base, but the current data is too thin to make a strong efficiency claim.
         </p>
         <details class="sql-block">
           <summary>View SQL — Corporate vs. Individual Summary</summary>
-          <pre><code>SELECT
-  c.iscompany,
-  COUNT(DISTINCT m.client_id)                               AS client_count,
-  ROUND(SUM(t.funds_in - t.funds_out)::numeric, 2)          AS total_revenue,
-  ROUND(SUM(a.hours)::numeric, 2)                           AS total_hours,
-  ROUND((SUM(t.funds_in - t.funds_out)
-         / NULLIF(SUM(a.hours), 0))::numeric, 2)            AS revenue_per_hour
-FROM matter m
-JOIN contact c     ON m.client_id = c.id
-JOIN transaction t ON t.matter_id = m.id
-JOIN activity    a ON a.matter_id = m.id
-GROUP BY c.iscompany
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+matter_metrics AS (
+  SELECT
+    m.id,
+    m.client_id,
+    c.iscompany,
+    COALESCE(r.net_revenue, 0) AS net_revenue,
+    COALESCE(h.total_hours, 0) AS total_hours
+  FROM matter m
+  JOIN contact c ON m.client_id = c.id
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
+)
+SELECT
+  iscompany,
+  COUNT(DISTINCT client_id)                                AS client_count,
+  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
+  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
+  ROUND((SUM(net_revenue)
+         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
+FROM matter_metrics
+GROUP BY iscompany
 ORDER BY total_revenue DESC;</code></pre>
         </details>
       </section>
@@ -886,7 +952,7 @@ SELECT
 FROM contact c
 JOIN revenue_per_area r ON c.id = r.client_id
 LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.iscompany = h.iscompany
+    AND r.iscompany IS NOT DISTINCT FROM h.iscompany
 ORDER BY c.id, net_revenue DESC;</code></pre>
         </details>
       </section>
@@ -896,21 +962,33 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.4</div>
         <h2>Revenue Efficiency by Acquisition Channel</h2>
         <p>
-          <strong style="color: #ba6aba;">Referral</strong> leads on both total revenue ($623M) and
-          hourly efficiency ($4,258/hr) — the clearest signal in the dataset
-          that investing in referral programs has an outsized return.
-          <strong style="color: #ea8424;">Google</strong> brings the most clients (273) but at a
-          lower yield ($3,572/hr), suggesting volume without equivalent
-          quality conversion.
+          <strong style="color: #ba6aba;">Referral</strong> leads total revenue at $1.63M across 300 clients, while <strong style="color: #ea8424;">Google</strong>
+          is close behind at $1.55M across 330 clients. These two channels remain the
+          firm's highest-volume acquisition engines.
         </p>
         <p>
-          <strong style="color: #888888;">Others</strong> is the weakest channel at $2,833/hr,
-          worth auditing to understand what sources it captures and whether
-          any deserve their own tracking categories.
+          On hourly yield, <strong style="color: #7cc8e6;">RERM</strong> leads at
+          $255.70/hr, though from only 5 clients. Among larger channels,
+          <strong style="color: #ea8424;">Google</strong> ($202.23/hr),
+          <strong style="color: #ba6aba;">Referral</strong> ($193.51/hr), and
+          <strong style="color: #df505a;">Spanish Google</strong> ($189.16/hr)
+          are tightly clustered.
         </p>
         <details class="sql-block">
           <summary>View SQL — Acquisition Channel Summary</summary>
-          <pre><code>WITH normalised AS (
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+normalised AS (
   SELECT
     CASE
       WHEN m.client_source ILIKE '%web%'      THEN 'Official Website'
@@ -923,18 +1001,18 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
       ELSE m.client_source
     END                                        AS source_group,
     m.client_id,
-    t.funds_in - t.funds_out                   AS net_revenue,
-    a.hours
+    COALESCE(r.net_revenue, 0)                 AS net_revenue,
+    COALESCE(h.total_hours, 0)                 AS total_hours
   FROM matter m
-  JOIN transaction t ON t.matter_id = m.id
-  JOIN activity    a ON a.matter_id = m.id
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
   WHERE m.client_source IS NOT NULL
 ),
 aggregated AS (
   SELECT source_group,
     COUNT(DISTINCT client_id)  AS client_count,
     SUM(net_revenue)           AS total_revenue,
-    SUM(hours)                 AS total_hours
+    SUM(total_hours)           AS total_hours
   FROM normalised GROUP BY source_group
 ),
 ranked AS (
@@ -973,8 +1051,9 @@ ORDER BY total_revenue DESC;</code></pre>
         </p>
         <details class="sql-block">
           <summary>View SQL — Channel × Tier Cross-Tab</summary>
-          <pre><code>WITH normalised AS (
+          <pre><code>WITH source_by_client AS (
   SELECT
+    m.client_id,
     CASE
       WHEN m.client_source ILIKE '%web%'      THEN 'Official Website'
       WHEN m.client_source ILIKE '%refer%'
@@ -984,13 +1063,19 @@ ORDER BY total_revenue DESC;</code></pre>
         OR m.client_source ILIKE '%network%'
         OR m.client_source ILIKE '%previous%' THEN 'Referral'
       ELSE m.client_source
-    END                                        AS source_group,
+    END                                        AS source_group
+  FROM matter m
+  WHERE m.client_source IS NOT NULL
+  GROUP BY m.client_id, source_group
+),
+normalised AS (
+  SELECT
+    s.source_group,
     ct.client_id,
     ct.client_tier,
     ct.net_revenue
-  FROM matter m
-  JOIN v_client_tier ct ON m.client_id = ct.client_id
-  WHERE m.client_source IS NOT NULL
+  FROM source_by_client s
+  JOIN v_client_tier ct ON s.client_id = ct.client_id
 ),
 top5 AS (
   SELECT source_group FROM (
@@ -1033,7 +1118,19 @@ ORDER BY lucrative_rate_pct DESC;</code></pre>
         </p>
         <details class="sql-block">
           <summary>View SQL — Acquisition Channel</summary>
-          <pre><code>WITH normalised AS (
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+normalised AS (
   SELECT
     m.client_id,
     CASE
@@ -1046,11 +1143,11 @@ ORDER BY lucrative_rate_pct DESC;</code></pre>
         OR m.client_source ILIKE '%previous%'  THEN 'Referral'
       ELSE m.client_source
     END                                         AS source_group,
-    t.funds_in - t.funds_out                    AS net_revenue,
-    a.hours
+    COALESCE(r.net_revenue, 0)                  AS net_revenue,
+    COALESCE(h.total_hours, 0)                  AS total_hours
   FROM matter m
-  JOIN transaction t ON t.matter_id = m.id
-  JOIN activity    a ON a.matter_id = m.id
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
   WHERE m.client_source IS NOT NULL
 ),
 top5 AS (
@@ -1069,7 +1166,7 @@ client_agg AS (
     CASE WHEN t5.source_group IS NOT NULL
          THEN n.source_group ELSE 'Others' END  AS source_group,
     SUM(n.net_revenue)                           AS net_revenue,
-    SUM(n.hours)                                 AS total_hours
+    SUM(n.total_hours)                           AS total_hours
   FROM normalised n
   LEFT JOIN top5 t5 ON n.source_group = t5.source_group
   GROUP BY n.client_id,
@@ -1094,13 +1191,13 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.5</div>
         <h2>Revenue Efficiency by Client Language</h2>
         <p>
-          <strong style="color:#8966d1">Spanish</strong>-speaking clients generate <strong>$4,144/hr</strong> —
-          marginally higher than <strong style="color:#2ea227">English</strong>-speaking clients at $4,094/hr.
+          <strong style="color:#8966d1">Spanish</strong>-speaking clients generate <strong>$195.82/hr</strong> —
+          marginally higher than <strong style="color:#2ea227">English</strong>-speaking clients at $194.38/hr.
           This is a striking finding: the firm's second-largest language
           segment is equally, if not more, profitable per attorney hour.
         </p>
         <p>
-          With 288 <strong style="color:#8966d1">Spanish</strong>-speaking clients (24% of the client base), the
+          With 327 <strong style="color:#8966d1">Spanish</strong>-speaking clients (19% of the client base), the
           <strong style="color:#8966d1">Spanish</strong>-speaking segment is far from a niche. It represents a
           material share of revenue and operates at premium efficiency,
           making it a top priority for retention and growth investment.
@@ -1111,18 +1208,39 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         </div>
         <details class="sql-block">
           <summary>View SQL — Client Language Summary</summary>
-          <pre><code>SELECT
-  m.client_language,
-  COUNT(DISTINCT m.client_id)                               AS client_count,
-  ROUND(SUM(t.funds_in - t.funds_out)::numeric, 2)          AS total_revenue,
-  ROUND(SUM(a.hours)::numeric, 2)                           AS total_hours,
-  ROUND((SUM(t.funds_in - t.funds_out)
-         / NULLIF(SUM(a.hours), 0))::numeric, 2)            AS revenue_per_hour
-FROM matter m
-JOIN transaction t ON t.matter_id = m.id
-JOIN activity    a ON a.matter_id = m.id
-WHERE m.client_language IS NOT NULL
-GROUP BY m.client_language
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+matter_metrics AS (
+  SELECT
+    m.id,
+    m.client_id,
+    m.client_language,
+    COALESCE(r.net_revenue, 0) AS net_revenue,
+    COALESCE(h.total_hours, 0) AS total_hours
+  FROM matter m
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
+  WHERE m.client_language IS NOT NULL
+)
+SELECT
+  client_language,
+  COUNT(DISTINCT client_id)                                AS client_count,
+  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
+  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
+  ROUND((SUM(net_revenue)
+         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
+FROM matter_metrics
+GROUP BY client_language
 ORDER BY total_revenue DESC;</code></pre>
         </details>
       </section>
@@ -1172,7 +1290,7 @@ SELECT
 FROM contact c
 JOIN revenue_per_area r ON c.id = r.client_id
 LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.client_language = h.client_language
+    AND r.client_language IS NOT DISTINCT FROM h.client_language
 ORDER BY c.id, net_revenue DESC;</code></pre>
         </details>
       </section>
@@ -1195,33 +1313,53 @@ ORDER BY c.id, net_revenue DESC;</code></pre>
         <div class="chapter-label">Chapter 4 · § 4.6</div>
         <h2>Revenue Efficiency by Retainer Type</h2>
         <p>
-          <strong style="color: #888;">Unspecified</strong> records — 25 clients with no retainer
-          type on file — show the highest yield at $10,359/hr, though the
-          small sample warrants caution. Among fully categorised types,
-          <strong style="color: #cc477c;">Flat Fee</strong> leads at $4,756/hr across 502 clients,
-          with matters averaging fewer than 8 hours each — structured
-          fixed-fee engagements capturing maximum value with minimal time.
+          <strong style="color: #cc477c;">Flat Fee</strong> matters now show the highest yield
+          at $222.61/hr across 707 clients, narrowly ahead of
+          <strong style="color: #1e6ce1;">Hourly - Bonus</strong> at $222.43/hr.
+          These structured engagements continue to capture strong value with
+          relatively low time investment.
         </p>
         <p>
-          <strong style="color: #1e6ce1;">Hourly - Bonus</strong> is the least efficient at
-          $3,024/hr despite being the fourth-highest total revenue category,
-          suggesting bonus arrangements add complexity without proportionate
-          return. <strong style="color: #e7e27a;">Hybrid Contingency</strong> ($4,678/hr) punches
-          well above its client count of 59.
+          <strong style="color: #888;">Unspecified</strong> records are the least efficient
+          at $135.69/hr, while <strong style="color: #c585f0;">Probate</strong>
+          follows at $137.31/hr. <strong style="color: #50cabe;">Hourly - No Bonus</strong>
+          remains the dominant volume category with 988 clients and $6.46M in
+          total revenue.
         </p>
         <details class="sql-block">
           <summary>View SQL — Retainer Type Summary</summary>
-          <pre><code>SELECT
-  COALESCE(m.retainer_type, 'Unspecified')                  AS retainer_type,
-  COUNT(DISTINCT m.client_id)                               AS client_count,
-  ROUND(SUM(t.funds_in - t.funds_out)::numeric, 2)          AS total_revenue,
-  ROUND(SUM(a.hours)::numeric, 2)                           AS total_hours,
-  ROUND((SUM(t.funds_in - t.funds_out)
-         / NULLIF(SUM(a.hours), 0))::numeric, 2)            AS revenue_per_hour
-FROM matter m
-JOIN transaction t ON t.matter_id = m.id
-JOIN activity    a ON a.matter_id = m.id
-GROUP BY m.retainer_type
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+matter_metrics AS (
+  SELECT
+    m.id,
+    m.client_id,
+    COALESCE(m.retainer_type, 'Unspecified') AS retainer_type,
+    COALESCE(r.net_revenue, 0) AS net_revenue,
+    COALESCE(h.total_hours, 0) AS total_hours
+  FROM matter m
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
+)
+SELECT
+  retainer_type,
+  COUNT(DISTINCT client_id)                                AS client_count,
+  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
+  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
+  ROUND((SUM(net_revenue)
+         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
+FROM matter_metrics
+GROUP BY retainer_type
 ORDER BY total_revenue DESC;</code></pre>
         </details>
       </section>
@@ -1269,7 +1407,7 @@ SELECT
 FROM contact c
 JOIN revenue_per_area r ON c.id = r.client_id
 LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.retainer_type = h.retainer_type
+    AND r.retainer_type IS NOT DISTINCT FROM h.retainer_type
 ORDER BY c.id, net_revenue DESC;</code></pre>
         </details>
       </section>
@@ -1311,25 +1449,46 @@ ORDER BY total_revenue_generated DESC;</code></pre>
         <h2>Attorney Performance: Execution Efficiency</h2>
         <p>
           The responsible attorney is the one tasked to get the case done.
-          <strong>Attorney #18</strong> leads at
-          $5,592/hr, though from only 5 matters. Among high-volume
-          attorneys, <strong>#2</strong> ($4,384/hr, 606 matters) and
-          <strong>#7</strong> ($4,350/hr, 132 matters) combine volume and efficiency.
+          <strong>Attorney #19</strong> leads at
+          $314.28/hr, though from only 5 matters. Among higher-volume
+          attorneys, <strong>#4</strong> ($199.86/hr, 369 matters),
+          <strong>#7</strong> ($192.69/hr, 149 matters), and
+          <strong>#2</strong> ($188.92/hr, 674 matters) combine scale with steady efficiency.
         </p>
         <details class="sql-block">
           <summary>View SQL — Responsible Attorney</summary>
-          <pre><code>SELECT
-  m.responsible_attorney                                    AS attorney_no,
-  COUNT(DISTINCT m.id)                                      AS matters_managed,
-  ROUND(SUM(t.funds_in - t.funds_out)::numeric, 2)          AS total_revenue,
-  ROUND(SUM(a.hours)::numeric, 2)                           AS total_hours,
-  ROUND((SUM(t.funds_in - t.funds_out)
-         / NULLIF(SUM(a.hours), 0))::numeric, 2)            AS revenue_per_hour
-FROM matter m
-JOIN transaction t ON t.matter_id = m.id
-JOIN activity    a ON a.matter_id = m.id
-WHERE m.responsible_attorney IS NOT NULL
-GROUP BY m.responsible_attorney
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id,
+         SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction
+  GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id,
+         SUM(hours) AS total_hours
+  FROM activity
+  GROUP BY matter_id
+),
+matter_metrics AS (
+  SELECT
+    m.id,
+    m.responsible_attorney,
+    COALESCE(r.net_revenue, 0) AS net_revenue,
+    COALESCE(h.total_hours, 0) AS total_hours
+  FROM matter m
+  LEFT JOIN matter_revenue r ON r.matter_id = m.id
+  LEFT JOIN matter_hours   h ON h.matter_id = m.id
+  WHERE m.responsible_attorney IS NOT NULL
+)
+SELECT
+  responsible_attorney                                      AS attorney_no,
+  COUNT(DISTINCT id)                                        AS matters_managed,
+  ROUND(SUM(net_revenue)::numeric, 2)                       AS total_revenue,
+  ROUND(SUM(total_hours)::numeric, 2)                       AS total_hours,
+  ROUND((SUM(net_revenue)
+         / NULLIF(SUM(total_hours), 0))::numeric, 2)        AS revenue_per_hour
+FROM matter_metrics
+GROUP BY responsible_attorney
 ORDER BY revenue_per_hour DESC;</code></pre>
         </details>
       </section>
@@ -1377,19 +1536,14 @@ ORDER BY revenue_per_hour DESC;</code></pre>
       <div class="finding-card">
         <div class="finding-num">05</div>
         <h3>Referral and the Spanish-speaking segment merit prioritization</h3>
-        <p>Referrals deliver $4,258/hr and are 43% lucrative — the
-          top channel by both efficiency and volume. RERM converts 75% of
-          intake to lucrative, the highest rate of any channel. Meanwhile,
-          Spanish-speaking clients rival English at $4,144/hr and represent
-          24% of the client base, with clear spatial clustering in specific
-          communities — a growth opportunity.</p>
+        <p>Referral and Google deliver the most acquisition volume, while RERM shows the strongest hourly yield ($255.70/hr) and the highest lucrative conversion rate (75%). Spanish-speaking clients rival English at $195.82/hr and represent 19% of the client base, with clear spatial clustering in specific communities - a growth opportunity.</p>
       </div>
       <div class="finding-card">
         <div class="finding-num">06</div>
         <h3>Fix billing mix and data gaps; diversify business development</h3>
-        <p>Flat Fee matters average $4,756/hr at fewer than 8 hours each —
-          the most efficient retainer structure. Hourly - Bonus is the weakest
-          at $3,024/hr. Over $1.67B in revenue sits under "Unspecified" scope,
+        <p>Flat Fee matters average $222.61/hr with relatively low time investment —
+          the most efficient retainer structure. Unspecified and Probate are the weakest
+          at $135.69/hr and $137.31/hr. Over $4.93M in revenue sits under "Unspecified" scope,
           obscuring strategy. Separately, Attorney #2 and #4 originated the
           vast majority of new clients — a concentration risk that structured
           team-wide referral incentives could begin to address.</p>
@@ -1479,6 +1633,17 @@ ORDER BY revenue_per_hour DESC;</code></pre>
   </div>
 
   <!-- Libraries — for offline: download files and update these paths -->
+  <!-- SQL popup -->
+  <div id="sql-modal" class="sql-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sql-modal-title">
+    <section class="sql-modal-panel">
+      <header class="sql-modal-header">
+        <h2 id="sql-modal-title">SQL</h2>
+        <button id="sql-modal-close" class="sql-modal-close" aria-label="Close SQL">&#10005;</button>
+      </header>
+      <pre><code id="sql-modal-code"></code></pre>
+    </section>
+  </div>
+
   <script src="lib/chart.min.js"></script>
   <script src="js/main.js"></script>
   <script>

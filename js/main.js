@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Chart.defaults.layout.padding.bottom = 16;
   }
   initLightbox();
+  initSqlModal();
   initScrollObserver();
 });
 
@@ -55,6 +56,55 @@ function initLightbox() {
 }
 
 // ── Image fade helper ─────────────────────────────────────────────────────
+// SQL popup
+function initSqlModal() {
+  const modal = document.getElementById('sql-modal');
+  const title = document.getElementById('sql-modal-title');
+  const code = document.getElementById('sql-modal-code');
+  const closeBtn = document.getElementById('sql-modal-close');
+  if (!modal || !title || !code || !closeBtn) return;
+
+  function openSql(details) {
+    const summary = details.querySelector('summary');
+    const sql = details.querySelector('pre code');
+    if (!summary || !sql) return;
+
+    title.textContent = summary.textContent.trim();
+    code.textContent = sql.textContent.trim();
+    details.removeAttribute('open');
+    modal.classList.remove('hidden');
+    closeBtn.focus();
+  }
+
+  function closeSql() {
+    modal.classList.add('hidden');
+  }
+
+  document.querySelectorAll('.sql-block').forEach(details => {
+    details.removeAttribute('open');
+    const summary = details.querySelector('summary');
+    if (!summary) return;
+
+    summary.setAttribute('role', 'button');
+    summary.setAttribute('aria-haspopup', 'dialog');
+    summary.addEventListener('click', e => {
+      e.preventDefault();
+      openSql(details);
+    });
+    summary.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      openSql(details);
+    });
+  });
+
+  closeBtn.addEventListener('click', closeSql);
+  modal.addEventListener('click', e => { if (e.target === modal) closeSql(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeSql();
+  });
+}
+
 function setVizImage(src, alt) {
   const img = document.getElementById('viz-img');
   img.classList.remove('visible');
@@ -457,13 +507,13 @@ function renderPracticeRevenueChart() {
 
   // Sorted ascending by totalRev so highest bar is at top
   const rows = [
-    { label: 'Drafting',         totalRev:    3975012, clients: 118 },
-    { label: 'Estate Planning',  totalRev:    4322409, clients: 148 },
-    { label: 'Case Review',      totalRev:   51135511, clients:  65 },
-    { label: 'Negotiations',     totalRev:   91247735, clients: 213 },
-    { label: 'Probate',          totalRev:  217716185, clients:  73 },
-    { label: 'Other',            totalRev:  309179344, clients: 142 },
-    { label: 'Civil Litigation', totalRev: 1977326682, clients: 321 }
+    { label: 'Case Review',      totalRev:  164571.50, clients: 114, totalHours:   716.08, revHr: 229.82 },
+    { label: 'Drafting',         totalRev:  167494.53, clients: 200, totalHours:   757.31, revHr: 221.17 },
+    { label: 'Estate Planning',  totalRev:  220351.50, clients: 201, totalHours:  1083.15, revHr: 203.44 },
+    { label: 'Negotiations',     totalRev:  622623.40, clients: 331, totalHours:  2820.66, revHr: 220.74 },
+    { label: 'Probate',          totalRev:  708562.47, clients: 108, totalHours:  5071.11, revHr: 139.73 },
+    { label: 'Other',            totalRev: 1242093.34, clients: 182, totalHours:  6201.80, revHr: 200.28 },
+    { label: 'Civil Litigation', totalRev: 5017378.96, clients: 457, totalHours: 25628.72, revHr: 195.77 }
   ];
 
   const ctx = document.getElementById('main-chart').getContext('2d');
@@ -491,14 +541,19 @@ function renderPracticeRevenueChart() {
             label: item => {
               const r = rows[item.dataIndex];
               const rev = (r.totalRev / 1e6).toFixed(2);
-              return [` $${rev}M total revenue`, ` ${r.clients} clients`];
+              return [
+                ` $${rev}M total revenue`,
+                ` ${r.clients} clients`,
+                ` ${r.totalHours.toLocaleString()} hours`,
+                ` $${r.revHr.toLocaleString()}/hr`
+              ];
             }
           }
         }
       },
       scales: {
         x: {
-          ticks: { color: '#aaa', font: { size: 12 }, callback: v => '$' + (v / 1e6).toFixed(0) + 'M' },
+          ticks: { color: '#aaa', font: { size: 12 }, callback: v => '$' + (v / 1e6).toFixed(2) + 'M' },
           grid:  { color: 'rgba(255,255,255,.07)' },
           title: { display: true, text: 'Total Revenue (USD)', color: '#888', font: { size: 13 } }
         },
@@ -514,13 +569,13 @@ function renderPracticeAreaChart() {
 
   // Sorted ascending by rev/hr so highest appears at top of horizontal bar chart
   const rows = [
-    { label: 'Negotiations',   revHr: 3179, clients: 213, totalRev:  91247735 },
-    { label: 'Estate Planning', revHr: 3545, clients: 148, totalRev:   4322409 },
-    { label: 'Probate',        revHr: 3584, clients:  73, totalRev: 217716185 },
-    { label: 'Other',          revHr: 3707, clients: 142, totalRev: 309179344 },
-    { label: 'Drafting',       revHr: 3769, clients: 118, totalRev:   3975012 },
-    { label: 'Civil Litigation', revHr: 4035, clients: 321, totalRev: 1977326682 },
-    { label: 'Case Review',    revHr: 4869, clients:  65, totalRev:  51135511 }
+    { label: 'Probate',          revHr: 139.73, clients: 108, totalRev:  708562.47 },
+    { label: 'Civil Litigation', revHr: 195.77, clients: 457, totalRev: 5017378.96 },
+    { label: 'Other',            revHr: 200.28, clients: 182, totalRev: 1242093.34 },
+    { label: 'Estate Planning',  revHr: 203.44, clients: 201, totalRev:  220351.50 },
+    { label: 'Negotiations',     revHr: 220.74, clients: 331, totalRev:  622623.40 },
+    { label: 'Drafting',         revHr: 221.17, clients: 200, totalRev:  167494.53 },
+    { label: 'Case Review',      revHr: 229.82, clients: 114, totalRev:  164571.50 }
   ];
 
   const AREA_COLORS = {
@@ -582,16 +637,16 @@ function renderAttorneyOrigChart() {
 
   // Sorted ascending by total_revenue_generated (highest at top)
   const rows = [
-    { label: 'Attorney #13', rev: 765,       clients: 1,   matters: 1 },
-    { label: 'Attorney #17', rev: 29997,     clients: 2,   matters: 2 },
-    { label: 'Attorney #7',  rev: 38446,     clients: 9,   matters: 10 },
-    { label: 'Attorney #19', rev: 52693,     clients: 6,   matters: 6 },
-    { label: 'Attorney #12', rev: 66973,     clients: 7,   matters: 7 },
-    { label: 'Attorney #14', rev: 131591,    clients: 21,  matters: 21 },
-    { label: 'Attorney #10', rev: 280422,    clients: 99,  matters: 105 },
-    { label: 'Attorney #5',  rev: 350864,    clients: 84,  matters: 88 },
-    { label: 'Attorney #4',  rev: 3774105,   clients: 389, matters: 431 },
-    { label: 'Attorney #2',  rev: 4830916,   clients: 733, matters: 767 }
+    { label: 'Attorney #13', rev:     765.00, clients:   1, matters:   1 },
+    { label: 'Attorney #17', rev:   29996.90, clients:   2, matters:   2 },
+    { label: 'Attorney #7',  rev:   38445.70, clients:   9, matters:  10 },
+    { label: 'Attorney #19', rev:   52692.80, clients:   6, matters:   6 },
+    { label: 'Attorney #12', rev:   66972.88, clients:   7, matters:   7 },
+    { label: 'Attorney #14', rev:  131590.89, clients:  21, matters:  21 },
+    { label: 'Attorney #10', rev:  280421.51, clients:  99, matters: 105 },
+    { label: 'Attorney #5',  rev:  350864.46, clients:  84, matters:  88 },
+    { label: 'Attorney #4',  rev: 3774105.43, clients: 389, matters: 431 },
+    { label: 'Attorney #2',  rev: 4830916.03, clients: 733, matters: 767 }
   ];
 
   const datasets = [
@@ -628,7 +683,7 @@ function renderAttorneyOrigChart() {
         }
       },
       scales: {
-        x: { ticks: { color: '#aaa', font: { size: 12 }, callback: v => '$' + (v / 1e6).toFixed(1) + 'M' },
+        x: { ticks: { color: '#aaa', font: { size: 12 }, callback: v => '$' + (v / 1e6).toFixed(2) + 'M' },
              grid: { color: 'rgba(255,255,255,.07)' },
              title: { display: true, text: 'Total Revenue ($)', color: '#888', font: { size: 13 } } },
         y: { ticks: { color: '#ccc', font: { size: 12 }, autoSkip: false }, grid: { color: 'rgba(255,255,255,.04)' } }
@@ -643,20 +698,21 @@ function renderAttorneyRespChart() {
 
   // Sorted ascending by revenue_per_hour (highest at top)
   const rows = [
-    { label: 'Attorney #5',  revHr: 2232, matters: 124, totalRev: 29894187 },
-    { label: 'Attorney #14', revHr: 2556, matters: 27,  totalRev: 29149723 },
-    { label: 'Attorney #9',  revHr: 2602, matters: 2,   totalRev: 35781 },
-    { label: 'Attorney #6',  revHr: 2615, matters: 1,   totalRev: 17000 },
-    { label: 'Attorney #17', revHr: 2791, matters: 7,   totalRev: 1707686 },
-    { label: 'Attorney #16', revHr: 3283, matters: 5,   totalRev: 117850 },
-    { label: 'Attorney #12', revHr: 3312, matters: 44,  totalRev: 29146853 },
-    { label: 'Attorney #10', revHr: 3497, matters: 126, totalRev: 45645000 },
-    { label: 'Attorney #11', revHr: 3675, matters: 13,  totalRev: 331940 },
-    { label: 'Attorney #4',  revHr: 3769, matters: 327, totalRev: 1049374936 },
-    { label: 'Attorney #7',  revHr: 4350, matters: 132, totalRev: 856068465 },
-    { label: 'Attorney #2',  revHr: 4384, matters: 606, totalRev: 1103014043 },
-    { label: 'Attorney #19', revHr: 4485, matters: 4,   totalRev: 5003366 },
-    { label: 'Attorney #18', revHr: 5592, matters: 5,   totalRev: 464142 }
+    { label: 'Attorney #15', revHr:   0.00, matters:   1, totalRev:       0.00, totalHours:     0.30 },
+    { label: 'Attorney #18', revHr:  56.94, matters:  18, totalRev:   10062.00, totalHours:   176.70 },
+    { label: 'Attorney #17', revHr: 123.82, matters:   7, totalRev:   20935.00, totalHours:   169.07 },
+    { label: 'Attorney #16', revHr: 126.64, matters:   8, totalRev:    5800.00, totalHours:    45.80 },
+    { label: 'Attorney #6',  revHr: 153.85, matters:   1, totalRev:    1000.00, totalHours:     6.50 },
+    { label: 'Attorney #11', revHr: 165.46, matters:  16, totalRev:   13670.00, totalHours:    82.62 },
+    { label: 'Attorney #5',  revHr: 179.89, matters: 142, totalRev:  358539.62, totalHours:  1993.13 },
+    { label: 'Attorney #14', revHr: 182.39, matters:  27, totalRev:  132322.67, totalHours:   725.48 },
+    { label: 'Attorney #2',  revHr: 188.92, matters: 674, totalRev: 3425228.75, totalHours: 18130.42 },
+    { label: 'Attorney #9',  revHr: 189.41, matters:   3, totalRev:    2642.30, totalHours:    13.95 },
+    { label: 'Attorney #10', revHr: 191.69, matters: 144, totalRev:  403830.42, totalHours:  2106.73 },
+    { label: 'Attorney #7',  revHr: 192.69, matters: 149, totalRev: 1895612.65, totalHours:  9837.79 },
+    { label: 'Attorney #4',  revHr: 199.86, matters: 369, totalRev: 2981419.33, totalHours: 14917.34 },
+    { label: 'Attorney #12', revHr: 254.58, matters:  52, totalRev:  275521.76, totalHours:  1082.26 },
+    { label: 'Attorney #19', revHr: 314.28, matters:   5, totalRev:   29203.10, totalHours:    92.92 }
   ];
 
   const datasets = [
@@ -687,6 +743,7 @@ function renderAttorneyRespChart() {
               return [
                 ` $${item.raw.toLocaleString()}/hr`,
                 ` ${r.matters} matters`,
+                ` ${r.totalHours.toLocaleString()} hours`,
                 ` $${rev}M total revenue`
               ];
             }
@@ -719,12 +776,12 @@ function renderRetainerChart() {
 
   // sorted ascending by revHr
   const rows = [
-    { label: 'Hourly - Bonus',     revHr: 3024,  clients: 28,  totalRev: 122000211 },
-    { label: 'Probate',            revHr: 3734,  clients: 61,  totalRev: 160218789 },
-    { label: 'Hourly - No Bonus',  revHr: 4000,  clients: 680, totalRev: 2251672885 },
-    { label: 'Hybrid Contingency', revHr: 4678,  clients: 59,  totalRev: 578805098 },
-    { label: 'Flat Fee',           revHr: 4756,  clients: 502, totalRev: 17680649 },
-    { label: 'Unspecified',        revHr: 10359, clients: 25,  totalRev: 19703317 }
+    { label: 'Unspecified',        revHr: 135.69, clients:  56, totalRev:   85331.49, totalHours:   628.88 },
+    { label: 'Probate',            revHr: 137.31, clients:  94, totalRev:  624422.08, totalHours:  4547.46 },
+    { label: 'Hybrid Contingency', revHr: 196.10, clients:  71, totalRev: 1317350.13, totalHours:  6717.66 },
+    { label: 'Hourly - No Bonus',  revHr: 197.51, clients: 988, totalRev: 6459944.93, totalHours: 32707.12 },
+    { label: 'Hourly - Bonus',     revHr: 222.43, clients:  33, totalRev:  321937.97, totalHours:  1447.37 },
+    { label: 'Flat Fee',           revHr: 222.61, clients: 707, totalRev:  759140.00, totalHours:  3410.18 }
   ];
 
   const datasets = rows.map((r, i) => ({
@@ -750,10 +807,11 @@ function renderRetainerChart() {
           callbacks: {
             label: item => {
               const r = rows[item.datasetIndex];
-              const rev = (r.totalRev / 1e6).toFixed(1);
+              const rev = (r.totalRev / 1e6).toFixed(2);
               return [
                 ` $${item.raw.toLocaleString()}/hr`,
                 ` ${r.clients} clients`,
+                ` ${r.totalHours.toLocaleString()} hours`,
                 ` $${rev}M total revenue`
               ];
             }
@@ -781,9 +839,9 @@ const LANG_COLORS = {
 function renderLanguageChart() {
   if (typeof Chart === 'undefined') { showChartUnavailable(); return; }
   const rows = [
-    { label: 'English',   clients: 907, revHr: 4094, totalRev: 2302387510 },
-    { label: 'Spanish',   clients: 288, revHr: 4144, totalRev: 668267123 },
-    { label: 'Cantonese', clients: 1,   revHr: 2752, totalRev: 703347 }
+    { label: 'English',   clients: 1403, revHr: 194.38, totalRev: 6817774.00, totalHours: 35074.90 },
+    { label: 'Spanish',   clients:  327, revHr: 195.82, totalRev: 2010257.73, totalHours: 10265.78 },
+    { label: 'Cantonese', clients:    1, revHr: 192.03, totalRev:    8178.45, totalHours:    42.59 }
   ];
 
   const barDatasets = rows.map((r, i) => ({
@@ -823,7 +881,10 @@ function renderLanguageChart() {
           callbacks: {
             afterBody: items => {
               const r = rows[items[0].dataIndex];
-              return `Total revenue: $${(r.totalRev / 1e6).toFixed(1)}M`;
+              return [
+                `Total revenue: $${(r.totalRev / 1e6).toFixed(2)}M`,
+                `Total hours:   ${r.totalHours.toLocaleString()}`
+              ];
             }
           }
         }
@@ -832,7 +893,7 @@ function renderLanguageChart() {
         x:  { ticks: { color: '#ccc', font: { size: 12 } }, grid: { color: 'rgba(255,255,255,.05)' } },
         y:  { ticks: { color: '#aaa', font: { size: 12 } }, grid: { color: 'rgba(255,255,255,.07)' },
               title: { display: true, text: 'Client Count', color: '#888', font: { size: 13 } } },
-        y2: { position: 'right', min: 0, max: 5500,
+        y2: { position: 'right', min: 0, max: 240,
               ticks: { color: 'rgba(192,148,76,1)', font: { size: 12 }, callback: v => '$' + v.toLocaleString() },
               grid: { drawOnChartArea: false },
               title: { display: true, text: 'Revenue per Hour ($)', color: 'rgba(192,148,76,1)', font: { size: 13 } } }
@@ -940,12 +1001,12 @@ function renderChannelChart() {
 
   // sorted ascending by revHr
   const rows = [
-    { label: 'Others',          revHr: 2833, clients: 20,  totalRev: 5916125 },
-    { label: 'RERM',            revHr: 3504, clients: 5,   totalRev: 7758512 },
-    { label: 'Official Website',revHr: 3548, clients: 15,  totalRev: 49653532 },
-    { label: 'Google',          revHr: 3572, clients: 273, totalRev: 387842217 },
-    { label: 'Spanish Google',  revHr: 3878, clients: 79,  totalRev: 138992258 },
-    { label: 'Referral',        revHr: 4258, clients: 259, totalRev: 623236289 }
+    { label: 'Official Website', revHr: 158.12, clients:  15, totalRev:  135864.05, totalHours:  859.23 },
+    { label: 'Others',           revHr: 171.07, clients:  23, totalRev:   52086.43, totalHours:  304.48 },
+    { label: 'Spanish Google',   revHr: 189.16, clients:  84, totalRev:  471430.47, totalHours: 2492.28 },
+    { label: 'Referral',         revHr: 193.51, clients: 300, totalRev: 1633815.62, totalHours: 8443.12 },
+    { label: 'Google',           revHr: 202.23, clients: 330, totalRev: 1550543.70, totalHours: 7667.38 },
+    { label: 'RERM',             revHr: 255.70, clients:   5, totalRev:   27580.33, totalHours:  107.86 }
   ];
 
   const datasets = rows.map((r, i) => ({
@@ -971,10 +1032,11 @@ function renderChannelChart() {
           callbacks: {
             label: item => {
               const r = rows[item.datasetIndex];
-              const rev = (r.totalRev / 1e6).toFixed(1);
+              const rev = (r.totalRev / 1e6).toFixed(2);
               return [
                 ` $${item.raw.toLocaleString()}/hr`,
                 ` ${r.clients} clients`,
+                ` ${r.totalHours.toLocaleString()} hours`,
                 ` $${rev}M total revenue`
               ];
             }
@@ -995,30 +1057,16 @@ function renderChannelChart() {
 function renderCorpChart() {
   if (typeof Chart === 'undefined') { showChartUnavailable(); return; }
   const ctx = document.getElementById('main-chart').getContext('2d');
-  const revs = [2444570735, 12753988];
-  const hrs  = [605361, 3383];
+  const revs = [7090957.93, 59431.00];
+  const hrs  = [36870.26, 339.11];
   chartInst = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: ['Individual', 'Corporate'],
       datasets: [
         {
-          label: 'Individual',
-          data: [855, null],
-          backgroundColor: '#47c597cc',
-          borderRadius: 4,
-          yAxisID: 'y'
-        },
-        {
-          label: 'Corporate',
-          data: [null, 7],
-          backgroundColor: '#7b6df7cc',
-          borderRadius: 4,
-          yAxisID: 'y'
-        },
-        {
           label: 'Revenue per Hour ($)',
-          data: [4038, 3770],
+          data: [192.32, 175.26],
           type: 'line',
           borderColor: 'rgba(192,148,76,.9)',
           backgroundColor: 'rgba(192,148,76,.15)',
@@ -1028,6 +1076,13 @@ function renderCorpChart() {
           pointBorderWidth: 2,
           tension: 0,
           yAxisID: 'y2'
+        },
+        {
+          label: 'Client Count',
+          data: [1060, 8],
+          backgroundColor: ['#47c597cc', '#7b6df7cc'],
+          borderRadius: 4,
+          yAxisID: 'y'
         }
       ]
     },
@@ -1042,7 +1097,7 @@ function renderCorpChart() {
             afterBody: items => {
               const i = items[0].dataIndex;
               return [
-                `Total revenue: $${(revs[i] / 1e6).toFixed(1)}M`,
+                `Total revenue: $${(revs[i] / 1e6).toFixed(2)}M`,
                 `Total hours:   ${hrs[i].toLocaleString()}`
               ];
             }
@@ -1053,7 +1108,7 @@ function renderCorpChart() {
         x:  { ticks: { color: '#ccc', font: { size: 12 } }, grid: { color: 'rgba(255,255,255,.05)' } },
         y:  { ticks: { color: '#aaa', font: { size: 12 } }, grid: { color: 'rgba(255,255,255,.07)' },
               title: { display: true, text: 'Client Count', color: '#888', font: { size: 13 } } },
-        y2: { position: 'right', min: 0, max: 5500,
+        y2: { position: 'right', min: 0, max: 260,
               ticks: { color: 'rgba(192,148,76)', font: { size: 12 }, callback: v => '$' + v.toLocaleString() },
               grid: { drawOnChartArea: false },
               title: { display: true, text: 'Revenue per Hour ($)', color: 'rgba(192,148,76)', font: { size: 13 } } }
@@ -1078,13 +1133,13 @@ function renderScopeRevenueChart() {
 
   // Sorted ascending by totalRev so highest bar is at top
   const rows = [
-    { label: 'Estate Planning',                totalRev:    2046372, clients:  21 },
-    { label: 'Limited Scope Litigation',       totalRev:    6560716, clients:   5 },
-    { label: 'Flat Fee',                       totalRev:    7605241, clients: 200 },
-    { label: 'Negotiations',                   totalRev:  143784929, clients: 157 },
-    { label: 'Full Litigation - Sub into Case',totalRev:  348648331, clients:  54 },
-    { label: 'Full Litigation',                totalRev:  973045680, clients: 195 },
-    { label: 'Unspecified',                    totalRev: 1668389680, clients: 752 }
+    { label: 'Limited Scope Litigation',        totalRev:   35166.15, clients:   7, totalHours:   150.88, revHr: 233.07 },
+    { label: 'Estate Planning',                 totalRev:   59736.33, clients:  44, totalHours:   202.23, revHr: 295.39 },
+    { label: 'Flat Fee',                        totalRev:  318301.28, clients: 339, totalHours:  1400.74, revHr: 227.24 },
+    { label: 'Negotiations',                    totalRev:  684570.46, clients: 277, totalHours:  2911.58, revHr: 235.12 },
+    { label: 'Full Litigation - Sub into Case', totalRev:  818266.33, clients:  82, totalHours:  4113.00, revHr: 198.95 },
+    { label: 'Full Litigation',                 totalRev: 2726072.09, clients: 299, totalHours: 14573.89, revHr: 187.05 },
+    { label: 'Unspecified',                     totalRev: 4926013.96, clients: 938, totalHours: 26106.35, revHr: 188.69 }
   ];
 
   const ctx = document.getElementById('main-chart').getContext('2d');
@@ -1112,14 +1167,19 @@ function renderScopeRevenueChart() {
             label: item => {
               const r = rows[item.datasetIndex];
               const rev = (r.totalRev / 1e6).toFixed(2);
-              return [` $${rev}M total revenue`, ` ${r.clients} clients`];
+              return [
+                ` $${rev}M total revenue`,
+                ` ${r.clients} clients`,
+                ` ${r.totalHours.toLocaleString()} hours`,
+                ` $${r.revHr.toLocaleString()}/hr`
+              ];
             }
           }
         }
       },
       scales: {
         x: {
-          ticks: { color: '#aaa', font: { size: 12 }, callback: v => '$' + (v / 1e6).toFixed(0) + 'M' },
+          ticks: { color: '#aaa', font: { size: 12 }, callback: v => '$' + (v / 1e6).toFixed(2) + 'M' },
           grid:  { color: 'rgba(255,255,255,.07)' },
           title: { display: true, text: 'Total Revenue (USD)', color: '#888', font: { size: 13 } }
         },
@@ -1144,13 +1204,13 @@ function renderScopeChart() {
 
   // Sorted ascending by rev/hr so highest appears at top
   const rows = [
-    { label: 'Limited Scope Litigation',       revHr: 1993, clients:   5, totalRev:    6560716 },
-    { label: 'Negotiations',                   revHr: 3402, clients: 157, totalRev:  143784929 },
-    { label: 'Full Litigation',                revHr: 3849, clients: 195, totalRev:  973045680 },
-    { label: 'Unspecified',                    revHr: 4177, clients: 752, totalRev: 1668389680 },
-    { label: 'Full Litigation - Sub into Case',revHr: 4596, clients:  54, totalRev:  348648331 },
-    { label: 'Flat Fee',                       revHr: 4938, clients: 200, totalRev:    7605241 },
-    { label: 'Estate Planning',                revHr: 9455, clients:  21, totalRev:    2046372 }
+    { label: 'Full Litigation',                 revHr: 187.05, clients: 299, totalRev: 2726072.09 },
+    { label: 'Unspecified',                     revHr: 188.69, clients: 938, totalRev: 4926013.96 },
+    { label: 'Full Litigation - Sub into Case', revHr: 198.95, clients:  82, totalRev:  818266.33 },
+    { label: 'Flat Fee',                        revHr: 227.24, clients: 339, totalRev:  318301.28 },
+    { label: 'Limited Scope Litigation',        revHr: 233.07, clients:   7, totalRev:   35166.15 },
+    { label: 'Negotiations',                    revHr: 235.12, clients: 277, totalRev:  684570.46 },
+    { label: 'Estate Planning',                 revHr: 295.39, clients:  44, totalRev:   59736.33 }
   ];
 
   const ctx = document.getElementById('main-chart').getContext('2d');
