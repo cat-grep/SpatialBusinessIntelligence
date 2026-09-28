@@ -35,7 +35,7 @@ SpatialBusinessIntelligence/
 ├── css/style.css             # Layout and styles
 ├── js/main.js                # Scrollytelling, lightbox, Chart.js charts
 ├── lib/chart.min.js          # Chart.js 4 (offline copy)
-├── analysis/build_story.py   # Rebuilds data/story.js and data/maps/* from PostGIS + ACS
+├── analysis/build_story.py   # Rebuilds data/story.js (and, with --maps, draft maps) from PostGIS + ACS
 ├── data/
 │   ├── story.js              # Every number the page quotes (generated)
 │   ├── maps/*.png            # Generated maps with legend, scale bar and call-outs
@@ -66,6 +66,7 @@ SpatialBusinessIntelligence/
 set PGPASSWORD=<your password>          # PowerShell: $env:PGPASSWORD = '...'
 python analysis/build_story.py --export # pull fresh tables from PostGIS, then rebuild
 python analysis/build_story.py          # rebuild from the last export
+python analysis/build_story.py --maps   # also redraw the draft maps (overwrites data/maps/*.png)
 ```
 
 Raw exports, the ACS downloads and the office locations are kept outside the repository, because they contain client-level records or would identify the firm. Only aggregated numbers and rendered maps are written into `data/`.

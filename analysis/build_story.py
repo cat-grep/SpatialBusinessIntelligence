@@ -7,12 +7,14 @@ Steps
   2. join clients to ZCTAs and to 2022 ACS 5-year estimates (population,
      Spanish spoken at home, median household income).
   3. compute every number the page quotes -> data/story.js
-  4. render the new maps (legend, scale bar and call-outs baked in) -> data/maps/
+  4. render the maps (legend, scale bar and call-outs baked in) -> data/maps/
+  5. write every map layer to story_layers.gpkg (repo root, git-ignored) for rebuilding in QGIS
 
 Usage
   set PGPASSWORD=...        (only needed with --export)
   python analysis/build_story.py --export
   python analysis/build_story.py            (re-use the last export)
+  python analysis/build_story.py --maps     (also redraw data/maps/*.png; overwrites them)
 
 Raw exports stay OUTSIDE the repo (../Analysis/StoryBuild) because they hold
 client-level records. Only aggregated numbers and rendered maps land in data/.
@@ -51,8 +53,8 @@ DB = dict(user='postgres', host='localhost', dbname='final_project_sbm')
 
 SNAPSHOT = pd.Timestamp('2026-04-09')      # last matter open date in the extract
 DORMANT_DAYS = 730
-STUDY_MILES = 60                           # ZCTAs considered part of the service region
 CATCHMENT_MILES = 30                       # "market" = within 30 mi of the nearest office
+STUDY_MILES = CATCHMENT_MILES              # every regional analysis uses the same 30-mile markets
 OPPORTUNITY_MILES = 20
 
 ACS_URL = 'https://www2.census.gov/programs-surveys/acs/summary_file/2022/table-based-SF/data/5YRData/acsdt5y2022-{}.dat'
@@ -221,7 +223,7 @@ def analyse(offices, c, m, tx, z):
         'first_matter': str(m.open_date.min().date()),
         'last_matter': str(m.open_date.max().date()),
         'clients_region': int((c.dist <= STUDY_MILES).sum()),
-        'clients_far': int((c.dist > 100).sum()),
+        'clients_outside': int((c.dist > STUDY_MILES).sum()),
     }
 
     # tiers
@@ -264,10 +266,11 @@ def analyse(offices, c, m, tx, z):
                           'upside_clients': r(v.clients_at_half_bench), 'upside_rev': r(v.rev_at_half_bench)}
                       for o, v in mk.iterrows()}
     out['catchment_miles'] = CATCHMENT_MILES
+    out['study_zctas'] = len(S)
 
     # distance decay
-    bands = [0, 5, 10, 20, 30, 45, 60]
-    labels = ['0–5', '5–10', '10–20', '20–30', '30–45', '45–60']
+    bands = [0, 5, 10, 20, 30]
+    labels = ['0–5', '5–10', '10–20', '20–30']
     S['band'] = pd.cut(S.dist, bands, labels=labels)
     b = S.groupby('band', observed=False).agg(pop=('pop', 'sum'), n=('n', 'sum'), nluc=('nluc', 'sum'), rev=('rev', 'sum'))
     out['distance'] = [{'band': k, 'per100k': r(v.n / v['pop'] * 1e5, 1), 'luc_rate': r(v.nluc / v.n * 100, 1),
@@ -316,7 +319,7 @@ def analyse(offices, c, m, tx, z):
                       'spanish_all': int(m[m.client_language.fillna('').str.startswith('Span')].client_id.nunique())}
 
     # time
-    reg = c[c.dist <= 100]
+    reg = c[c.dist <= STUDY_MILES]
     yrs = []
     seen = set()
     for y in range(2021, 2027):
@@ -398,7 +401,7 @@ def analyse(offices, c, m, tx, z):
     }
     m['src5'] = m.src.where(m.src.isin(['Referral', 'Google', 'Spanish Google', 'Official Website', 'Yelp', 'RERM']) | m.src.isna(), 'Others')
     out['ops']['channel'] = ops('src5', fill='Not recorded')
-    ch = c[c.dist <= 100].groupby('src').agg(n=('client_id', 'size'), luc=('luc', 'mean'), avg=('net_revenue', 'mean'))
+    ch = c[c.dist <= STUDY_MILES].groupby('src').agg(n=('client_id', 'size'), luc=('luc', 'mean'), avg=('net_revenue', 'mean'))
     out['channel_quality'] = [{'label': k, 'clients': int(v.n), 'luc_rate': r(v.luc * 100, 1), 'avg_rev': r(v.avg)}
                               for k, v in ch.sort_values('n', ascending=False).iterrows() if v.n >= 4]
     seas = m.dropna(subset=['open_date']).assign(mo=lambda d: d.open_date.dt.month).groupby('mo').size()
@@ -492,7 +495,7 @@ def legend_box(ax, handles, title, loc='lower left', fs=9, ncol=1, anchor=(0.02,
 
 def save(fig, name):
     MAP_DIR.mkdir(parents=True, exist_ok=True)
-    fig.savefig(MAP_DIR / name, dpi=170, bbox_inches='tight', pad_inches=0.05, facecolor='white')
+    fig.savefig(MAP_DIR / name, dpi=300, bbox_inches='tight', pad_inches=0.05, facecolor='white')
     plt.close(fig)
     print('map', name)
 
@@ -607,14 +610,20 @@ def draw_maps(offices, c, S, out):
     for y in range(2021, 2026):
         fig, ax = plt.subplots(figsize=(6, 5.6))
         bm.frame(ax, REGION)
-        prev = cp[cp.year < y]
+        inside = cp[cp.dist <= STUDY_MILES]
+        prev = inside[inside.year < y]
         if len(prev):
             prev.plot(ax=ax, color='#e2ddd3', markersize=5, zorder=3, alpha=.8)
-        g = cp[cp.year == y]
+        g = inside[inside.year == y]
         g[~g.luc].plot(ax=ax, color='#a9a397', markersize=10, zorder=5, alpha=.85, edgecolor='white', linewidth=.3)
         g[g.luc].plot(ax=ax, color='#1c5c55', markersize=16, zorder=6, alpha=.9, edgecolor='white', linewidth=.3)
         bm.overlay(ax, REGION, labels=False, office_labels=False)
         ax.text(.05, .95, str(y), transform=ax.transAxes, fontsize=26, fontweight='bold', color='#1a2d22', va='top', zorder=12)
+        h = [Line2D([], [], marker='o', ls='', color='#1c5c55', ms=6, label='New lucrative client'),
+             Line2D([], [], marker='o', ls='', color='#a9a397', ms=5, label='New standard client'),
+             Line2D([], [], marker='o', ls='', color='#e2ddd3', ms=4, label='Earlier clients'),
+             Line2D([], [], marker='D', ls='', color=OFFICE_COLOR, ms=5, label='Office')]
+        legend_box(ax, h, f'Within {STUDY_MILES} mi of an office', fs=7.5, anchor=(0.02, 0.04))
         save(fig, f'year_{y}.png')
 
     # 7. dormant lucrative clients
@@ -638,10 +647,38 @@ def draw_maps(offices, c, S, out):
     save(fig, 'dormant.png')
 
 
+def write_layers(offices, c, S):
+    """Every layer the maps use, for rebuilding them in QGIS. Stays outside the repo (client points)."""
+    path = REPO / 'story_layers.gpkg'     # git-ignored: holds client points
+    zc = S[['zcta', 'place', 'office', 'dist', 'pop', 'pop5', 'spanish_spk', 'mhi', 'n', 'nluc', 'rev', 'nspan',
+            'cli_eb', 'luc_eb', 'gi', 'hot', 'expected', 'gap', 'opp_rank', 'span_gap', 'geometry']].copy()
+    zc['span_pct'] = np.where(zc.pop5 > 0, zc.spanish_spk / zc.pop5.replace(0, np.nan) * 100, np.nan)
+    zc = zc.rename(columns={'dist': 'dist_mi', 'n': 'clients', 'nluc': 'lucrative', 'rev': 'revenue',
+                            'nspan': 'spanish_clients', 'cli_eb': 'clients_per100k', 'luc_eb': 'lucrative_per100k',
+                            'gi': 'gi_z', 'hot': 'hotspot'})
+    gpd.GeoDataFrame(zc, crs=4326).to_crs(3310).to_file(path, layer='zcta_market', driver='GPKG')
+
+    pts = c[['tier', 'luc', 'net_revenue', 'dist', 'office', 'year', 'last', 'spanish', 'lon', 'lat']].copy()
+    pts['net_revenue'] = pts.net_revenue.round(-2)          # no exact client amounts
+    pts['dormant'] = pts.luc & ((SNAPSHOT - pts['last']).dt.days > DORMANT_DAYS)
+    pts['last'] = pts['last'].dt.strftime('%Y-%m-%d')
+    pts = pts.rename(columns={'dist': 'dist_mi', 'year': 'first_year', 'last': 'last_matter', 'luc': 'lucrative'})
+    gpd.GeoDataFrame(pts.drop(columns=['lon', 'lat']), geometry=gpd.points_from_xy(pts.lon, pts.lat), crs=4326) \
+        .to_crs(3310).to_file(path, layer='clients', driver='GPKG')
+
+    off = gpd.GeoDataFrame(offices[['office']], geometry=gpd.points_from_xy(offices.lon, offices.lat), crs=4326).to_crs(3310)
+    off.to_file(path, layer='offices', driver='GPKG')
+    rings = [{'office': o.office, 'miles': mi, 'geometry': o.geometry.buffer(mi * 1609.34, 128).boundary}
+             for o in off.itertuples() for mi in (10, 20, 30)]
+    gpd.GeoDataFrame(rings, crs=3310).to_file(path, layer='office_rings', driver='GPKG')
+    print('wrote', path)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--export', action='store_true', help='re-export tables from PostGIS first')
-    ap.add_argument('--no-maps', action='store_true')
+    ap.add_argument('--maps', action='store_true',
+                    help='also redraw the matplotlib maps; off by default so hand-made QGIS maps in data/maps are not overwritten')
     a = ap.parse_args()
     if a.export:
         export_from_db()
@@ -650,7 +687,8 @@ def main():
     # a script rather than JSON, so index.html works from file:// (no fetch needed)
     OUT_JS.write_text('window.STORY = ' + json.dumps(out, ensure_ascii=False) + ';\n', encoding='utf-8')
     print('wrote', OUT_JS)
-    if not a.no_maps:
+    write_layers(offices, c, S)
+    if a.maps:
         draw_maps(offices, c, S, out)
 
 

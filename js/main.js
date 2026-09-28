@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function initScrolly() {
   document.querySelectorAll('.scrolly').forEach(root => {
     const img = root.querySelector('.scrolly-img');
-    const legend = root.querySelector('.scrolly-legend');
     const caption = root.querySelector('.scrolly-caption');
     const steps = [...root.querySelectorAll('.step')];
     let current = null;
@@ -32,9 +31,6 @@ function initScrolly() {
       current = step;
       steps.forEach(s => s.classList.toggle('active', s === step));
       caption.textContent = step.dataset.caption || '';
-      legend.innerHTML = '';
-      const tpl = step.dataset.legend && document.getElementById(step.dataset.legend);
-      if (tpl) legend.appendChild(tpl.content.cloneNode(true));
       img.alt = step.dataset.alt || '';
       if (img.getAttribute('src') === step.dataset.img) return;
       img.classList.add('fading');
@@ -60,7 +56,6 @@ function initLightbox() {
   const modal = document.getElementById('img-modal');
   const mImg = document.getElementById('img-modal-img');
   const mCap = document.getElementById('img-modal-caption');
-  const mLeg = document.getElementById('img-modal-legend');
   const closeBtn = document.getElementById('img-modal-close');
   let opener = null;
 
@@ -79,8 +74,6 @@ function initLightbox() {
     mImg.src = img.currentSrc || img.src;
     mImg.alt = img.alt;
     mCap.textContent = captionFor(img);
-    const scrolly = img.closest('.scrolly');
-    mLeg.innerHTML = scrolly ? scrolly.querySelector('.scrolly-legend').innerHTML : '';
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     closeBtn.focus();

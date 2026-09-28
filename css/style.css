@@ -357,22 +357,6 @@ a:hover { color: var(--forest); }
 .scrolly-img.fading { opacity: 0; }
 .scrolly-caption { font-family: var(--font-hd); color: var(--gold); padding: .7rem .2rem 0; font-size: .98rem; }
 
-.scrolly-legend:empty { display: none; }
-.scrolly-legend {
-  position: absolute; left: .8rem; bottom: .8rem;
-  background: rgba(255,255,255,.95); color: var(--ink);
-  border: 1px solid var(--rule); border-radius: 4px;
-  padding: .6rem .8rem; font-size: .82rem; line-height: 1.45;
-}
-.scrolly-legend ul { list-style: none; padding: 0; }
-.scrolly-legend li { margin: 0; }
-.scrolly-legend .lg-title { font-weight: 700; margin-bottom: .25rem; }
-.scrolly-legend .lg-note { color: var(--muted); margin: .3rem 0 0; }
-.scrolly-legend .diamond {
-  display: inline-block; width: .62em; height: .62em; background: var(--office);
-  transform: rotate(45deg); margin: 0 .55em 0 .08em;
-}
-
 .step {
   min-height: 80vh;
   display: flex; flex-direction: column; justify-content: center;
@@ -613,9 +597,6 @@ a:hover { color: var(--forest); }
   .step h3 { padding: 1rem 1rem 0; margin: 0; }
   .step p { padding: .6rem 1rem; margin: 0; }
   .step p:last-child { padding-bottom: 1rem; }
-  .scrolly-legend { font-size: .72rem; padding: .35rem .5rem; left: .4rem; right: .4rem; bottom: .4rem; }
-  .scrolly-legend .lg-title, .scrolly-legend .lg-note { display: none; }
-  .scrolly-legend ul { display: flex; flex-wrap: wrap; gap: .1rem .8rem; }
 
   .years-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chapter-head { grid-template-columns: minmax(0, 1fr); gap: .3rem; }

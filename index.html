@@ -287,13 +287,12 @@
       <figure class="scrolly-figure">
         <div class="scrolly-frame">
           <img class="scrolly-img" src="data/maps/region_tiers.png" alt="" data-zoom />
-          <div class="scrolly-legend"></div>
         </div>
         <figcaption class="scrolly-caption"></figcaption>
       </figure>
 
       <div class="scrolly-steps">
-        <article class="step" data-img="data/maps/region_tiers.png" data-legend=""
+        <article class="step" data-img="data/maps/region_tiers.png"
           data-caption="Exhibit 2.1 · All mapped clients by tier, Southern California"
           data-alt="Regional map of clients colored by tier with 30-mile rings around the three offices">
           <h3>Eight in ten mapped clients live within 30 miles of an office</h3>
@@ -307,7 +306,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_LA.png" data-legend="lg-tier"
+        <article class="step" data-img="data/LucrativeCustomerTier_LA.png"
           data-caption="Exhibit 2.2 · Los Angeles market, clients by tier"
           data-alt="Los Angeles basin, client circles colored by tier and sized by revenue, concentrated south and west of the Los Angeles office">
           <h3>Los Angeles: fewer clients, larger cases</h3>
@@ -321,7 +320,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_ON.png" data-legend="lg-tier"
+        <article class="step" data-img="data/LucrativeCustomerTier_ON.png"
           data-caption="Exhibit 2.3 · Ontario and Inland Empire market, clients by tier"
           data-alt="Inland Empire map with dense client circles from Pomona and Rancho Cucamonga to Fontana and San Bernardino">
           <h3>Ontario: the firm's widest reach</h3>
@@ -335,7 +334,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_SD.png" data-legend="lg-tier"
+        <article class="step" data-img="data/LucrativeCustomerTier_SD.png"
           data-caption="Exhibit 2.4 · San Diego market, clients by tier"
           data-alt="San Diego county map with sparse client circles from Escondido through downtown to Chula Vista">
           <h3>San Diego: high client quality, low reach</h3>
@@ -348,17 +347,18 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/maps/hotspots.png" data-legend=""
+        <article class="step" data-img="data/maps/hotspots.png"
           data-caption="Exhibit 2.5 · Hot spots of lucrative clients per resident (Getis-Ord Gi*)"
           data-alt="Hot spot map: a large block of significant red ZIP areas around Ontario, a few south-west of the Los Angeles office, none near San Diego">
           <h3>Where the clusters are statistically significant</h3>
           <p>
             A hot spot test asks whether a ZIP area and its neighbors have more lucrative clients per resident than
-            chance alone would give. <b>34 ZIP areas around Ontario</b> pass at 99% confidence, running from Pomona
-            and Chino to Fontana, Rialto and Jurupa Valley.
+            chance alone would give, across the 498 ZIP areas within 30 miles of an office. <b>32 ZIP areas around
+            Ontario</b> pass at 99% confidence, from Pomona, Chino and Upland to Rancho Cucamonga, Fontana and Rialto.
           </p>
           <p>
-            Los Angeles has 14 smaller hot spots, just south-west of the office. <b>San Diego has none.</b>
+            Los Angeles has 10 smaller hot spots, all at 95% confidence, just south-west of the office.
+            <b>San Diego has none.</b>
           </p>
           <p>
             The blue <b>cold spots</b>, north of Glendale and around Anaheim, are the opposite: few lucrative
@@ -427,17 +427,16 @@
               <td>7</td>
             </tr>
             <tr>
-              <th scope="row">Hot-spot ZIP areas (95%+, within 60 miles)</th>
-              <td>14</td>
-              <td class="best">40</td>
+              <th scope="row">Hot-spot ZIP areas (95%+)</th>
+              <td>10</td>
+              <td class="best">37</td>
               <td class="worst">0</td>
             </tr>
           </tbody>
         </table>
       </div>
       <p class="fine compare-note">Each client and ZIP area counts toward its nearest office only, so where the Los
-        Angeles and Ontario rings overlap, the area is split between the two markets. Hot-spot counts cover ZIP areas
-        up to 60 miles from their nearest office.</p>
+        Angeles and Ontario rings overlap, the area is split between the two markets.</p>
     </div>
   </section>
 
@@ -459,7 +458,7 @@
       <figure class="chart-figure">
         <figcaption class="exhibit-label">Exhibit 3.1 · Reach and quality by distance from the nearest office</figcaption>
         <div class="chart-box"><canvas id="c-distance"
-            aria-label="Bar and line chart: clients per 100,000 residents falls from 7.4 within 5 miles to 1.9 at 45 to 60 miles; the lucrative share falls from 48% to 33%"></canvas>
+            aria-label="Bar and line chart: clients per 100,000 residents falls from 7.4 within 5 miles to 3.1 at 20 to 30 miles; the lucrative share falls from 48% to 38%"></canvas>
         </div>
         <p class="chart-note">Bars: clients per 100,000 residents · line: share of those clients who are lucrative</p>
       </figure>
@@ -612,19 +611,14 @@
 
     <figure class="years">
       <figcaption>
-        <span class="exhibit-label">Exhibit 4.1 · New clients by year of their first matter</span>
-        <span class="years-key">
-          <i class="dot" style="--c:#1c5c55"></i>new lucrative client
-          <i class="dot" style="--c:#a9a397"></i>new standard client
-          <i class="dot" style="--c:#e2ddd3"></i>clients from earlier years
-        </span>
+        <span class="exhibit-label">Exhibit 4.1 · New clients by year of their first matter, 30-mile markets</span>
       </figcaption>
       <ol class="years-grid">
-        <li><img src="data/maps/year_2021.png" data-zoom alt="2021: 263 new clients, split between Los Angeles and Ontario" /><span><b>263</b> new clients · LA 50% · Ontario 42%</span></li>
-        <li><img src="data/maps/year_2022.png" data-zoom alt="2022: 151 new clients, more around Ontario and San Diego" /><span><b>151</b> new clients · LA 35% · Ontario 50%</span></li>
-        <li><img src="data/maps/year_2023.png" data-zoom alt="2023: 132 new clients, spread across all three markets" /><span><b>132</b> new clients · LA 39% · Ontario 50%</span></li>
-        <li><img src="data/maps/year_2024.png" data-zoom alt="2024: 167 new clients, concentrated in the Inland Empire" /><span><b>167</b> new clients · LA 29% · Ontario 58%</span></li>
-        <li><img src="data/maps/year_2025.png" data-zoom alt="2025: 202 new clients, concentrated in the Inland Empire" /><span><b>202</b> new clients · LA 30% · Ontario 56%</span></li>
+        <li><img src="data/maps/year_2021.png" data-zoom alt="2021: 233 new clients, mostly in the Los Angeles market" /><span><b>233</b> new clients · LA 53% · Ontario 40%</span></li>
+        <li><img src="data/maps/year_2022.png" data-zoom alt="2022: 137 new clients, more around Ontario and San Diego" /><span><b>137</b> new clients · LA 38% · Ontario 47%</span></li>
+        <li><img src="data/maps/year_2023.png" data-zoom alt="2023: 116 new clients, split evenly between Los Angeles and Ontario" /><span><b>116</b> new clients · LA 45% · Ontario 45%</span></li>
+        <li><img src="data/maps/year_2024.png" data-zoom alt="2024: 138 new clients, concentrated in the Inland Empire" /><span><b>138</b> new clients · LA 33% · Ontario 54%</span></li>
+        <li><img src="data/maps/year_2025.png" data-zoom alt="2025: 180 new clients, concentrated in the Inland Empire" /><span><b>180</b> new clients · LA 33% · Ontario 55%</span></li>
       </ol>
     </figure>
 
@@ -632,17 +626,17 @@
       <figure class="chart-figure">
         <figcaption class="exhibit-label">Exhibit 4.2 · Which market new clients came from</figcaption>
         <div class="chart-box"><canvas id="c-yearshare"
-            aria-label="Stacked bar chart by year: Los Angeles share of new clients falls from 50% in 2021 to 30% in 2025 while Ontario rises from 42% to 56%"></canvas>
+            aria-label="Stacked bar chart by year: Los Angeles share of new clients falls from 53% in 2021 to 33% in 2025 while Ontario rises from 40% to 55%"></canvas>
         </div>
         <div class="prose">
           <p>
-            In 2021, half of new clients came from the Los Angeles market. By 2024–2025 it was <b>under a third</b>,
-            and Ontario's share had risen from <b>42% to 56%</b>.
+            In 2021, over half of new clients in the three markets came from Los Angeles. By 2024–2025 it was
+            <b>a third</b>, and Ontario's share had risen from <b>40% to 55%</b>.
           </p>
           <p>
-            Each year the median new client has lived between <b>10.6 and 13.9 miles</b> from an office. The firm
-            keeps reaching new places, about 40 new ZIP areas a year and 346 in total by 2025, mostly by filling in its
-            existing markets rather than stretching them.
+            Each year the median new client has lived between <b>8.7 and 11.4 miles</b> from an office. The firm
+            keeps reaching new places, 24 to 47 new ZIP areas a year and 283 in total by 2025, by filling in its
+            markets rather than stretching them.
           </p>
         </div>
       </figure>
@@ -683,7 +677,8 @@
 
     <p class="population-note">
       Exhibits 5.1, 5.2 and 5.4 use <b>all 2,066 matters and 1,874 clients</b> ($9.57M), including the 806 clients
-      without an address. Exhibits 5.3 and 5.5 use mapped clients only, because tiers and distances need an address.
+      without an address. Exhibits 5.3 and 5.5 use mapped clients within 30 miles of an office, because tiers and distances need an
+      address.
       Revenue per hour is total revenue divided by total hours for the group.
     </p>
 
@@ -712,7 +707,7 @@
         <figcaption>
           <span class="exhibit-label">Exhibit 5.3 · Share of lucrative clients by acquisition channel</span>
           <h3>Referral and Google bring clients of similar quality</h3>
-          <p>About 42% of mapped clients from each channel turn out lucrative. Spanish-language Google ads do worse, at 33%.
+          <p>About 43% of clients from each channel turn out lucrative. Spanish-language Google ads do worse, at 35%.
             Channels with fewer than 20 clients are too small to judge.</p>
         </figcaption>
         <div class="chart-box"><canvas id="c-channel" aria-label="Share of lucrative clients by acquisition channel"></canvas></div>
@@ -738,7 +733,7 @@
           mouth, though it may also reflect where referral clients tend to live. If it is word of mouth, past clients
           matter even when they don't come back (Chapter 6).
         </p>
-        <p class="fine">Clients within 60 miles of an office, 2021–2026.</p>
+        <p class="fine">Clients within 30 miles of an office, 2021–2026.</p>
       </div>
       <table class="ledger mini">
         <caption>Exhibit 5.5 · Distance from each new client to an earlier client</caption>
@@ -746,9 +741,9 @@
           <tr><th scope="col">First channel</th><th scope="col" class="num">Median distance to an earlier client</th><th scope="col" class="num">Within 1 mile</th></tr>
         </thead>
         <tbody>
-          <tr><th scope="row">Referral</th><td class="num best">0.80 mi</td><td class="num best">60%</td></tr>
-          <tr><th scope="row">Spanish Google</th><td class="num">0.90 mi</td><td class="num">55%</td></tr>
-          <tr><th scope="row">Google</th><td class="num">1.17 mi</td><td class="num">45%</td></tr>
+          <tr><th scope="row">Referral</th><td class="num best">0.74 mi</td><td class="num best">64%</td></tr>
+          <tr><th scope="row">Spanish Google</th><td class="num">0.80 mi</td><td class="num">58%</td></tr>
+          <tr><th scope="row">Google</th><td class="num">1.07 mi</td><td class="num">49%</td></tr>
         </tbody>
       </table>
     </div>
@@ -822,7 +817,7 @@
         <h3>Bring Spanish-language outreach to San Diego</h3>
         <p class="plan-where">Chula Vista (91910, 91911), Otay Mesa–Nestor (92154), City Heights (92105)</p>
         <p>The market has 626,000 Spanish speakers and 4 Spanish-speaking clients. Use bilingual intake and local
-          Spanish-language ads, and track lucrative conversion, which is only 33% for Spanish Google today.</p>
+          Spanish-language ads, and track lucrative conversion, which is only 35% for Spanish Google today.</p>
         <p class="plan-meta"><span>Worth: part of San Diego's +79 clients (~$0.37M)</span><span>Effort: medium</span><a href="#ch3">Evidence: Chapter 3</a></p>
       </li>
       <li>
@@ -882,9 +877,10 @@
               (<code>ST_Distance</code> on <code>geography</code>). A market is everything within 30 miles; where two
               offices' rings overlap, the nearer office takes the client or ZIP area.</li>
             <li><b>Reach:</b> clients per 100,000 residents per ZCTA, smoothed with global empirical Bayes so that
-              small populations don't produce extreme rates.</li>
+              small populations don't produce extreme rates. Every regional figure, including hot spots, trends over
+              time and channel quality, covers the 30-mile markets only.</li>
             <li><b>Hot spots:</b> Getis-Ord Gi* on smoothed lucrative clients per resident, with queen-contiguity
-              neighbors, across the 640 ZCTAs within 60 miles of an office.</li>
+              neighbors, across the 498 ZCTAs within 30 miles of an office.</li>
             <li><b>Missing clients:</b> expected clients = ZCTA population × the firm-wide rate for its distance
               ring. The gap is expected minus actual.</li>
             <li><b>Word of mouth:</b> distance from each new client to the nearest client whose first matter came
@@ -1061,25 +1057,12 @@ ORDER BY ct.net_revenue DESC;</code></pre>
     </p>
   </footer>
 
-  <!-- legend for the Chapter 2 close-up maps -->
-  <template id="lg-tier">
-    <p class="lg-title">Client tier</p>
-    <ul>
-      <li><i class="dot" style="--c:var(--star)"></i>Star</li>
-      <li><i class="dot" style="--c:var(--hv)"></i>High Value</li>
-      <li><i class="dot" style="--c:var(--eff)"></i>Efficient</li>
-      <li><i class="dot" style="--c:var(--std)"></i>Standard</li>
-      <li><i class="diamond"></i>Office</li>
-    </ul>
-    <p class="lg-note">Bigger circle = more net revenue</p>
-  </template>
 
   <!-- lightbox -->
   <div id="img-modal" class="img-modal hidden" role="dialog" aria-modal="true" aria-label="Enlarged map">
     <button id="img-modal-close" class="img-modal-close" aria-label="Close">&#10005;</button>
     <div class="img-modal-frame">
       <img id="img-modal-img" src="" alt="" />
-      <div id="img-modal-legend" class="scrolly-legend"></div>
     </div>
     <p id="img-modal-caption"></p>
   </div>

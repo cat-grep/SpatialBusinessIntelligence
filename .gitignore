@@ -1,2 +1,7 @@
 prepros.config
 __pycache__/
+
+# local only: authors' map specs and the QGIS layer package (it holds client points)
+MAP_PRODUCTION_GUIDE.md
+MAP_PRODUCTION_GUIDE_EN.md
+story_layers.gpkg*
