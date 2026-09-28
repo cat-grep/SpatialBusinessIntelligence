@@ -19,37 +19,81 @@
 
   <!-- ── HERO: the answer first ──────────────────────────────────────────── -->
   <header id="hero">
-    <div class="hero-text">
+    <div class="hero-inner">
       <p class="hero-course">Geog 574 final project, spring 2026 · Eugenie Huang &amp; Reid Osborn</p>
       <h1>Where are your best clients?</h1>
       <p class="hero-lede">
-        We mapped five years of records from a Southern California civil law firm to find out who its
-        valuable clients are, where they live, and where the firm should look for the next ones.
-        Here is the short answer.
+        We mapped five years of records from a Southern California civil law firm to see who its most valuable
+        clients are, where they live, and where the firm could look for more of them. Three findings stand out.
       </p>
-      <ol class="verdict">
-        <li>
-          <strong>A small group carries the firm.</strong>
-          42% of clients bring in 89% of revenue, and the top 8% alone bring in a third.
+
+      <ol class="findings">
+        <li class="finding">
+          <span class="finding-num" aria-hidden="true">1</span>
+          <h2>A small group of clients brings in most of the revenue</h2>
+          <figure class="finding-viz" aria-label="Share of clients and share of revenue: top clients, other lucrative clients, all other clients">
+            <p class="viz-title">Share of mapped clients and of revenue</p>
+            <div class="stack-row">
+              <span class="stack-label">Clients</span>
+              <div class="stack">
+                <i style="--g:8;--c:var(--g-top)" title="Top clients: 8% of clients"></i>
+                <i style="--g:34;--c:var(--g-luc)" title="Other lucrative clients: 34% of clients">34%</i>
+                <i style="--g:58;--c:var(--g-rest)" title="All other clients: 58% of clients">58%</i>
+              </div>
+            </div>
+            <div class="stack-row">
+              <span class="stack-label">Revenue</span>
+              <div class="stack">
+                <i style="--g:33.4;--c:var(--g-top)" title="Top clients: 33% of revenue">33%</i>
+                <i style="--g:56;--c:var(--g-luc)" title="Other lucrative clients: 56% of revenue">56%</i>
+                <i style="--g:10.6;--c:var(--g-rest)" title="All other clients: 11% of revenue">11%</i>
+              </div>
+            </div>
+            <figcaption class="viz-key">
+              <span><i class="dot" style="--c:var(--g-top)"></i>Top 8%</span>
+              <span><i class="dot" style="--c:var(--g-luc)"></i>Other lucrative</span>
+              <span><i class="dot" style="--c:var(--g-rest)"></i>All other clients</span>
+            </figcaption>
+          </figure>
+          <p>The top 8% and the other lucrative clients together are <b>42%</b> of mapped clients and bring in
+            <b>89%</b> of revenue. The top 8% alone bring in a third.</p>
         </li>
-        <li>
-          <strong>The Inland Empire is already won. Los Angeles and San Diego are not.</strong>
-          Around the Ontario office the firm reaches 9.0 clients per 100,000 residents.
-          Around Los Angeles and San Diego it reaches fewer than 4, even though the clients it does win there are just as
-          valuable.
+
+        <li class="finding">
+          <span class="finding-num" aria-hidden="true">2</span>
+          <h2>Ontario reaches far more residents than the other two offices</h2>
+          <figure class="finding-viz" aria-label="Clients per 100,000 residents within 30 miles of each office">
+            <p class="viz-title">Clients per 100,000 residents, within 30 miles</p>
+            <div class="hbars">
+              <div class="hbar" title="Ontario: 9.0 per 100,000 residents"><span>Ontario</span><i style="--w:100%" class="hi"></i><b>9.0</b></div>
+              <div class="hbar" title="Los Angeles: 3.7 per 100,000 residents"><span>Los Angeles</span><i style="--w:41%"></i><b>3.7</b></div>
+              <div class="hbar" title="San Diego: 3.4 per 100,000 residents"><span>San Diego</span><i style="--w:38%"></i><b>3.4</b></div>
+            </div>
+          </figure>
+          <p>Yet the share of lucrative clients is similar or higher around Los Angeles (44%) and San Diego (46%) than
+            around Ontario (40%).</p>
         </li>
-        <li>
-          <strong>The next clients are close to home.</strong>
-          Reach falls by more than half beyond 20 miles, so growth should come from under-served ZIP areas inside
-          20 miles of an office, starting with Spanish-speaking neighborhoods near San Diego.
+
+        <li class="finding">
+          <span class="finding-num" aria-hidden="true">3</span>
+          <h2>The clearest room to grow is close to the offices</h2>
+          <figure class="finding-viz" aria-label="Clients per 100,000 residents by distance from the nearest office">
+            <p class="viz-title">Clients per 100,000 residents, by miles from the nearest office</p>
+            <div class="cols">
+              <div class="col" title="0–5 miles: 7.4"><b>7.4</b><i style="--h:100%" class="hi"></i><span>0–5</span></div>
+              <div class="col" title="5–10 miles: 7.0"><b>7.0</b><i style="--h:95%" class="hi"></i><span>5–10</span></div>
+              <div class="col" title="10–20 miles: 4.5"><b>4.5</b><i style="--h:61%" class="hi"></i><span>10–20</span></div>
+              <div class="col" title="20–30 miles: 3.1"><b>3.1</b><i style="--h:42%"></i><span>20–30</span></div>
+              <div class="col" title="30–45 miles: 3.5"><b>3.5</b><i style="--h:47%"></i><span>30–45</span></div>
+              <div class="col" title="45–60 miles: 1.9"><b>1.9</b><i style="--h:26%"></i><span>45–60</span></div>
+            </div>
+          </figure>
+          <p>Reach beyond 20 miles is about half what it is within 10. Several populous ZIP areas within 20 miles of
+            Los Angeles and San Diego have few clients today.</p>
         </li>
       </ol>
-      <a href="#read-me" class="begin">Read the full story</a>
+      <a href="#about" class="begin">Read the full story</a>
     </div>
-    <figure class="hero-map">
-      <img src="data/maps/region_tiers.png"
-        alt="Map of Southern California showing about a thousand client locations colored by value tier, clustered around offices in Los Angeles, Ontario and San Diego" />
-    </figure>
   </header>
 
   <!-- ── NAVIGATION ─────────────────────────────────────────────────────── -->
@@ -68,40 +112,61 @@
     <div class="nav-progress" aria-hidden="true"><div id="progress-bar"></div></div>
   </nav>
 
-  <!-- ── HOW TO READ ────────────────────────────────────────────────────── -->
-  <section id="read-me" class="band band-paper">
-    <div class="read-grid">
-      <div class="read-intro">
-        <h2>Six questions, six chapters</h2>
-        <p>
-          Each chapter opens with its question and a one-line answer, then shows the evidence.
-          If you only read the answers, you still get the whole story.
-        </p>
-        <ol class="roadmap">
-          <li><a href="#ch1">Who are the firm's best clients?</a></li>
-          <li><a href="#ch2">Where do they live?</a></li>
-          <li><a href="#ch3">Where should the firm grow next?</a></li>
-          <li><a href="#ch4">How has the client map changed since 2021?</a></li>
-          <li><a href="#ch5">What makes a client valuable?</a></li>
-          <li><a href="#ch6">Which revenue is at risk?</a></li>
-        </ol>
+  <!-- ── ABOUT THE PROJECT ──────────────────────────────────────────────── -->
+  <section id="about" class="band band-paper">
+    <div class="about-wrap">
+      <div class="about-grid">
+        <div class="about-bg">
+          <h2>Background</h2>
+          <p>
+            The firm is a civil law practice in Southern California with offices in Los Angeles, Ontario and
+            San Diego. It keeps detailed records of every case, payment and billable hour, but those records say
+            nothing on their own about <em>where</em> its clients come from.
+          </p>
+          <p>
+            This project adds geography to the firm's records. Using PostGIS and U.S. Census data, it maps where
+            the most valuable clients live, compares each office's market, and estimates where the firm has the
+            most room to grow.
+          </p>
+        </div>
+        <div class="about-aims">
+          <h2>Project aims</h2>
+          <p>Six questions, one per chapter:</p>
+          <ol class="roadmap">
+            <li><a href="#ch1">Who are the firm's best clients?</a></li>
+            <li><a href="#ch2">Where do they live?</a></li>
+            <li><a href="#ch3">Where should the firm grow next?</a></li>
+            <li><a href="#ch4">How has the client map changed since 2021?</a></li>
+            <li><a href="#ch5">What makes a client valuable?</a></li>
+            <li><a href="#ch6">Which revenue is at risk?</a></li>
+          </ol>
+        </div>
       </div>
-      <aside class="read-notes">
+
+      <h3 class="about-sub">Scope at a glance</h3>
+      <dl class="scope-tiles">
+        <div><dt>Period</dt><dd>Jan 2021 – Apr 2026</dd></div>
+        <div><dt>Offices</dt><dd>3</dd></div>
+        <div><dt>Matters (cases)</dt><dd>2,066</dd></div>
+        <div class="tile-share">
+          <dt>Clients</dt><dd>1,874</dd>
+          <dd class="share"><span class="meter" style="--p:57%"></span><b>1,071</b> on the maps (57%)</dd>
+        </div>
+        <div class="tile-share">
+          <dt>Net revenue</dt><dd>$9.57M</dd>
+          <dd class="share"><span class="meter" style="--p:74%"></span><b>$7.05M</b> from clients on the maps (74%)</dd>
+        </div>
+      </dl>
+
+      <div class="about-notes">
         <h3>About the data</h3>
         <p>
-          The firm's records cover <b>2,066 matters</b> (legal cases) for <b>1,874 clients</b> opened between
-          January 2021 and April 2026, worth <b>$9.57M</b> in net revenue.
+          Firm records are anonymized: no names, and no map shows anything finer than a client point or ZIP area.
+          Only clients with an address on file can be mapped, so the maps and every location-based number use the
+          clients on the maps. Population and language come from the U.S. Census (American Community Survey
+          2018–2022).
         </p>
-        <p>
-          <b>1,071 of those clients have an address on file</b> ($7.05M). The maps and every location-based number
-          use this mapped group. The operational charts in Chapter 5 use all 1,874 clients.
-        </p>
-        <h3>About the maps</h3>
-        <p>
-          Every map is numbered as an exhibit and carries its own legend and scale. Click any map to enlarge it.
-          The <span class="office-glyph" aria-hidden="true"></span> orange diamonds are the firm's three offices.
-        </p>
-      </aside>
+      </div>
     </div>
   </section>
 
@@ -183,6 +248,15 @@
             </tr>
           </tfoot>
         </table>
+        <details class="method-peek">
+          <summary>How the tiers are calculated</summary>
+          <p>
+            <code>NTILE(4)</code> window functions rank all 1,071 mapped clients twice, once by net revenue and once by
+            revenue per hour, inside the <code>v_client_tier</code> view. Every later analysis joins to this view.
+            Clients with no recorded hours count as Standard unless their revenue alone is in the top quarter.
+            The SQL is in the <a href="#appendix">appendix</a>.
+          </p>
+        </details>
       </div>
 
       <figure class="chart-figure">
@@ -190,25 +264,10 @@
         <div class="chart-box square"><canvas id="c-scatter"
             aria-label="Scatter plot of 823 clients: net revenue against revenue per hour, colored by tier, with dashed lines at $6,095 and $261 per hour"></canvas>
         </div>
-        <p class="how-to-read">
-          Each dot is one client. Both axes use a log scale. The dashed lines are the top-quarter cut-offs:
-          $6,095 in revenue and $261 per hour. Hover a dot for its values.
-        </p>
-        <p class="fine">
-          248 clients have no recorded hours, so they can't be placed on the hourly axis and are left off this chart.
-          They count as Standard unless their revenue alone puts them in the top quarter.
-        </p>
+        <p class="chart-note">One dot per client · log scales · 248 clients with no recorded hours are not shown</p>
       </figure>
     </div>
 
-    <details class="method-peek">
-      <summary>How the tiers are calculated</summary>
-      <p>
-        <code>NTILE(4)</code> window functions rank all 1,071 mapped clients twice, once by net revenue and once by
-        revenue per hour, inside the <code>v_client_tier</code> view. Every later analysis joins to this view.
-        The SQL is in the <a href="#appendix">appendix</a>.
-      </p>
-    </details>
   </section>
 
   <!-- ══ CHAPTER 2 · WHERE ══════════════════════════════════════════════ -->
@@ -218,8 +277,8 @@
       <div>
         <h2>Where do they live?</h2>
         <p class="answer">
-          Close to the three offices, and above all around Ontario, the only market where valuable clients form a
-          statistically significant cluster.
+          Mostly close to the three offices. The largest statistically significant cluster of valuable clients is
+          around Ontario.
         </p>
       </div>
     </header>
@@ -237,63 +296,62 @@
         <article class="step" data-img="data/maps/region_tiers.png" data-legend=""
           data-caption="Exhibit 2.1 · All mapped clients by tier, Southern California"
           data-alt="Regional map of clients colored by tier with 30-mile rings around the three offices">
-          <h3>Nine in ten clients live within 60 miles of an office</h3>
+          <h3>Eight in ten mapped clients live within 30 miles of an office</h3>
           <p>
-            992 of the 1,071 mapped clients are in Southern California. The rest are scattered across the country and
-            are left out of the regional analysis.
+            <b>878 of the 1,071</b> mapped clients (82%) live within 30 miles of an office. The dashed rings mark
+            that distance, and each ring is treated as that office's market.
           </p>
           <p>
-            The dashed rings mark 30 miles from each office. We treat each ring as that office's market. Bigger
-            circles mean more revenue.
+            The Los Angeles and Ontario rings overlap. There, each client and ZIP area counts toward the nearer
+            office only, so no one is counted twice.
           </p>
         </article>
 
         <article class="step" data-img="data/LucrativeCustomerTier_LA.png" data-legend="lg-tier"
           data-caption="Exhibit 2.2 · Los Angeles market, clients by tier"
           data-alt="Los Angeles basin, client circles colored by tier and sized by revenue, concentrated south and west of the Los Angeles office">
-          <h3>Los Angeles: fewer clients, bigger cases</h3>
+          <h3>Los Angeles: fewer clients, larger cases</h3>
           <p>
-            The LA market holds <b>358 clients</b>, and they are the firm's most valuable: an average of
-            <b>$7,984</b> each and <b>35 Stars</b>, more than any other market.
+            The LA market holds <b>358 clients</b> with the highest average revenue of the three markets,
+            <b>$7,984</b> each, and the most Stars (<b>35</b>).
           </p>
           <p>
-            Most of them sit within about 10 miles south and west of the office. Measured against the 9.8 million people
-            living within 30 miles, though, the firm reaches only <b>3.7 clients per 100,000 residents</b>.
+            Half of them live within about 10 miles of the office. Measured against the 9.8 million people living
+            within 30 miles, though, the firm reaches <b>3.7 clients per 100,000 residents</b>.
           </p>
         </article>
 
         <article class="step" data-img="data/LucrativeCustomerTier_ON.png" data-legend="lg-tier"
           data-caption="Exhibit 2.3 · Ontario and Inland Empire market, clients by tier"
           data-alt="Inland Empire map with dense client circles from Pomona and Rancho Cucamonga to Fontana and San Bernardino">
-          <h3>Ontario: the firm's strongest market</h3>
+          <h3>Ontario: the firm's widest reach</h3>
           <p>
             The Ontario market has the <b>most clients (424)</b> from the smallest population (4.7 million). That works
             out to <b>9.0 clients per 100,000 residents</b>, more than twice the reach of the other two offices.
           </p>
           <p>
-            Cases here are smaller, averaging <b>$5,478</b>. The Inland Empire wins on breadth, with steady work from
-            Pomona and Rancho Cucamonga through Fontana to San Bernardino.
+            Cases here are smaller, averaging <b>$5,478</b>. Clients are spread widely, from Pomona and Rancho
+            Cucamonga through Fontana to San Bernardino.
           </p>
         </article>
 
         <article class="step" data-img="data/LucrativeCustomerTier_SD.png" data-legend="lg-tier"
           data-caption="Exhibit 2.4 · San Diego market, clients by tier"
           data-alt="San Diego county map with sparse client circles from Escondido through downtown to Chula Vista">
-          <h3>San Diego: good clients, not enough of them</h3>
+          <h3>San Diego: high client quality, low reach</h3>
           <p>
-            Only <b>96 clients</b> live in the San Diego market. But <b>45.8% of them are lucrative</b>, the
-            highest share of the three markets.
+            Only <b>96 clients</b> live in the San Diego market, but <b>45.8% of them are lucrative</b>, the
+            highest share of the three markets (on a small sample).
           </p>
           <p>
-            The firm isn't attracting the wrong clients in San Diego. It is attracting too few of them. Chapter 3 shows
-            where the missing clients are.
+            The gap in San Diego appears to be the number of clients rather than their quality.
           </p>
         </article>
 
         <article class="step" data-img="data/maps/hotspots.png" data-legend=""
           data-caption="Exhibit 2.5 · Hot spots of lucrative clients per resident (Getis-Ord Gi*)"
           data-alt="Hot spot map: a large block of significant red ZIP areas around Ontario, a few south-west of the Los Angeles office, none near San Diego">
-          <h3>Where the clusters are real, not just visible</h3>
+          <h3>Where the clusters are statistically significant</h3>
           <p>
             A hot spot test asks whether a ZIP area and its neighbors have more lucrative clients per resident than
             chance alone would give. <b>34 ZIP areas around Ontario</b> pass at 99% confidence, running from Pomona
@@ -301,8 +359,12 @@
           </p>
           <p>
             Los Angeles has 14 smaller hot spots, just south-west of the office. <b>San Diego has none.</b>
-            The blue cold spots, north of Glendale and around Anaheim, are places where the firm has almost no
-            lucrative clients at all.
+          </p>
+          <p>
+            The blue <b>cold spots</b>, north of Glendale and around Anaheim, are the opposite: few lucrative
+            clients <em>for the number of people who live there</em>. A cold spot can still have clients, and it
+            doesn't mean the clients there are less valuable. It means the firm reaches few residents there. The
+            large one north of Glendale is mostly mountains with few residents.
           </p>
         </article>
       </div>
@@ -310,6 +372,13 @@
 
     <div class="market-compare">
       <h3 class="compare-title">The three markets side by side <span>(within 30 miles of each office)</span></h3>
+      <div class="insight">
+        <p class="insight-kicker">Takeaway</p>
+        <p class="insight-text">Each office leads on a different measure: <b>Los Angeles</b> on case size,
+          <b>San Diego</b> on client quality, and <b>Ontario</b> on reach.</p>
+        <p class="insight-sub">Reach is the measure most directly shaped by marketing and intake, so Chapter 3 looks at
+          where it could grow.</p>
+      </div>
       <div class="table-scroll">
         <table class="ledger compare">
           <thead>
@@ -358,7 +427,7 @@
               <td>7</td>
             </tr>
             <tr>
-              <th scope="row">Hot-spot ZIP areas (95%+)</th>
+              <th scope="row">Hot-spot ZIP areas (95%+, within 60 miles)</th>
               <td>14</td>
               <td class="best">40</td>
               <td class="worst">0</td>
@@ -366,10 +435,9 @@
           </tbody>
         </table>
       </div>
-      <p class="compare-read">
-        <b>How to read it:</b> each office wins one kind of contest. Los Angeles wins on case size, San Diego on client
-        quality, and Ontario on reach. Reach is the one the firm can most directly change.
-      </p>
+      <p class="fine compare-note">Each client and ZIP area counts toward its nearest office only, so where the Los
+        Angeles and Ontario rings overlap, the area is split between the two markets. Hot-spot counts cover ZIP areas
+        up to 60 miles from their nearest office.</p>
     </div>
   </section>
 
@@ -380,33 +448,30 @@
       <div>
         <h2>Where should the firm grow next?</h2>
         <p class="answer">
-          Inside 20 miles of the Los Angeles and San Diego offices, in populous ZIP areas where the firm has almost no
-          clients today. Spanish-speaking neighborhoods near San Diego are the clearest gap.
+          Most likely within 20 miles of the Los Angeles and San Diego offices, in populous ZIP areas where the firm
+          has few clients today. The widest gap is among Spanish-speaking residents near San Diego.
         </p>
       </div>
     </header>
 
     <!-- distance decay -->
-    <div class="split split-wide-left">
+    <div class="split split-visual">
       <figure class="chart-figure">
         <figcaption class="exhibit-label">Exhibit 3.1 · Reach and quality by distance from the nearest office</figcaption>
         <div class="chart-box"><canvas id="c-distance"
             aria-label="Bar and line chart: clients per 100,000 residents falls from 7.4 within 5 miles to 1.9 at 45 to 60 miles; the lucrative share falls from 48% to 33%"></canvas>
         </div>
-        <p class="how-to-read">
-          Bars show how many clients the firm has per 100,000 residents in each distance ring. The line shows what share
-          of those clients are lucrative.
-        </p>
+        <p class="chart-note">Bars: clients per 100,000 residents · line: share of those clients who are lucrative</p>
       </figure>
       <div class="prose">
-        <h3>Distance is the strongest pattern in the data</h3>
+        <h3>Reach falls with distance from an office</h3>
         <p>
           Within 10 miles of an office the firm reaches about <b>7 clients per 100,000 residents</b>. Between 20 and
           30 miles that drops to <b>3.1</b>, less than half.
         </p>
         <p>
-          The clients from farther away are also less often lucrative: <b>48%</b> within 5 miles against
-          <b>38%</b> at 20–30 miles. People hire a nearby lawyer, and the best cases come from close by.
+          Clients from farther away are also less often lucrative: <b>48%</b> within 5 miles against
+          <b>38%</b> at 20–30 miles. This suggests proximity to an office matters, although the data can't show why.
         </p>
         <p>
           That gives us a fair benchmark for every ZIP area: <em>how many clients would we expect here, given its
@@ -423,12 +488,12 @@
       </div>
       <figcaption class="exhibit-notes">
         <p class="exhibit-label">Exhibit 3.2 · Market reach, clients per 100,000 residents</p>
-        <h3>The Inland Empire is saturated. The coast is not.</h3>
+        <h3>Reach is highest in the Inland Empire and lower along the coast</h3>
         <ol class="notes">
-          <li>The dark band from Pomona to San Bernardino is the firm's home turf. Most ZIP areas there have 10 or more
+          <li>The dark band from Pomona to San Bernardino is the firm's core. Most ZIP areas there have 10 or more
             clients per 100,000 residents.</li>
           <li>Inside the Los Angeles 10-mile ring, most ZIP areas are pale even though they are close to the office.</li>
-          <li>Orange County sits between two offices and is almost untouched.</li>
+          <li>Orange County sits between two offices and has few clients for its population.</li>
           <li>Around San Diego, only a few ZIP areas south-east of the office show any depth.</li>
         </ol>
         <p class="fine">
@@ -439,14 +504,14 @@
     </figure>
 
     <!-- opportunity -->
-    <div class="split split-even opportunity">
+    <div class="split split-visual opportunity">
       <figure class="exhibit-plain">
         <p class="exhibit-label">Exhibit 3.3 · Missing clients within 20 miles of an office</p>
         <img src="data/maps/opportunity.png" data-zoom
           alt="Map of ZIP areas within 20 miles of an office shaded by missing clients, with the top ten numbered: seven around Los Angeles and three around San Diego" />
       </figure>
       <div class="prose">
-        <h3>Ten ZIP areas to start with</h3>
+        <h3>Ten ZIP areas with the largest shortfall</h3>
         <p>
           For each ZIP area we compared the clients the firm actually has with the number its population and distance
           predict. Within 20 miles of an office, the shortfall adds up to about <b>197 clients around Los Angeles</b>
@@ -496,14 +561,14 @@
     </div>
 
     <!-- Spanish gap -->
-    <figure class="exhibit exhibit-flip">
+    <figure class="exhibit">
       <div class="exhibit-map">
         <img src="data/maps/spanish_gap.png" data-zoom
           alt="Map shading ZIP areas by share of residents who speak Spanish at home, with yellow dots for Spanish-speaking clients: many dots around Los Angeles and Ontario, almost none in the heavily Spanish-speaking areas south of San Diego" />
       </div>
       <figcaption class="exhibit-notes">
         <p class="exhibit-label">Exhibit 3.4 · Spanish-speaking residents and Spanish-speaking clients</p>
-        <h3>San Diego's biggest gap is a language gap</h3>
+        <h3>Around San Diego, the widest gap is among Spanish speakers</h3>
         <p>
           The San Diego market has <b>626,000 residents who speak Spanish at home</b>. The firm has
           <b>4 Spanish-speaking clients</b> there.
@@ -525,8 +590,8 @@
           in Los Angeles.
         </p>
         <p class="fine">
-          Spanish-speaking clients are just as profitable per hour as English-speaking ones (Chapter 5), so this is
-          a gap in reach, not in value.
+          Across the firm, Spanish-speaking clients earn about the same per hour as English-speaking ones (Chapter 5).
+          With only 4 Spanish-speaking clients in San Diego, their value there can't be measured directly.
         </p>
       </figcaption>
     </figure>
@@ -539,8 +604,8 @@
       <div>
         <h2>How has the client map changed since 2021?</h2>
         <p class="answer">
-          The firm's center of gravity moved from Los Angeles to the Inland Empire. New clients aren't coming from
-          farther away. They are coming from a different office's market.
+          New clients have shifted from the Los Angeles market toward Ontario. The typical distance between a new
+          client and an office has changed little.
         </p>
       </div>
     </header>
@@ -575,9 +640,9 @@
             and Ontario's share had risen from <b>42% to 56%</b>.
           </p>
           <p>
-            The typical new client still lives <b>11–14 miles</b> from an office, the same as in 2021. The firm keeps
-            reaching new places, about 40 new ZIP areas a year and 346 in total by 2025, but it does this by filling
-            in its markets, not by stretching them.
+            Each year the median new client has lived between <b>10.6 and 13.9 miles</b> from an office. The firm
+            keeps reaching new places, about 40 new ZIP areas a year and 346 in total by 2025, mostly by filling in its
+            existing markets rather than stretching them.
           </p>
         </div>
       </figure>
@@ -590,12 +655,13 @@
         <div class="prose">
           <p>
             Judged on total revenue so far, the 2021 clients look like the best ever at <b>$9,719</b> each.
-            But they have had five years to pay, and the data starts in 2021, so this group also includes older
-            clients who returned.
+            But they have had five years to pay, and because the data starts in 2021, this group may also include
+            older clients who returned.
           </p>
           <p>
             Compared fairly, on revenue from each client's <b>first 12 months</b>, every year from 2021 to 2024 lands
-            between <b>$3,300 and $4,000</b>. Recent clients aren't weaker. They are younger.
+            between <b>$3,300 and $4,000</b>. On this measure, recent clients look about as valuable as earlier
+            ones; they have simply had less time to pay.
           </p>
         </div>
       </figure>
@@ -609,21 +675,23 @@
       <div>
         <h2>What makes a client valuable?</h2>
         <p class="answer">
-          Mostly the kind of work, not where the client lives. Short, structured matters earn the most per hour, and
-          the two big acquisition channels bring clients of equal quality.
+          The type of work shows the clearest differences. Short, structured matters earn the most per hour, and
+          the two largest acquisition channels bring clients of similar quality.
         </p>
       </div>
     </header>
 
     <p class="population-note">
-      These charts use <b>all 2,066 matters and 1,874 clients</b> ($9.57M), including the 806 clients without an
-      address. Revenue per hour is total revenue divided by total hours for the group.
+      Exhibits 5.1, 5.2 and 5.4 use <b>all 2,066 matters and 1,874 clients</b> ($9.57M), including the 806 clients
+      without an address. Exhibits 5.3 and 5.5 use mapped clients only, because tiers and distances need an address.
+      Revenue per hour is total revenue divided by total hours for the group.
     </p>
 
     <div class="drivers">
       <figure class="driver">
         <figcaption>
-          <h3>Civil litigation brings the money. Short matters earn more per hour.</h3>
+          <span class="exhibit-label">Exhibit 5.1 · Revenue per hour by practice area</span>
+          <h3>Civil litigation brings the most revenue; shorter matters earn more per hour</h3>
           <p>Civil litigation is $5.0M of revenue at $196/hr. Case review, drafting and negotiations earn $221–230/hr
             on far fewer hours. Probate is the weakest at $140/hr.</p>
         </figcaption>
@@ -632,7 +700,8 @@
 
       <figure class="driver">
         <figcaption>
-          <h3>Flat fees beat hourly billing</h3>
+          <span class="exhibit-label">Exhibit 5.2 · Revenue per hour by retainer type</span>
+          <h3>Flat fees earn more per hour than hourly billing</h3>
           <p>Flat-fee matters earn $223/hr across 707 clients. Standard hourly billing earns $198/hr, but it covers most
             of the firm's revenue ($6.46M).</p>
         </figcaption>
@@ -641,8 +710,9 @@
 
       <figure class="driver">
         <figcaption>
-          <h3>Referral and Google bring equally good clients</h3>
-          <p>About 42% of clients from each channel turn out lucrative. Spanish-language Google ads do worse, at 33%.
+          <span class="exhibit-label">Exhibit 5.3 · Share of lucrative clients by acquisition channel</span>
+          <h3>Referral and Google bring clients of similar quality</h3>
+          <p>About 42% of mapped clients from each channel turn out lucrative. Spanish-language Google ads do worse, at 33%.
             Channels with fewer than 20 clients are too small to judge.</p>
         </figcaption>
         <div class="chart-box"><canvas id="c-channel" aria-label="Share of lucrative clients by acquisition channel"></canvas></div>
@@ -650,9 +720,10 @@
 
       <figure class="driver">
         <figcaption>
-          <h3>Spanish-speaking clients are just as profitable</h3>
-          <p>327 Spanish-speaking clients (19% of those with a recorded language) earn $195.82/hr, the same as
-            English-speaking clients at $194.38/hr.</p>
+          <span class="exhibit-label">Exhibit 5.4 · Revenue per hour by client language</span>
+          <h3>Spanish-speaking clients earn about the same per hour</h3>
+          <p>327 Spanish-speaking clients (19% of those with a recorded language) earn $195.82/hr, about the same
+            as English-speaking clients at $194.38/hr.</p>
         </figcaption>
         <div class="chart-box"><canvas id="c-language" aria-label="Revenue per hour and total revenue by client language"></canvas></div>
       </figure>
@@ -660,15 +731,17 @@
 
     <div class="split split-even word-of-mouth">
       <div class="prose">
-        <h3>Referrals spread from neighbor to neighbor</h3>
+        <h3>Referral clients live closer to earlier clients</h3>
         <p>
           For every new client we measured the distance to the nearest client who came to the firm earlier.
-          Referral clients live closer to an existing client than Google clients do. That is word of mouth you can
-          see on a map, and it's why past clients matter even when they don't come back (Chapter 6).
+          Referral clients live closer to an existing client than Google clients do. That is consistent with word of
+          mouth, though it may also reflect where referral clients tend to live. If it is word of mouth, past clients
+          matter even when they don't come back (Chapter 6).
         </p>
         <p class="fine">Clients within 60 miles of an office, 2021–2026.</p>
       </div>
       <table class="ledger mini">
+        <caption>Exhibit 5.5 · Distance from each new client to an earlier client</caption>
         <thead>
           <tr><th scope="col">First channel</th><th scope="col" class="num">Median distance to an earlier client</th><th scope="col" class="num">Within 1 mile</th></tr>
         </thead>
@@ -699,8 +772,8 @@
       <div>
         <h2>Which revenue is at risk?</h2>
         <p class="answer">
-          Not really lost clients, since most people only need a lawyer once. The real risk is that the firm's
-          reputation and its new business both run through very few people.
+          Probably less than it looks. Few clients ever return for a second matter, so a long silence is a weak sign of
+          a lost client. Past clients may matter more as a source of referrals.
         </p>
       </div>
     </header>
@@ -712,21 +785,22 @@
       </div>
       <figcaption class="exhibit-notes">
         <p class="exhibit-label">Exhibit 6.1 · Lucrative clients with no new matter in two years</p>
-        <h3>Most clients never come back, and that's normal</h3>
+        <h3>Most clients open only one matter</h3>
         <p>
-          Only <b>8.3%</b> of the firm's clients have ever opened a second matter. So it's no surprise that
+          Only <b>8.3%</b> of the firm's clients have ever opened a second matter. So it is not surprising that
           <b>306 lucrative clients</b>, worth <b>$4.6M</b> in lifetime revenue, haven't opened a new matter since April
           2024.
         </p>
         <p>
-          Chasing them for repeat work is unlikely to pay. What they can do is refer. <b>126 of them live within 10
-          miles of an office</b>, and referral clients tend to live about a mile from someone the firm already served.
+          Repeat work may be a weak lever with this group; referrals may be a stronger one. <b>126 of them live
+          within 10 miles of an office</b>, and referral clients typically live within about a mile of someone the
+          firm already served.
         </p>
         <table class="ledger mini">
           <thead><tr><th scope="col">Tier</th><th scope="col" class="num">Clients</th><th scope="col" class="num">Lifetime revenue</th><th scope="col" class="num">Ever returned</th></tr></thead>
           <tbody>
             <tr><th scope="row"><i class="dot" style="--c:var(--star)"></i>Star</th><td class="num">62</td><td class="num">$1.88M</td><td class="num">15%</td></tr>
-            <tr><th scope="row"><i class="dot" style="--c:var(--hv)"></i>High Value</th><td class="num">120</td><td class="num">$2.47M</td><td class="num">27%</td></tr>
+            <tr><th scope="row"><i class="dot" style="--c:var(--hv)"></i>High Value</th><td class="num">120</td><td class="num">$2.47M</td><td class="num">28%</td></tr>
             <tr><th scope="row"><i class="dot" style="--c:var(--eff)"></i>Efficient</th><td class="num">124</td><td class="num">$0.25M</td><td class="num">6%</td></tr>
           </tbody>
         </table>
@@ -735,26 +809,6 @@
       </figcaption>
     </figure>
 
-    <div class="split split-wide-left">
-      <figure class="chart-figure">
-        <figcaption class="exhibit-label">Exhibit 6.2 · Revenue by originating attorney</figcaption>
-        <div class="chart-box"><canvas id="c-attorney"
-            aria-label="Bar chart: attorney 2 originated $4.83M and attorney 4 $3.77M; the next six attorneys originated less than $0.4M each"></canvas>
-        </div>
-      </figure>
-      <div class="prose">
-        <h3>Two attorneys bring in 90% of the revenue</h3>
-        <p>
-          The originating attorney is the one who brought the client in. <b>Attorney #2 ($4.83M)</b> and
-          <b>Attorney #4 ($3.77M)</b> originated 90% of all revenue. The other nine originating attorneys share the
-          remaining 10%.
-        </p>
-        <p>
-          If either of them left, the firm would lose most of its pipeline, and possibly the referral network that
-          comes with it.
-        </p>
-      </div>
-    </div>
   </section>
 
   <!-- ══ ACTION PLAN ═══════════════════════════════════════════════════ -->
@@ -772,9 +826,9 @@
         <p class="plan-meta"><span>Worth: part of San Diego's +79 clients (~$0.37M)</span><span>Effort: medium</span><a href="#ch3">Evidence: Chapter 3</a></p>
       </li>
       <li>
-        <h3>Win the Los Angeles neighborhoods inside 10 miles</h3>
+        <h3>Grow in Los Angeles neighborhoods within 10 miles</h3>
         <p class="plan-where">Koreatown, Hancock Park, Los Feliz, Highland Park, Glassell Park, Palms, Westwood</p>
-        <p>These are close to the office and populous, but have almost no clients. Target search ads by ZIP code
+        <p>These are close to the office and populous, but have few clients. Target search ads by ZIP code
           and build local referral partners.</p>
         <p class="plan-meta"><span>Worth: up to +260 clients (~$2.1M)</span><span>Effort: medium–high</span><a href="#ch3">Evidence: Chapter 3</a></p>
       </li>
@@ -782,13 +836,13 @@
         <h3>Turn past clients into referral sources</h3>
         <p class="plan-where">306 dormant lucrative clients, 126 of them within 10 miles of an office</p>
         <p>Ask for referrals rather than repeat work. Send a check-in and a referral ask, starting with the 62 Stars.</p>
-        <p class="plan-meta"><span>Worth: low cost, compounding</span><span>Effort: low</span><a href="#ch6">Evidence: Chapters 5–6</a></p>
+        <p class="plan-meta"><span>Worth: low cost</span><span>Effort: low</span><a href="#ch6">Evidence: Chapters 5–6</a></p>
       </li>
       <li>
         <h3>Protect the Inland Empire core</h3>
         <p class="plan-where">Pomona, Ontario, Rancho Cucamonga, Fontana, Rialto, Chino</p>
-        <p>This is where over half of new clients now come from. Keep staffing and response times at the Ontario
-          office ahead of demand.</p>
+        <p>Over half of new clients now come from this market. Keep staffing and response times at the Ontario
+          office in step with demand.</p>
         <p class="plan-meta"><span>Worth: defends the largest client base</span><span>Effort: low</span><a href="#ch2">Evidence: Chapters 2 and 4</a></p>
       </li>
       <li>
@@ -799,10 +853,11 @@
         <p class="plan-meta"><span>Worth: makes every future analysis possible</span><span>Effort: low</span><a href="#ch5">Evidence: Chapter 5</a></p>
       </li>
       <li>
-        <h3>Share business development beyond two attorneys</h3>
-        <p class="plan-where">Firm-wide</p>
-        <p>Give every attorney a referral target and credit, so the pipeline doesn't depend on Attorneys #2 and #4.</p>
-        <p class="plan-meta"><span>Worth: lowers key-person risk</span><span>Effort: medium</span><a href="#ch6">Evidence: Chapter 6</a></p>
+        <h3>Measure what works</h3>
+        <p class="plan-where">Target ZIP areas and every channel</p>
+        <p>Track new clients by ZIP area and channel for 12 months, and compare the target areas with the rest. This
+          tests whether the estimates in Chapter 3 hold before the firm spends more.</p>
+        <p class="plan-meta"><span>Worth: protects every other step</span><span>Effort: low</span><a href="#ch3">Evidence: Chapter 3</a></p>
       </li>
     </ol>
   </section>
@@ -824,7 +879,8 @@
           <h3>Spatial methods</h3>
           <ul>
             <li><b>Markets:</b> each client and ZCTA is assigned to its nearest office by geodesic distance
-              (<code>ST_Distance</code> on <code>geography</code>). A market is everything within 30 miles.</li>
+              (<code>ST_Distance</code> on <code>geography</code>). A market is everything within 30 miles; where two
+              offices' rings overlap, the nearer office takes the client or ZIP area.</li>
             <li><b>Reach:</b> clients per 100,000 residents per ZCTA, smoothed with global empirical Bayes so that
               small populations don't produce extreme rates.</li>
             <li><b>Hot spots:</b> Getis-Ord Gi* on smoothed lucrative clients per resident, with queen-contiguity
@@ -840,6 +896,8 @@
           <ul>
             <li>The data begins in 2021, so clients from before then are counted in the 2021 group.</li>
             <li>Straight-line distance stands in for travel time.</li>
+            <li>Hot-spot significance is not corrected for multiple testing across ZIP areas.</li>
+            <li>Correlations, such as between distance and client value, don't show cause.</li>
             <li>Revenue per hour ignores differences in attorney cost.</li>
             <li>Reach benchmarks assume every market could match Ontario. Competition and demand differ, so the
               dollar figures are for scale only.</li>
@@ -849,8 +907,7 @@
           <h3>Tools</h3>
           <p>
             PostGIS for joins, distances and views; QGIS for the market close-up maps (Exhibits 2.2–2.4); Python
-            (GeoPandas, matplotlib) for smoothing, hot spots and the other maps; Chart.js for charts. Everything after
-            the database export can be rebuilt with <code>python analysis/build_story.py</code>.
+            (GeoPandas, matplotlib) for smoothing, hot spots and the other maps; Chart.js for charts.
           </p>
         </div>
       </div>
@@ -872,7 +929,7 @@
 
       <div id="appendix" class="appendix">
         <h3>SQL appendix</h3>
-        <p>The core queries behind each chapter. The full set is in <code>PostGIS_Functions.md</code>.</p>
+        <p>The core queries behind each chapter.</p>
 
         <details>
           <summary>Chapter 1 · Client tier view (<code>v_client_tier</code>)</summary>
@@ -906,12 +963,8 @@ WHERE c.isclient = true;</code></pre>
 
         <details>
           <summary>Chapter 2 · Nearest office and 30-mile markets</summary>
-          <pre><code>WITH office(name, geom) AS (VALUES
-  ('Los Angeles', ST_SetSRID(ST_MakePoint(-118.2587514, 34.04860677), 4326)),
-  ('Ontario',     ST_SetSRID(ST_MakePoint(-117.6110578, 34.06634171), 4326)),
-  ('San Diego',   ST_SetSRID(ST_MakePoint(-117.177125,  32.75891346), 4326))
-),
-nearest AS (
+          <pre><code>-- office(name, geom): the three office points, kept out of this page
+WITH nearest AS (
   SELECT ct.client_id, ct.client_tier, ct.net_revenue, o.name AS office,
          ST_Distance(ct.geom::geography, o.geom::geography) / 1609.34 AS miles
   FROM v_client_tier ct
@@ -938,8 +991,8 @@ GROUP BY office;</code></pre>
 FROM zcta z
 LEFT JOIN v_client_tier ct ON ST_Within(ct.geom, z.geom)
 GROUP BY z.zcta5ce20, z.geom;
--- Joined to ACS population in Python; empirical Bayes smoothing and Gi*
--- are computed in analysis/build_story.py.</code></pre>
+-- Joined to ACS population in Python, where the empirical Bayes
+-- smoothing and Gi* statistics are also computed.</code></pre>
         </details>
 
         <details>
@@ -1008,7 +1061,7 @@ ORDER BY ct.net_revenue DESC;</code></pre>
     </p>
   </footer>
 
-  <!-- legend used on the QGIS close-up maps, which have none of their own -->
+  <!-- legend for the Chapter 2 close-up maps -->
   <template id="lg-tier">
     <p class="lg-title">Client tier</p>
     <ul>

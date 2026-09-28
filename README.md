@@ -35,13 +35,12 @@ SpatialBusinessIntelligence/
 ├── css/style.css             # Layout and styles
 ├── js/main.js                # Scrollytelling, lightbox, Chart.js charts
 ├── lib/chart.min.js          # Chart.js 4 (offline copy)
-├── analysis/build_story.py   # Rebuilds data/story.* and data/maps/* from PostGIS + ACS
+├── analysis/build_story.py   # Rebuilds data/story.js and data/maps/* from PostGIS + ACS
 ├── data/
-│   ├── story.json / story.js # Every number the page quotes (generated)
+│   ├── story.js              # Every number the page quotes (generated)
 │   ├── maps/*.png            # Generated maps with legend, scale bar and call-outs
-│   ├── LucrativeCustomerTier_*.png   # QGIS close-ups used in Chapter 2
-│   ├── ERDiagram.PNG, RelationalSchema.PNG
-│   └── (older QGIS exports and GIFs kept for reference, not used by the page)
+│   ├── LucrativeCustomerTier_{LA,ON,SD}.png   # QGIS close-ups used in Chapter 2
+│   └── ERDiagram.PNG, RelationalSchema.PNG
 └── PostGIS_Functions.md      # All SQL, by research question
 ```
 
@@ -69,16 +68,16 @@ python analysis/build_story.py --export # pull fresh tables from PostGIS, then r
 python analysis/build_story.py          # rebuild from the last export
 ```
 
-Raw exports and the ACS downloads are kept outside the repository in `../Analysis/StoryBuild/`, because they contain client-level records. Only aggregated numbers and rendered maps are written into `data/`.
+Raw exports, the ACS downloads and the office locations are kept outside the repository, because they contain client-level records or would identify the firm. Only aggregated numbers and rendered maps are written into `data/`.
 
-The narrative text in `index.html` quotes numbers from `data/story.json`. If the data changes, update the text to match.
+The narrative text in `index.html` quotes numbers from `data/story.js`. If the data changes, update the text to match.
 
 ---
 
 ## Acknowledgements
 
 - **PostGIS** — spatial join and window function engine
-- **QGIS** — map rendering, Temporal Controller animation, Bivariate Renderer plugin
+- **QGIS** — Chapter 2 market close-up maps
 - **Chart.js** — client-side interactive charts
 - **Google Fonts** — Oswald & Roboto typefaces
 
@@ -88,11 +87,8 @@ The narrative text in `index.html` quotes numbers from `data/story.json`. If the
 - Proprietary law firm records (anonymized)  
 - [US Census - American Community Survey 2018–2022 5-year, table-based summary files](https://www2.census.gov/programs-surveys/acs/summary_file/2022/table-based-SF/)  
 - [US Census - 2020 ZIP Code Tabulation Areas (ZCTAs)](https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_zcta520_500k.zip)  
-- [California Department of Technology - California City Boundaries](https://gis.data.ca.gov/datasets/California::california-city-boundaries-and-identifiers/)  
-- Other Tutorials:  
-   - [Animated GIF Maker](https://ezgif.com/maker)  
-   - [Animating Time Series Data (QGIS3) — QGIS Tutorials and Tips](https://www.qgistutorials.com/en/docs/3/animating_time_series.html)  
-   - [Bivariate choropleth maps in QGIS - BNHR](https://bnhr.xyz/2019/09/15/bivariate-choropleths-in-qgis.html)  
+- [California Department of Technology - California City Boundaries](https://gis.data.ca.gov/datasets/California::california-city-boundaries-and-identifiers/)
+
 ---
 
 *Geog 574 · Advanced GIS Applications · University of Wisconsin–Madison · Spring 2026*

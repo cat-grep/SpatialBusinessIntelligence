@@ -6,7 +6,7 @@ Steps
      with read-only queries. Needs PGPASSWORD in the environment.
   2. join clients to ZCTAs and to 2022 ACS 5-year estimates (population,
      Spanish spoken at home, median household income).
-  3. compute every number the page quotes -> data/story.json
+  3. compute every number the page quotes -> data/story.js
   4. render the new maps (legend, scale bar and call-outs baked in) -> data/maps/
 
 Usage
@@ -43,7 +43,7 @@ COUNTY_SHP = PROJECT / 'Analysis' / 'ImportData' / 'cb_2025_us_county_500k.shp'
 PLACE_SHP = PROJECT / 'Analysis' / 'ImportData' / 'cb_2025_us_place_500k.shp'
 BIG_CITY = PROJECT / 'Analysis' / 'ExportData' / 'california_big_city.geojson'
 OFFICE_CSV = PROJECT / 'Analysis' / 'ImportData' / 'office_location.csv'
-OUT_JSON = REPO / 'data' / 'story.json'           # story.js is written next to it
+OUT_JS = REPO / 'data' / 'story.js'
 MAP_DIR = REPO / 'data' / 'maps'
 
 PSQL = r'C:\Program Files\PostgreSQL\18\bin\psql.exe'
@@ -235,7 +235,8 @@ def analyse(offices, c, m, tx, z):
     out['lucrative'] = {'n': int(c.luc.sum()), 'share': r(c.luc.mean() * 100, 1),
                         'rev_share': r(c[c.luc].net_revenue.sum() / tot_rev * 100, 1)}
     q = c[c.rph.notna() & (c.net_revenue > 0)]
-    out['scatter'] = [[round(a, 2), round(b, 2), k] for a, b, k in zip(q.net_revenue, q.rph, q.tier)]
+    # rounded (revenue to $100, hourly to $1) so no exact client amounts are published
+    out['scatter'] = [[int(round(a, -2)), int(round(b)), k] for a, b, k in zip(q.net_revenue, q.rph, q.tier)]
     out['thresholds'] = {'rev': 6095, 'rph': 261}
     out['no_hours'] = int(c.rph.isna().sum())
 
@@ -400,14 +401,6 @@ def analyse(offices, c, m, tx, z):
     ch = c[c.dist <= 100].groupby('src').agg(n=('client_id', 'size'), luc=('luc', 'mean'), avg=('net_revenue', 'mean'))
     out['channel_quality'] = [{'label': k, 'clients': int(v.n), 'luc_rate': r(v.luc * 100, 1), 'avg_rev': r(v.avg)}
                               for k, v in ch.sort_values('n', ascending=False).iterrows() if v.n >= 4]
-    orig = m.groupby('originating_attorney').agg(clients=('client_id', 'nunique'), rev=('net_revenue', 'sum')).sort_values('rev', ascending=False)
-    out['attorneys'] = {'orig': [{'label': f'#{int(k)}', 'clients': int(v.clients), 'rev': r(v.rev)} for k, v in orig.head(8).iterrows()],
-                        'orig_top2_share': r(orig.rev.head(2).sum() / orig.rev.sum() * 100, 1),
-                        'orig_n': int(len(orig))}
-    resp = m.groupby('responsible_attorney').agg(matters=('matter_id', 'size'), rev=('net_revenue', 'sum'), hours=('hours', 'sum'))
-    resp['rph'] = resp.rev / resp.hours
-    out['attorneys']['resp'] = [{'label': f'#{int(k)}', 'matters': int(v.matters), 'rph': r(v.rph, 2), 'rev': r(v.rev)}
-                                for k, v in resp[resp.matters >= 20].sort_values('rph', ascending=False).iterrows()]
     seas = m.dropna(subset=['open_date']).assign(mo=lambda d: d.open_date.dt.month).groupby('mo').size()
     out['seasonal'] = {int(k): int(v) for k, v in seas.items()}
     unspec = next(x for x in out['ops']['scope'] if x['label'] == 'Unspecified')
@@ -654,10 +647,9 @@ def main():
         export_from_db()
     offices, c, m, tx, z = load()
     out, S = analyse(offices, c, m, tx, z)
-    OUT_JSON.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding='utf-8')
-    # same payload as a script so index.html works from file:// (no fetch needed)
-    OUT_JSON.with_suffix('.js').write_text('window.STORY = ' + json.dumps(out, ensure_ascii=False) + ';\n', encoding='utf-8')
-    print('wrote', OUT_JSON, 'and story.js')
+    # a script rather than JSON, so index.html works from file:// (no fetch needed)
+    OUT_JS.write_text('window.STORY = ' + json.dumps(out, ensure_ascii=False) + ';\n', encoding='utf-8')
+    print('wrote', OUT_JS)
     if not a.no_maps:
         draw_maps(offices, c, S, out)
 
