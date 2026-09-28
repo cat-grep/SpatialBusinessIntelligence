@@ -137,8 +137,7 @@ function initCharts() {
     'c-practice': dark => rphChart(S.ops.practice, { grey: ['Unspecified', 'Other'] }, dark),
     'c-retainer': dark => rphChart(S.ops.retainer, { grey: ['Unspecified'] }, dark),
     'c-channel': channelChart,
-    'c-language': dark => rphChart(S.ops.language.filter(d => d.clients >= 20), { showClients: true }, dark),
-    'c-attorney': attorneyChart
+    'c-language': dark => rphChart(S.ops.language.filter(d => d.clients >= 20), { showClients: true }, dark)
   };
 
   const io = new IntersectionObserver(entries => {
@@ -202,6 +201,11 @@ function scatterChart(dark) {
       tag('High Value', TIER['High Value'], x - 8, a.top + 18, 'right');
       tag('Efficient', TIER.Efficient, a.right - 8, a.bottom - 10, 'right');
       tag('Standard', '#6f6f6f', x - 8, a.bottom - 10, 'right');
+      ctx.font = '500 12px Roboto, sans-serif';
+      tag(`top quarter: ${money(thr.rev)}`, C.goldDk, a.left + 8, y - 6, 'left');
+      ctx.save(); ctx.translate(x + 14, a.bottom - 30); ctx.rotate(-Math.PI / 2);
+      tag(`top quarter: ${money(thr.rph)}/hr`, C.goldDk, 0, 0, 'left');
+      ctx.restore();
       ctx.restore();
     }
   };
@@ -376,34 +380,6 @@ function channelChart(dark) {
       },
       scales: {
         x: axis(t, { min: 0, max: 100, ticks: { color: t.sub, callback: v => v + '%' }, title: axisTitle(t, 'Share of clients who are lucrative') }),
-        y: axis(t, { grid: { display: false }, ticks: { color: t.text } })
-      }
-    }
-  };
-}
-
-// Exhibit 6.2
-function attorneyChart(dark) {
-  const t = theme(dark);
-  const rows = S.attorneys.orig;
-  return {
-    type: 'bar',
-    plugins: [barLabels],
-    data: {
-      labels: rows.map(d => 'Attorney ' + d.label),
-      datasets: [{ data: rows.map(d => d.rev), backgroundColor: rows.map((_, i) => i < 2 ? C.gold : 'rgba(255,255,255,.35)'), borderRadius: 2, barPercentage: .78 }]
-    },
-    options: {
-      indexAxis: 'y',
-      maintainAspectRatio: false,
-      layout: { padding: { right: 60 } },
-      plugins: {
-        legend: { display: false },
-        barLabels: { color: t.text, format: i => moneyK(rows[i].rev) },
-        tooltip: { callbacks: { label: i => [` ${moneyK(rows[i.dataIndex].rev)} originated`, ` ${rows[i.dataIndex].clients} clients`] } }
-      },
-      scales: {
-        x: axis(t, { beginAtZero: true, ticks: { color: t.sub, callback: v => moneyK(v) }, title: axisTitle(t, 'Net revenue from the clients they brought in') }),
         y: axis(t, { grid: { display: false }, ticks: { color: t.text } })
       }
     }
