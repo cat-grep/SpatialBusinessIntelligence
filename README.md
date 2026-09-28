@@ -8,21 +8,22 @@
 
 ## Overview
 
-This project applies PostGIS spatial analysis to a California law firm's client database to answer five business-critical questions:
+This project applies PostGIS spatial analysis to a Southern California civil law firm's client database. The StoryMap is built to be read without a presenter: each chapter opens with a question and a one-line answer, then shows the evidence.
 
-1. Who are the high-value clients and where do they live?
-2. Which ZIP codes have the most untapped growth potential?
-3. How has the firm's client geography shifted over time and which characteristics do each year's client base possess?
-4. Which practice areas, billing structures and acquisition channels generate the highest revenue per hour?
-5. Which valuable clients are going silent and which attorneys drive the most business?
+1. Who are the firm's best clients?
+2. Where do they live?
+3. Where should the firm grow next?
+4. How has the client map changed since 2021?
+5. What makes a client valuable?
+6. Which revenue is at risk?
 
-The result is an interactive scrollytelling web page where each scroll step reveals a new map or chart alongside the narrative analysis.
+It ends with a ranked action plan, the method and its limits, and an SQL appendix.
 
 ---
 
 ## Live Demo
 
-Open `index.html` in any modern browser — no server required. All map exports are pre-rendered as static images; interactive charts are built client-side with Chart.js.
+Open `index.html` in any modern browser. No server is required: chart data is loaded from `data/story.js`, and maps are pre-rendered images.
 
 ---
 
@@ -30,17 +31,18 @@ Open `index.html` in any modern browser — no server required. All map exports 
 
 ```
 SpatialBusinessIntelligence/
-├── index.html              # Main scrollytelling page
-├── css/
-│   └── style.css           # All styles (layout, nav, charts, responsive)
-├── js/
-│   └── main.js             # Scrollytelling logic, Chart.js chart functions
-├── lib/
-│   └── chart.min.js        # Chart.js 4 (bundled offline copy)
-└── data/
-    ├── *.png / *.gif       # QGIS-exported map images and animated GIFs
-    ├── ERDiagram.PNG       # Entity-relationship diagram
-    └── RelationalSchema.PNG
+├── index.html                # StoryMap page
+├── css/style.css             # Layout and styles
+├── js/main.js                # Scrollytelling, lightbox, Chart.js charts
+├── lib/chart.min.js          # Chart.js 4 (offline copy)
+├── analysis/build_story.py   # Rebuilds data/story.* and data/maps/* from PostGIS + ACS
+├── data/
+│   ├── story.json / story.js # Every number the page quotes (generated)
+│   ├── maps/*.png            # Generated maps with legend, scale bar and call-outs
+│   ├── LucrativeCustomerTier_*.png   # QGIS close-ups used in Chapter 2
+│   ├── ERDiagram.PNG, RelationalSchema.PNG
+│   └── (older QGIS exports and GIFs kept for reference, not used by the page)
+└── PostGIS_Functions.md      # All SQL, by research question
 ```
 
 ---
@@ -50,35 +52,26 @@ SpatialBusinessIntelligence/
 | Layer | Tool |
 |---|---|
 | Spatial database | PostgreSQL 18 + PostGIS 3.6 |
-| Map authoring | QGIS 3.x (DB Manager, Temporal Controller, Bivariate Renderer) |
+| Spatial statistics | Python: GeoPandas, NumPy (empirical Bayes smoothing, Getis-Ord Gi*) |
+| Demographics | ACS 2018–2022 5-year: B01003 (population), C16001 (language at home), B19013 (income) |
+| Map authoring | QGIS 3.x (Chapter 2 close-ups); matplotlib (all other maps) |
 | Interactive charts | Chart.js 4 |
-| Scrollytelling | Vanilla JS — `IntersectionObserver` API |
-| Front-end | HTML5 · CSS3 · Vanilla JS (no build step, no framework) |
+| Front-end | HTML, CSS, vanilla JS, no build step |
 
 ---
 
-## Running Locally
+## Rebuilding the numbers and maps
 
 ```bash
-git clone <repo-url>
-cd SpatialBusinessIntelligence
-# Open index.html in a browser — no npm, no server needed
-open index.html   # macOS
-start index.html  # Windows
+# from the repository root; PGPASSWORD is only needed with --export
+set PGPASSWORD=<your password>          # PowerShell: $env:PGPASSWORD = '...'
+python analysis/build_story.py --export # pull fresh tables from PostGIS, then rebuild
+python analysis/build_story.py          # rebuild from the last export
 ```
 
-Chart.js is bundled in `lib/chart.min.js` so the page works fully offline.
+Raw exports and the ACS downloads are kept outside the repository in `../Analysis/StoryBuild/`, because they contain client-level records. Only aggregated numbers and rendered maps are written into `data/`.
 
----
-
-## Reproducing the Analysis
-
-All SQL queries are documented in [PostGIS_Functions.md](PostGIS_Functions.md), organized by research question. To re-run against a live PostGIS database:
-
-1. Connect QGIS to your PostgreSQL instance via DB Manager.
-2. Execute each query from `PostGIS_Functions.md` to create or refresh the views.
-3. Export spatial views as PNG/GIF from QGIS and place them in `data/`.
-4. Update the inline data arrays in `js/main.js` with fresh aggregated values.
+The narrative text in `index.html` quotes numbers from `data/story.json`. If the data changes, update the text to match.
 
 ---
 
@@ -93,6 +86,7 @@ All SQL queries are documented in [PostGIS_Functions.md](PostGIS_Functions.md), 
 
 ## Data Source
 - Proprietary law firm records (anonymized)  
+- [US Census - American Community Survey 2018–2022 5-year, table-based summary files](https://www2.census.gov/programs-surveys/acs/summary_file/2022/table-based-SF/)  
 - [US Census - 2020 ZIP Code Tabulation Areas (ZCTAs)](https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_zcta520_500k.zip)  
 - [California Department of Technology - California City Boundaries](https://gis.data.ca.gov/datasets/California::california-city-boundaries-and-identifiers/)  
 - Other Tutorials:  

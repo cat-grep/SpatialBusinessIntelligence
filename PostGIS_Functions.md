@@ -1064,3 +1064,89 @@ Core analytical choices:
 - `NTILE(4)` creates the client tier model.
 - `NTILE(3)` creates the Volume x Quality area matrix.
 - `DATE_TRUNC('year', open_date)` supports temporal animation in QGIS.
+
+---
+
+## 7. Added for the revised story (2026 revision)
+
+These queries back the new Chapters 2–4 and 6. Python (`analysis/build_story.py`) adds the steps
+PostGIS doesn't do: joining ACS population, empirical Bayes smoothing and Getis-Ord Gi*.
+
+### 7.1 Two populations
+
+Matter-level analyses cover every client in `matter` (1,874 clients, $9.57M). Location-based
+analyses only cover clients in `contact` with `isclient = true` (1,071 clients, $7.05M). 806
+matter clients have no `contact` row, so they have no geometry.
+
+```sql
+WITH mc AS (SELECT DISTINCT client_id FROM matter)
+SELECT CASE WHEN c.id IS NULL THEN 'not in contact'
+            WHEN c.isclient THEN 'isclient'
+            ELSE 'contact, not isclient' END AS population,
+       COUNT(*)
+FROM mc LEFT JOIN contact c ON c.id = mc.client_id
+GROUP BY 1;
+```
+
+### 7.2 Nearest office and 30-mile markets
+
+```sql
+WITH office(name, geom) AS (VALUES
+  ('Los Angeles', ST_SetSRID(ST_MakePoint(-118.2587514, 34.04860677), 4326)),
+  ('Ontario',     ST_SetSRID(ST_MakePoint(-117.6110578, 34.06634171), 4326)),
+  ('San Diego',   ST_SetSRID(ST_MakePoint(-117.177125,  32.75891346), 4326))
+),
+nearest AS (
+  SELECT ct.client_id, ct.client_tier, ct.net_revenue, o.name AS office,
+         ST_Distance(ct.geom::geography, o.geom::geography) / 1609.34 AS miles
+  FROM v_client_tier ct
+  CROSS JOIN LATERAL (
+    SELECT name, geom FROM office
+    ORDER BY ct.geom::geography <-> geom::geography LIMIT 1
+  ) o
+)
+SELECT office, COUNT(*) AS clients,
+       ROUND(AVG((client_tier <> 'Standard')::int) * 100, 1) AS lucrative_pct,
+       ROUND(SUM(net_revenue)::numeric) AS revenue
+FROM nearest
+WHERE miles <= 30
+GROUP BY office;
+```
+
+### 7.3 First-12-month revenue by intake year
+
+Replaces lifetime revenue per cohort, which favors older cohorts.
+
+```sql
+WITH first_matter AS (
+  SELECT client_id, MIN(open_date) AS first_open FROM matter GROUP BY client_id
+)
+SELECT EXTRACT(YEAR FROM f.first_open)::int AS cohort,
+       COUNT(DISTINCT f.client_id) AS clients,
+       ROUND((SUM(t.funds_in - t.funds_out) / COUNT(DISTINCT f.client_id))::numeric) AS first_12m_revenue
+FROM first_matter f
+LEFT JOIN transaction t
+  ON t.client_id = f.client_id
+ AND t.date >= f.first_open
+ AND t.date <  f.first_open + INTERVAL '12 months'
+WHERE f.first_open <= DATE '2025-03-31'
+GROUP BY 1 ORDER BY 1;
+```
+
+### 7.4 Dormant lucrative clients on a fixed snapshot
+
+Section 3.3 used `CURRENT_DATE`, so its result changed every day. The revision fixes the snapshot
+at the last matter date in the extract (2026-04-09).
+
+```sql
+WITH last_matter AS (
+  SELECT client_id, MAX(open_date) AS last_open, COUNT(*) AS matters
+  FROM matter GROUP BY client_id
+)
+SELECT ct.client_id, ct.client_tier, ct.net_revenue, lm.last_open, lm.matters, ct.geom
+FROM v_client_tier ct
+JOIN last_matter lm ON lm.client_id = ct.client_id
+WHERE ct.client_tier <> 'Standard'
+  AND lm.last_open < DATE '2026-04-09' - 730
+ORDER BY ct.net_revenue DESC;
+```

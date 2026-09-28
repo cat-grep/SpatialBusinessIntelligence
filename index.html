@@ -5,204 +5,897 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Where Are Your Best Clients? — Law Firm Spatial Analysis</title>
+  <meta name="description"
+    content="A self-guided spatial business analysis of a Southern California civil law firm: who the valuable clients are, where they live, where the firm should grow, and what to do next." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Roboto:wght@300;400;500;600&display=swap" />
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
 
-  <!-- ── HERO ─────────────────────────────────────────────────────────── -->
+  <!-- ── HERO: the answer first ──────────────────────────────────────────── -->
   <header id="hero">
-    <div class="hero-inner">
-      <p class="hero-tag">Geog 574 · Final Project · Spring 2026</p>
-      <h1>Where Are Your Best Clients?</h1>
-      <p class="hero-sub">
-        A PostGIS-driven spatial analysis of client value, geography, and
-        growth strategy for a Southern California-based civil law firm.
+    <div class="hero-text">
+      <p class="hero-course">Geog 574 final project, spring 2026 · Eugenie Huang &amp; Reid Osborn</p>
+      <h1>Where are your best clients?</h1>
+      <p class="hero-lede">
+        We mapped five years of records from a Southern California civil law firm to find out who its
+        valuable clients are, where they live, and where the firm should look for the next ones.
+        Here is the short answer.
       </p>
-      <p class="hero-authors">Eugenie Huang &amp; Reid Osborn</p>
-      <a href="#intro" class="scroll-cue">&#8595; Begin</a>
+      <ol class="verdict">
+        <li>
+          <strong>A small group carries the firm.</strong>
+          42% of clients bring in 89% of revenue, and the top 8% alone bring in a third.
+        </li>
+        <li>
+          <strong>The Inland Empire is already won. Los Angeles and San Diego are not.</strong>
+          Around the Ontario office the firm reaches 9.0 clients per 100,000 residents.
+          Around Los Angeles and San Diego it reaches fewer than 4, even though the clients it does win there are just as
+          valuable.
+        </li>
+        <li>
+          <strong>The next clients are close to home.</strong>
+          Reach falls by more than half beyond 20 miles, so growth should come from under-served ZIP areas inside
+          20 miles of an office, starting with Spanish-speaking neighborhoods near San Diego.
+        </li>
+      </ol>
+      <a href="#read-me" class="begin">Read the full story</a>
     </div>
+    <figure class="hero-map">
+      <img src="data/maps/region_tiers.png"
+        alt="Map of Southern California showing about a thousand client locations colored by value tier, clustered around offices in Los Angeles, Ontario and San Diego" />
+    </figure>
   </header>
 
-  <!-- ── NAVIGATION ───────────────────────────────────────────────────── -->
-  <nav id="site-nav" aria-label="Page navigation">
-    <span class="nav-brand">Spatial Business Intelligence</span>
-    <ul class="nav-links">
-      <li><a href="#hero">Home</a></li>
-      <li><a href="#intro">The Question</a></li>
-      <li><a href="#ch1">Client Tiers</a></li>
-      <li><a href="#ch2">Market Map</a></li>
-      <li><a href="#ch3">Over Time</a></li>
-      <li><a href="#ch4">Operations</a></li>
-      <li><a href="#findings">Key Findings</a></li>
-      <li><a href="#methodology">Methodology</a></li>
-    </ul>
+  <!-- ── NAVIGATION ─────────────────────────────────────────────────────── -->
+  <nav id="site-nav" aria-label="Chapters">
+    <a class="nav-brand" href="#hero">Best clients</a>
+    <ol class="nav-links">
+      <li><a href="#ch1"><span>1</span> Who</a></li>
+      <li><a href="#ch2"><span>2</span> Where</a></li>
+      <li><a href="#ch3"><span>3</span> Grow</a></li>
+      <li><a href="#ch4"><span>4</span> Over time</a></li>
+      <li><a href="#ch5"><span>5</span> Drivers</a></li>
+      <li><a href="#ch6"><span>6</span> At risk</a></li>
+      <li><a href="#plan">Action plan</a></li>
+      <li><a href="#method">Method</a></li>
+    </ol>
+    <div class="nav-progress" aria-hidden="true"><div id="progress-bar"></div></div>
   </nav>
 
-  <!-- ── INTRO ─────────────────────────────────────────────────────────── -->
-  <section id="intro" class="full-section bg-light">
-    <div class="prose">
-      <h2>The Question</h2>
-      <p>
-        Not all of a business's clients are, financially, created equal. 
-        Some of them are stars that bring in all of the revenue with comparatively little hassle, 
-        some bring more trouble than the time was worth, and the rest fall somewhere in the middle.
-      </p>
-      <p>
-        This project uses <strong>PostGIS spatial analysis</strong> to answer
-        five business-critical questions:
-      </p>
-      <ol class="question-list">
-        <li>Who are the high-value clients and where do they live?</li>
-        <li>Which ZIP codes have the most untapped growth potential?</li>
-        <li>How has the firm's client geography shifted over time, and which characteristics does each year's client base possess?
-        </li>
-        <li>Which practice areas, billing structures and acquisition channels generate the highest revenue per hour?
-        </li>
-        <li>Which valuable clients are going silent and which attorneys drive the most business?</li>
-      </ol>
-      <p>
-        The analysis connects four database tables —
-        <code>contact</code>, <code>matter</code>,
-        <code>transaction</code>, and <code>activity</code> — with a
-        <strong>ZIP Code Tabulation Area</strong> (<code>zcta</code>) geometry layer via
-        spatial joins.
-        <i>ZIP code boundaries are changed frequently. 
-          ZIP Code Tabulation Areas were created by the U.S. Census Bureau to better study the people living in each ZIP code.</i>
-      </p>
-    </div>
-    <div class="schema-diagram">
-      <div class="schema-box primary">contact<span>point · isclient</span></div>
-      <div class="schema-arrow">↕ ST_Within</div>
-      <div class="schema-box geo">zcta<span>polygon</span></div>
-      <div class="schema-connector"></div>
-      <div class="schema-box">matter<span>practice_area · client_source</span></div>
-      <div class="schema-connector"></div>
-      <div class="schema-box">transaction<span>funds_in · funds_out</span></div>
-      <div class="schema-connector"></div>
-      <div class="schema-box">activity<span>hours</span></div>
+  <!-- ── HOW TO READ ────────────────────────────────────────────────────── -->
+  <section id="read-me" class="band band-paper">
+    <div class="read-grid">
+      <div class="read-intro">
+        <h2>Six questions, six chapters</h2>
+        <p>
+          Each chapter opens with its question and a one-line answer, then shows the evidence.
+          If you only read the answers, you still get the whole story.
+        </p>
+        <ol class="roadmap">
+          <li><a href="#ch1">Who are the firm's best clients?</a></li>
+          <li><a href="#ch2">Where do they live?</a></li>
+          <li><a href="#ch3">Where should the firm grow next?</a></li>
+          <li><a href="#ch4">How has the client map changed since 2021?</a></li>
+          <li><a href="#ch5">What makes a client valuable?</a></li>
+          <li><a href="#ch6">Which revenue is at risk?</a></li>
+        </ol>
+      </div>
+      <aside class="read-notes">
+        <h3>About the data</h3>
+        <p>
+          The firm's records cover <b>2,066 matters</b> (legal cases) for <b>1,874 clients</b> opened between
+          January 2021 and April 2026, worth <b>$9.57M</b> in net revenue.
+        </p>
+        <p>
+          <b>1,071 of those clients have an address on file</b> ($7.05M). The maps and every location-based number
+          use this mapped group. The operational charts in Chapter 5 use all 1,874 clients.
+        </p>
+        <h3>About the maps</h3>
+        <p>
+          Every map is numbered as an exhibit and carries its own legend and scale. Click any map to enlarge it.
+          The <span class="office-glyph" aria-hidden="true"></span> orange diamonds are the firm's three offices.
+        </p>
+      </aside>
     </div>
   </section>
 
-  <!-- ── SCROLLYTELLING WRAPPER ──────────────────────────────────────── -->
-  <div id="story-wrapper">
+  <!-- ══ CHAPTER 1 · WHO ════════════════════════════════════════════════ -->
+  <section id="ch1" class="chapter">
+    <header class="chapter-head">
+      <span class="chapter-num" aria-hidden="true">1</span>
+      <div>
+        <h2>Who are the firm's best clients?</h2>
+        <p class="answer">
+          Clients who pay well and don't need many hours to do it. Four in ten clients qualify, and they bring in nine
+          dollars of every ten.
+        </p>
+      </div>
+    </header>
 
-    <!-- sticky visualization panel -->
-    <div id="viz-panel">
-      <div id="img-container" class="hidden">
-        <img id="viz-img" src="" alt="" />
+    <div class="split split-wide-right">
+      <div class="prose">
+        <p>
+          Revenue alone is a poor measure of a client. A $50,000 case that takes 800 hours earns less per hour than a
+          $20,000 case finished in 60. So we score every mapped client on two things: <b>net revenue</b> (money in
+          minus money out) and <b>revenue per hour</b> of attorney time.
+        </p>
+        <p>
+          A client in the top quarter on both is a <b class="t-star">Star</b>. Top quarter on revenue only is
+          <b class="t-hv">High Value</b>; top quarter on hourly yield only is <b class="t-eff">Efficient</b>.
+          Everyone else is <b class="t-std">Standard</b>. The first three together are the firm's
+          <b>lucrative</b> clients.
+        </p>
+
+        <table class="ledger tier-ledger">
+          <caption>Mapped clients by tier</caption>
+          <thead>
+            <tr>
+              <th scope="col">Tier</th>
+              <th scope="col" class="num">Clients</th>
+              <th scope="col" class="num">Share of clients</th>
+              <th scope="col" class="num">Share of revenue</th>
+              <th scope="col" class="num">Avg revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><i class="dot" style="--c:var(--star)"></i>Star</th>
+              <td class="num">86</td>
+              <td class="num">8%</td>
+              <td class="num"><span class="bar" style="--w:33.4%"></span>33%</td>
+              <td class="num">$27,341</td>
+            </tr>
+            <tr>
+              <th scope="row"><i class="dot" style="--c:var(--hv)"></i>High Value</th>
+              <td class="num">182</td>
+              <td class="num">17%</td>
+              <td class="num"><span class="bar" style="--w:50.8%"></span>51%</td>
+              <td class="num">$19,675</td>
+            </tr>
+            <tr>
+              <th scope="row"><i class="dot" style="--c:var(--eff)"></i>Efficient</th>
+              <td class="num">182</td>
+              <td class="num">17%</td>
+              <td class="num"><span class="bar" style="--w:5.2%"></span>5%</td>
+              <td class="num">$2,020</td>
+            </tr>
+            <tr>
+              <th scope="row"><i class="dot" style="--c:var(--std)"></i>Standard</th>
+              <td class="num">621</td>
+              <td class="num">58%</td>
+              <td class="num"><span class="bar" style="--w:10.6%"></span>11%</td>
+              <td class="num">$1,208</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Lucrative</th>
+              <td class="num">450</td>
+              <td class="num">42%</td>
+              <td class="num">89%</td>
+              <td class="num"></td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
-      <div id="chart-container" class="hidden">
-        <canvas id="main-chart"></canvas>
-      </div>
-      <div id="viz-caption"></div>
+
+      <figure class="chart-figure">
+        <figcaption class="exhibit-label">Exhibit 1.1 · How the four tiers separate</figcaption>
+        <div class="chart-box square"><canvas id="c-scatter"
+            aria-label="Scatter plot of 823 clients: net revenue against revenue per hour, colored by tier, with dashed lines at $6,095 and $261 per hour"></canvas>
+        </div>
+        <p class="how-to-read">
+          Each dot is one client. Both axes use a log scale. The dashed lines are the top-quarter cut-offs:
+          $6,095 in revenue and $261 per hour. Hover a dot for its values.
+        </p>
+        <p class="fine">
+          248 clients have no recorded hours, so they can't be placed on the hourly axis and are left off this chart.
+          They count as Standard unless their revenue alone puts them in the top quarter.
+        </p>
+      </figure>
     </div>
 
-    <!-- scrolling narrative -->
-    <div id="scroll-sections">
+    <details class="method-peek">
+      <summary>How the tiers are calculated</summary>
+      <p>
+        <code>NTILE(4)</code> window functions rank all 1,071 mapped clients twice, once by net revenue and once by
+        revenue per hour, inside the <code>v_client_tier</code> view. Every later analysis joins to this view.
+        The SQL is in the <a href="#appendix">appendix</a>.
+      </p>
+    </details>
+  </section>
 
-      <!-- ── CHAPTER 1 · Overview ──────────────────────────────────────── -->
-      <section id="ch1" class="story-section" data-viz="tier-us">
-        <div class="chapter-label">Chapter 1</div>
-        <h2>Defining Value: The Client Tier System</h2>
-        <p>
-          Revenue alone is a poor measure of client value. A client who
-          pays $50,000 but requires 800 billable hours may be significantly less profitable
-          than one who pays $20,000 for 60 hours of work.
+  <!-- ══ CHAPTER 2 · WHERE ══════════════════════════════════════════════ -->
+  <section id="ch2" class="chapter chapter-dark">
+    <header class="chapter-head">
+      <span class="chapter-num" aria-hidden="true">2</span>
+      <div>
+        <h2>Where do they live?</h2>
+        <p class="answer">
+          Close to the three offices, and above all around Ontario, the only market where valuable clients form a
+          statistically significant cluster.
         </p>
-        <p>
-          We combine <strong>net revenue</strong> (funds_in − funds_out) with
-          <strong>revenue per hour</strong> (efficiency) using
-          <code>NTILE(4)</code> window functions to classify every client into
-          one of four tiers:
-        </p>
-        <div class="tier-grid">
-          <div class="tier-card star">
-            <strong style="color:#434b8b">Star</strong>
-            <p>Top-quartile revenue <em>and</em> efficiency. The firm's most
-              valuable clients — high total return with low hours per dollar.</p>
-            <div class="tier-stats">
-              <span>86 clients</span>
-              <span>avg $27K revenue</span>
-              <span>avg $555 / hr</span>
-            </div>
-          </div>
-          <div class="tier-card high-value">
-            <strong style="color:#cc586f">High Value</strong>
-            <p>Top-quartile revenue but time-intensive — cases that pay
-              well, yet consume more billable hours.</p>
-            <div class="tier-stats">
-              <span>182 clients</span>
-              <span>avg $20K revenue</span>
-              <span>avg $187 / hr</span>
-            </div>
-          </div>
-          <div class="tier-card efficient">
-            <strong style="color:#368acc">Efficient</strong>
-            <p>Top-quartile hourly yield — cases that close quickly relative
-              to their revenue, even if the total dollar amount is smaller.</p>
-            <div class="tier-stats">
-              <span>182 clients</span>
-              <span>avg $2K revenue</span>
-              <span>avg $366 / hr</span>
-            </div>
-          </div>
-          <div class="tier-card standard">
-            <strong style="color:#888">Standard</strong>
-            <p>All remaining clients — below the top quartile on both
-              revenue and hourly efficiency.</p>
-            <div class="tier-stats">
-              <span>621 clients</span>
-              <span>avg $1.2K revenue</span>
-              <span>avg $171 / hr</span>
-            </div>
-          </div>
+      </div>
+    </header>
+
+    <div class="scrolly" id="scrolly-where">
+      <figure class="scrolly-figure">
+        <div class="scrolly-frame">
+          <img class="scrolly-img" src="data/maps/region_tiers.png" alt="" data-zoom />
+          <div class="scrolly-legend"></div>
         </div>
-        <p>
-          All clients who are not designated as "Standard" are considered
-          <strong>Lucrative</strong> — 450 of 1,071 clients 
-            (42%) in this dataset qualify. This national overview shows
-          how clients are distributed across the continental US before
-          we zoom into the firm's three core markets.
+        <figcaption class="scrolly-caption"></figcaption>
+      </figure>
+
+      <div class="scrolly-steps">
+        <article class="step" data-img="data/maps/region_tiers.png" data-legend=""
+          data-caption="Exhibit 2.1 · All mapped clients by tier, Southern California"
+          data-alt="Regional map of clients colored by tier with 30-mile rings around the three offices">
+          <h3>Nine in ten clients live within 60 miles of an office</h3>
+          <p>
+            992 of the 1,071 mapped clients are in Southern California. The rest are scattered across the country and
+            are left out of the regional analysis.
+          </p>
+          <p>
+            The dashed rings mark 30 miles from each office. We treat each ring as that office's market. Bigger
+            circles mean more revenue.
+          </p>
+        </article>
+
+        <article class="step" data-img="data/LucrativeCustomerTier_LA.png" data-legend="lg-tier"
+          data-caption="Exhibit 2.2 · Los Angeles market, clients by tier"
+          data-alt="Los Angeles basin, client circles colored by tier and sized by revenue, concentrated south and west of the Los Angeles office">
+          <h3>Los Angeles: fewer clients, bigger cases</h3>
+          <p>
+            The LA market holds <b>358 clients</b>, and they are the firm's most valuable: an average of
+            <b>$7,984</b> each and <b>35 Stars</b>, more than any other market.
+          </p>
+          <p>
+            Most of them sit within about 10 miles south and west of the office. Measured against the 9.8 million people
+            living within 30 miles, though, the firm reaches only <b>3.7 clients per 100,000 residents</b>.
+          </p>
+        </article>
+
+        <article class="step" data-img="data/LucrativeCustomerTier_ON.png" data-legend="lg-tier"
+          data-caption="Exhibit 2.3 · Ontario and Inland Empire market, clients by tier"
+          data-alt="Inland Empire map with dense client circles from Pomona and Rancho Cucamonga to Fontana and San Bernardino">
+          <h3>Ontario: the firm's strongest market</h3>
+          <p>
+            The Ontario market has the <b>most clients (424)</b> from the smallest population (4.7 million). That works
+            out to <b>9.0 clients per 100,000 residents</b>, more than twice the reach of the other two offices.
+          </p>
+          <p>
+            Cases here are smaller, averaging <b>$5,478</b>. The Inland Empire wins on breadth, with steady work from
+            Pomona and Rancho Cucamonga through Fontana to San Bernardino.
+          </p>
+        </article>
+
+        <article class="step" data-img="data/LucrativeCustomerTier_SD.png" data-legend="lg-tier"
+          data-caption="Exhibit 2.4 · San Diego market, clients by tier"
+          data-alt="San Diego county map with sparse client circles from Escondido through downtown to Chula Vista">
+          <h3>San Diego: good clients, not enough of them</h3>
+          <p>
+            Only <b>96 clients</b> live in the San Diego market. But <b>45.8% of them are lucrative</b>, the
+            highest share of the three markets.
+          </p>
+          <p>
+            The firm isn't attracting the wrong clients in San Diego. It is attracting too few of them. Chapter 3 shows
+            where the missing clients are.
+          </p>
+        </article>
+
+        <article class="step" data-img="data/maps/hotspots.png" data-legend=""
+          data-caption="Exhibit 2.5 · Hot spots of lucrative clients per resident (Getis-Ord Gi*)"
+          data-alt="Hot spot map: a large block of significant red ZIP areas around Ontario, a few south-west of the Los Angeles office, none near San Diego">
+          <h3>Where the clusters are real, not just visible</h3>
+          <p>
+            A hot spot test asks whether a ZIP area and its neighbors have more lucrative clients per resident than
+            chance alone would give. <b>34 ZIP areas around Ontario</b> pass at 99% confidence, running from Pomona
+            and Chino to Fontana, Rialto and Jurupa Valley.
+          </p>
+          <p>
+            Los Angeles has 14 smaller hot spots, just south-west of the office. <b>San Diego has none.</b>
+            The blue cold spots, north of Glendale and around Anaheim, are places where the firm has almost no
+            lucrative clients at all.
+          </p>
+        </article>
+      </div>
+    </div>
+
+    <div class="market-compare">
+      <h3 class="compare-title">The three markets side by side <span>(within 30 miles of each office)</span></h3>
+      <div class="table-scroll">
+        <table class="ledger compare">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Los Angeles</th>
+              <th scope="col">Ontario</th>
+              <th scope="col">San Diego</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Residents</th>
+              <td>9.8M</td>
+              <td>4.7M</td>
+              <td>2.8M</td>
+            </tr>
+            <tr>
+              <th scope="row">Clients</th>
+              <td>358</td>
+              <td class="best">424</td>
+              <td>96</td>
+            </tr>
+            <tr>
+              <th scope="row">Clients per 100,000 residents</th>
+              <td>3.7</td>
+              <td class="best">9.0</td>
+              <td class="worst">3.4</td>
+            </tr>
+            <tr>
+              <th scope="row">Share that are lucrative</th>
+              <td>44.4%</td>
+              <td>39.6%</td>
+              <td class="best">45.8%</td>
+            </tr>
+            <tr>
+              <th scope="row">Average revenue per client</th>
+              <td class="best">$7,984</td>
+              <td>$5,478</td>
+              <td>$4,743</td>
+            </tr>
+            <tr>
+              <th scope="row">Star clients</th>
+              <td class="best">35</td>
+              <td>24</td>
+              <td>7</td>
+            </tr>
+            <tr>
+              <th scope="row">Hot-spot ZIP areas (95%+)</th>
+              <td>14</td>
+              <td class="best">40</td>
+              <td class="worst">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="compare-read">
+        <b>How to read it:</b> each office wins one kind of contest. Los Angeles wins on case size, San Diego on client
+        quality, and Ontario on reach. Reach is the one the firm can most directly change.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══ CHAPTER 3 · GROW ═══════════════════════════════════════════════ -->
+  <section id="ch3" class="chapter">
+    <header class="chapter-head">
+      <span class="chapter-num" aria-hidden="true">3</span>
+      <div>
+        <h2>Where should the firm grow next?</h2>
+        <p class="answer">
+          Inside 20 miles of the Los Angeles and San Diego offices, in populous ZIP areas where the firm has almost no
+          clients today. Spanish-speaking neighborhoods near San Diego are the clearest gap.
         </p>
-        <details class="sql-block">
-          <summary>View SQL — <code>v_client_tier</code></summary>
+      </div>
+    </header>
+
+    <!-- distance decay -->
+    <div class="split split-wide-left">
+      <figure class="chart-figure">
+        <figcaption class="exhibit-label">Exhibit 3.1 · Reach and quality by distance from the nearest office</figcaption>
+        <div class="chart-box"><canvas id="c-distance"
+            aria-label="Bar and line chart: clients per 100,000 residents falls from 7.4 within 5 miles to 1.9 at 45 to 60 miles; the lucrative share falls from 48% to 33%"></canvas>
+        </div>
+        <p class="how-to-read">
+          Bars show how many clients the firm has per 100,000 residents in each distance ring. The line shows what share
+          of those clients are lucrative.
+        </p>
+      </figure>
+      <div class="prose">
+        <h3>Distance is the strongest pattern in the data</h3>
+        <p>
+          Within 10 miles of an office the firm reaches about <b>7 clients per 100,000 residents</b>. Between 20 and
+          30 miles that drops to <b>3.1</b>, less than half.
+        </p>
+        <p>
+          The clients from farther away are also less often lucrative: <b>48%</b> within 5 miles against
+          <b>38%</b> at 20–30 miles. People hire a nearby lawyer, and the best cases come from close by.
+        </p>
+        <p>
+          That gives us a fair benchmark for every ZIP area: <em>how many clients would we expect here, given its
+          population and its distance from an office?</em>
+        </p>
+      </div>
+    </div>
+
+    <!-- penetration exhibit -->
+    <figure class="exhibit">
+      <div class="exhibit-map">
+        <img src="data/maps/penetration.png" data-zoom
+          alt="Choropleth of clients per 100,000 residents by ZIP area: darkest around Ontario and the Inland Empire, lighter across Los Angeles, Orange County and San Diego" />
+      </div>
+      <figcaption class="exhibit-notes">
+        <p class="exhibit-label">Exhibit 3.2 · Market reach, clients per 100,000 residents</p>
+        <h3>The Inland Empire is saturated. The coast is not.</h3>
+        <ol class="notes">
+          <li>The dark band from Pomona to San Bernardino is the firm's home turf. Most ZIP areas there have 10 or more
+            clients per 100,000 residents.</li>
+          <li>Inside the Los Angeles 10-mile ring, most ZIP areas are pale even though they are close to the office.</li>
+          <li>Orange County sits between two offices and is almost untouched.</li>
+          <li>Around San Diego, only a few ZIP areas south-east of the office show any depth.</li>
+        </ol>
+        <p class="fine">
+          Rates are smoothed (empirical Bayes) so that small ZIP areas with one or two clients don't look like
+          outliers. Hatched areas have fewer than 1,000 residents.
+        </p>
+      </figcaption>
+    </figure>
+
+    <!-- opportunity -->
+    <div class="split split-even opportunity">
+      <figure class="exhibit-plain">
+        <p class="exhibit-label">Exhibit 3.3 · Missing clients within 20 miles of an office</p>
+        <img src="data/maps/opportunity.png" data-zoom
+          alt="Map of ZIP areas within 20 miles of an office shaded by missing clients, with the top ten numbered: seven around Los Angeles and three around San Diego" />
+      </figure>
+      <div class="prose">
+        <h3>Ten ZIP areas to start with</h3>
+        <p>
+          For each ZIP area we compared the clients the firm actually has with the number its population and distance
+          predict. Within 20 miles of an office, the shortfall adds up to about <b>197 clients around Los Angeles</b>
+          and <b>69 around San Diego</b>, against only 18 around Ontario.
+        </p>
+        <div class="table-scroll">
+          <table class="ledger targets">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">ZIP</th>
+                <th scope="col">Area</th>
+                <th scope="col" class="num">Miles</th>
+                <th scope="col" class="num">Residents</th>
+                <th scope="col" class="num">Clients now</th>
+                <th scope="col" class="num">Expected</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>90004</td><td>LA · Hancock Park, Koreatown</td><td class="num">3.5</td><td class="num">58,833</td><td class="num">0</td><td class="num">4.4</td></tr>
+              <tr><td>2</td><td>92105</td><td>SD · City Heights</td><td class="num">5.5</td><td class="num">72,688</td><td class="num">1</td><td class="num">5.1</td></tr>
+              <tr><td>3</td><td>90034</td><td>LA · Palms</td><td class="num">8.5</td><td class="num">55,061</td><td class="num">0</td><td class="num">3.9</td></tr>
+              <tr><td>4</td><td>90024</td><td>LA · Westwood</td><td class="num">9.9</td><td class="num">50,392</td><td class="num">0</td><td class="num">3.5</td></tr>
+              <tr><td>5</td><td>92126</td><td>SD · Mira Mesa</td><td class="num">10.5</td><td class="num">78,111</td><td class="num">0</td><td class="num">3.5</td></tr>
+              <tr><td>6</td><td>90065</td><td>LA · Glassell Park, Mt Washington</td><td class="num">4.5</td><td class="num">44,897</td><td class="num">0</td><td class="num">3.3</td></tr>
+              <tr><td>7</td><td>92109</td><td>SD · Pacific Beach</td><td class="num">4.2</td><td class="num">44,009</td><td class="num">0</td><td class="num">3.3</td></tr>
+              <tr><td>8</td><td>90027</td><td>LA · Los Feliz</td><td class="num">5.7</td><td class="num">45,764</td><td class="num">0</td><td class="num">3.2</td></tr>
+              <tr><td>9</td><td>90042</td><td>LA · Highland Park</td><td class="num">5.7</td><td class="num">59,151</td><td class="num">1</td><td class="num">4.2</td></tr>
+              <tr><td>10</td><td>91402</td><td>LA · Panorama City</td><td class="num">16.5</td><td class="num">67,937</td><td class="num">0</td><td class="num">3.0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <aside class="sizing">
+          <h4>What the gap is worth</h4>
+          <p>
+            If Los Angeles and San Diego closed just <b>half</b> the reach gap to Ontario, at their current average
+            revenue per client:
+          </p>
+          <dl>
+            <div><dt>Los Angeles</dt><dd>+260 clients, about <b>$2.1M</b></dd></div>
+            <div><dt>San Diego</dt><dd>+79 clients, about <b>$0.37M</b></dd></div>
+          </dl>
+          <p class="fine">An illustration of scale, not a forecast. It assumes the firm has capacity for the extra work
+            and that local competition allows it.</p>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Spanish gap -->
+    <figure class="exhibit exhibit-flip">
+      <div class="exhibit-map">
+        <img src="data/maps/spanish_gap.png" data-zoom
+          alt="Map shading ZIP areas by share of residents who speak Spanish at home, with yellow dots for Spanish-speaking clients: many dots around Los Angeles and Ontario, almost none in the heavily Spanish-speaking areas south of San Diego" />
+      </div>
+      <figcaption class="exhibit-notes">
+        <p class="exhibit-label">Exhibit 3.4 · Spanish-speaking residents and Spanish-speaking clients</p>
+        <h3>San Diego's biggest gap is a language gap</h3>
+        <p>
+          The San Diego market has <b>626,000 residents who speak Spanish at home</b>. The firm has
+          <b>4 Spanish-speaking clients</b> there.
+        </p>
+        <table class="ledger mini">
+          <caption>Clients per 100,000 residents, 30-mile markets</caption>
+          <thead>
+            <tr><th scope="col"></th><th scope="col" class="num">Spanish speakers</th><th scope="col" class="num">Everyone else</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Ontario</th><td class="num">6.8</td><td class="num">11.0</td></tr>
+            <tr><th scope="row">Los Angeles</th><td class="num">3.1</td><td class="num">4.3</td></tr>
+            <tr><th scope="row">San Diego</th><td class="num worst">0.6</td><td class="num">4.5</td></tr>
+          </tbody>
+        </table>
+        <p>
+          The largest untouched Spanish-speaking ZIP areas near an office are Chula Vista (91911, 91910) and
+          Otay Mesa–Nestor (92154) in San Diego, and Panorama City (91402), Hawthorne (90250) and Pico-Union (90006)
+          in Los Angeles.
+        </p>
+        <p class="fine">
+          Spanish-speaking clients are just as profitable per hour as English-speaking ones (Chapter 5), so this is
+          a gap in reach, not in value.
+        </p>
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ══ CHAPTER 4 · OVER TIME ═════════════════════════════════════════ -->
+  <section id="ch4" class="chapter chapter-paper">
+    <header class="chapter-head">
+      <span class="chapter-num" aria-hidden="true">4</span>
+      <div>
+        <h2>How has the client map changed since 2021?</h2>
+        <p class="answer">
+          The firm's center of gravity moved from Los Angeles to the Inland Empire. New clients aren't coming from
+          farther away. They are coming from a different office's market.
+        </p>
+      </div>
+    </header>
+
+    <figure class="years">
+      <figcaption>
+        <span class="exhibit-label">Exhibit 4.1 · New clients by year of their first matter</span>
+        <span class="years-key">
+          <i class="dot" style="--c:#1c5c55"></i>new lucrative client
+          <i class="dot" style="--c:#a9a397"></i>new standard client
+          <i class="dot" style="--c:#e2ddd3"></i>clients from earlier years
+        </span>
+      </figcaption>
+      <ol class="years-grid">
+        <li><img src="data/maps/year_2021.png" data-zoom alt="2021: 263 new clients, split between Los Angeles and Ontario" /><span><b>263</b> new clients · LA 50% · Ontario 42%</span></li>
+        <li><img src="data/maps/year_2022.png" data-zoom alt="2022: 151 new clients, more around Ontario and San Diego" /><span><b>151</b> new clients · LA 35% · Ontario 50%</span></li>
+        <li><img src="data/maps/year_2023.png" data-zoom alt="2023: 132 new clients, spread across all three markets" /><span><b>132</b> new clients · LA 39% · Ontario 50%</span></li>
+        <li><img src="data/maps/year_2024.png" data-zoom alt="2024: 167 new clients, concentrated in the Inland Empire" /><span><b>167</b> new clients · LA 29% · Ontario 58%</span></li>
+        <li><img src="data/maps/year_2025.png" data-zoom alt="2025: 202 new clients, concentrated in the Inland Empire" /><span><b>202</b> new clients · LA 30% · Ontario 56%</span></li>
+      </ol>
+    </figure>
+
+    <div class="split split-even">
+      <figure class="chart-figure">
+        <figcaption class="exhibit-label">Exhibit 4.2 · Which market new clients came from</figcaption>
+        <div class="chart-box"><canvas id="c-yearshare"
+            aria-label="Stacked bar chart by year: Los Angeles share of new clients falls from 50% in 2021 to 30% in 2025 while Ontario rises from 42% to 56%"></canvas>
+        </div>
+        <div class="prose">
+          <p>
+            In 2021, half of new clients came from the Los Angeles market. By 2024–2025 it was <b>under a third</b>,
+            and Ontario's share had risen from <b>42% to 56%</b>.
+          </p>
+          <p>
+            The typical new client still lives <b>11–14 miles</b> from an office, the same as in 2021. The firm keeps
+            reaching new places, about 40 new ZIP areas a year and 346 in total by 2025, but it does this by filling
+            in its markets, not by stretching them.
+          </p>
+        </div>
+      </figure>
+
+      <figure class="chart-figure">
+        <figcaption class="exhibit-label">Exhibit 4.3 · Revenue per client by year of first matter</figcaption>
+        <div class="chart-box"><canvas id="c-cohort"
+            aria-label="Bar chart comparing lifetime revenue per client, which falls for recent cohorts, with first-12-month revenue, which stays between $3,300 and $4,000 for 2021 to 2024"></canvas>
+        </div>
+        <div class="prose">
+          <p>
+            Judged on total revenue so far, the 2021 clients look like the best ever at <b>$9,719</b> each.
+            But they have had five years to pay, and the data starts in 2021, so this group also includes older
+            clients who returned.
+          </p>
+          <p>
+            Compared fairly, on revenue from each client's <b>first 12 months</b>, every year from 2021 to 2024 lands
+            between <b>$3,300 and $4,000</b>. Recent clients aren't weaker. They are younger.
+          </p>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ══ CHAPTER 5 · DRIVERS ═══════════════════════════════════════════ -->
+  <section id="ch5" class="chapter">
+    <header class="chapter-head">
+      <span class="chapter-num" aria-hidden="true">5</span>
+      <div>
+        <h2>What makes a client valuable?</h2>
+        <p class="answer">
+          Mostly the kind of work, not where the client lives. Short, structured matters earn the most per hour, and
+          the two big acquisition channels bring clients of equal quality.
+        </p>
+      </div>
+    </header>
+
+    <p class="population-note">
+      These charts use <b>all 2,066 matters and 1,874 clients</b> ($9.57M), including the 806 clients without an
+      address. Revenue per hour is total revenue divided by total hours for the group.
+    </p>
+
+    <div class="drivers">
+      <figure class="driver">
+        <figcaption>
+          <h3>Civil litigation brings the money. Short matters earn more per hour.</h3>
+          <p>Civil litigation is $5.0M of revenue at $196/hr. Case review, drafting and negotiations earn $221–230/hr
+            on far fewer hours. Probate is the weakest at $140/hr.</p>
+        </figcaption>
+        <div class="chart-box"><canvas id="c-practice" aria-label="Revenue per hour by practice area"></canvas></div>
+      </figure>
+
+      <figure class="driver">
+        <figcaption>
+          <h3>Flat fees beat hourly billing</h3>
+          <p>Flat-fee matters earn $223/hr across 707 clients. Standard hourly billing earns $198/hr, but it covers most
+            of the firm's revenue ($6.46M).</p>
+        </figcaption>
+        <div class="chart-box"><canvas id="c-retainer" aria-label="Revenue per hour by retainer type"></canvas></div>
+      </figure>
+
+      <figure class="driver">
+        <figcaption>
+          <h3>Referral and Google bring equally good clients</h3>
+          <p>About 42% of clients from each channel turn out lucrative. Spanish-language Google ads do worse, at 33%.
+            Channels with fewer than 20 clients are too small to judge.</p>
+        </figcaption>
+        <div class="chart-box"><canvas id="c-channel" aria-label="Share of lucrative clients by acquisition channel"></canvas></div>
+      </figure>
+
+      <figure class="driver">
+        <figcaption>
+          <h3>Spanish-speaking clients are just as profitable</h3>
+          <p>327 Spanish-speaking clients (19% of those with a recorded language) earn $195.82/hr, the same as
+            English-speaking clients at $194.38/hr.</p>
+        </figcaption>
+        <div class="chart-box"><canvas id="c-language" aria-label="Revenue per hour and total revenue by client language"></canvas></div>
+      </figure>
+    </div>
+
+    <div class="split split-even word-of-mouth">
+      <div class="prose">
+        <h3>Referrals spread from neighbor to neighbor</h3>
+        <p>
+          For every new client we measured the distance to the nearest client who came to the firm earlier.
+          Referral clients live closer to an existing client than Google clients do. That is word of mouth you can
+          see on a map, and it's why past clients matter even when they don't come back (Chapter 6).
+        </p>
+        <p class="fine">Clients within 60 miles of an office, 2021–2026.</p>
+      </div>
+      <table class="ledger mini">
+        <thead>
+          <tr><th scope="col">First channel</th><th scope="col" class="num">Median distance to an earlier client</th><th scope="col" class="num">Within 1 mile</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Referral</th><td class="num best">0.80 mi</td><td class="num best">60%</td></tr>
+          <tr><th scope="row">Spanish Google</th><td class="num">0.90 mi</td><td class="num">55%</td></tr>
+          <tr><th scope="row">Google</th><td class="num">1.17 mi</td><td class="num">45%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <aside class="data-gaps">
+      <h3>What the firm's own records can't tell us yet</h3>
+      <ul>
+        <li><b>51.5% of revenue</b> ($4.93M) sits in matters with no scope of representation recorded.</li>
+        <li><b>63% of matters</b> have no acquisition channel recorded, so the channel results above rest on about
+          a third of the caseload.</li>
+        <li><b>806 clients</b> ($2.52M) have no address, so they can't appear on any map.</li>
+      </ul>
+      <p>Filling these three fields at intake is the cheapest way to make the next analysis sharper.</p>
+    </aside>
+  </section>
+
+  <!-- ══ CHAPTER 6 · AT RISK ═══════════════════════════════════════════ -->
+  <section id="ch6" class="chapter chapter-dark">
+    <header class="chapter-head">
+      <span class="chapter-num" aria-hidden="true">6</span>
+      <div>
+        <h2>Which revenue is at risk?</h2>
+        <p class="answer">
+          Not really lost clients, since most people only need a lawyer once. The real risk is that the firm's
+          reputation and its new business both run through very few people.
+        </p>
+      </div>
+    </header>
+
+    <figure class="exhibit">
+      <div class="exhibit-map">
+        <img src="data/maps/dormant.png" data-zoom
+          alt="Map of 306 lucrative clients with no new matter since April 2024, sized by lifetime revenue, clustered near the Los Angeles and Ontario offices" />
+      </div>
+      <figcaption class="exhibit-notes">
+        <p class="exhibit-label">Exhibit 6.1 · Lucrative clients with no new matter in two years</p>
+        <h3>Most clients never come back, and that's normal</h3>
+        <p>
+          Only <b>8.3%</b> of the firm's clients have ever opened a second matter. So it's no surprise that
+          <b>306 lucrative clients</b>, worth <b>$4.6M</b> in lifetime revenue, haven't opened a new matter since April
+          2024.
+        </p>
+        <p>
+          Chasing them for repeat work is unlikely to pay. What they can do is refer. <b>126 of them live within 10
+          miles of an office</b>, and referral clients tend to live about a mile from someone the firm already served.
+        </p>
+        <table class="ledger mini">
+          <thead><tr><th scope="col">Tier</th><th scope="col" class="num">Clients</th><th scope="col" class="num">Lifetime revenue</th><th scope="col" class="num">Ever returned</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><i class="dot" style="--c:var(--star)"></i>Star</th><td class="num">62</td><td class="num">$1.88M</td><td class="num">15%</td></tr>
+            <tr><th scope="row"><i class="dot" style="--c:var(--hv)"></i>High Value</th><td class="num">120</td><td class="num">$2.47M</td><td class="num">27%</td></tr>
+            <tr><th scope="row"><i class="dot" style="--c:var(--eff)"></i>Efficient</th><td class="num">124</td><td class="num">$0.25M</td><td class="num">6%</td></tr>
+          </tbody>
+        </table>
+        <p class="fine">"Ever returned" is the share of all clients in that tier with two or more matters.
+          Data snapshot: 9 April 2026.</p>
+      </figcaption>
+    </figure>
+
+    <div class="split split-wide-left">
+      <figure class="chart-figure">
+        <figcaption class="exhibit-label">Exhibit 6.2 · Revenue by originating attorney</figcaption>
+        <div class="chart-box"><canvas id="c-attorney"
+            aria-label="Bar chart: attorney 2 originated $4.83M and attorney 4 $3.77M; the next six attorneys originated less than $0.4M each"></canvas>
+        </div>
+      </figure>
+      <div class="prose">
+        <h3>Two attorneys bring in 90% of the revenue</h3>
+        <p>
+          The originating attorney is the one who brought the client in. <b>Attorney #2 ($4.83M)</b> and
+          <b>Attorney #4 ($3.77M)</b> originated 90% of all revenue. The other nine originating attorneys share the
+          remaining 10%.
+        </p>
+        <p>
+          If either of them left, the firm would lose most of its pipeline, and possibly the referral network that
+          comes with it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ACTION PLAN ═══════════════════════════════════════════════════ -->
+  <section id="plan" class="band band-forest">
+    <div class="plan-head">
+      <h2>Action plan</h2>
+      <p>Ranked by how much each step is worth against how hard it is. Each links back to its evidence.</p>
+    </div>
+    <ol class="plan">
+      <li>
+        <h3>Bring Spanish-language outreach to San Diego</h3>
+        <p class="plan-where">Chula Vista (91910, 91911), Otay Mesa–Nestor (92154), City Heights (92105)</p>
+        <p>The market has 626,000 Spanish speakers and 4 Spanish-speaking clients. Use bilingual intake and local
+          Spanish-language ads, and track lucrative conversion, which is only 33% for Spanish Google today.</p>
+        <p class="plan-meta"><span>Worth: part of San Diego's +79 clients (~$0.37M)</span><span>Effort: medium</span><a href="#ch3">Evidence: Chapter 3</a></p>
+      </li>
+      <li>
+        <h3>Win the Los Angeles neighborhoods inside 10 miles</h3>
+        <p class="plan-where">Koreatown, Hancock Park, Los Feliz, Highland Park, Glassell Park, Palms, Westwood</p>
+        <p>These are close to the office and populous, but have almost no clients. Target search ads by ZIP code
+          and build local referral partners.</p>
+        <p class="plan-meta"><span>Worth: up to +260 clients (~$2.1M)</span><span>Effort: medium–high</span><a href="#ch3">Evidence: Chapter 3</a></p>
+      </li>
+      <li>
+        <h3>Turn past clients into referral sources</h3>
+        <p class="plan-where">306 dormant lucrative clients, 126 of them within 10 miles of an office</p>
+        <p>Ask for referrals rather than repeat work. Send a check-in and a referral ask, starting with the 62 Stars.</p>
+        <p class="plan-meta"><span>Worth: low cost, compounding</span><span>Effort: low</span><a href="#ch6">Evidence: Chapters 5–6</a></p>
+      </li>
+      <li>
+        <h3>Protect the Inland Empire core</h3>
+        <p class="plan-where">Pomona, Ontario, Rancho Cucamonga, Fontana, Rialto, Chino</p>
+        <p>This is where over half of new clients now come from. Keep staffing and response times at the Ontario
+          office ahead of demand.</p>
+        <p class="plan-meta"><span>Worth: defends the largest client base</span><span>Effort: low</span><a href="#ch2">Evidence: Chapters 2 and 4</a></p>
+      </li>
+      <li>
+        <h3>Record scope, channel and address at intake</h3>
+        <p class="plan-where">Every new matter</p>
+        <p>Half the revenue has no scope, two-thirds of matters have no channel, and 806 clients have no address.
+          Three required fields would fix this.</p>
+        <p class="plan-meta"><span>Worth: makes every future analysis possible</span><span>Effort: low</span><a href="#ch5">Evidence: Chapter 5</a></p>
+      </li>
+      <li>
+        <h3>Share business development beyond two attorneys</h3>
+        <p class="plan-where">Firm-wide</p>
+        <p>Give every attorney a referral target and credit, so the pipeline doesn't depend on Attorneys #2 and #4.</p>
+        <p class="plan-meta"><span>Worth: lowers key-person risk</span><span>Effort: medium</span><a href="#ch6">Evidence: Chapter 6</a></p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ══ METHOD ════════════════════════════════════════════════════════ -->
+  <section id="method" class="band band-paper">
+    <div class="method-wrap">
+      <h2>Method and limits</h2>
+
+      <div class="method-cols">
+        <div>
+          <h3>Data</h3>
+          <p>
+            PostgreSQL 18 with PostGIS 3.6. Four firm tables (<code>contact</code>, <code>matter</code>,
+            <code>transaction</code>, <code>activity</code>) plus 2020 Census ZIP Code Tabulation Areas (ZCTAs).
+            ZCTAs are the Census Bureau's stable version of ZIP codes. Population, language spoken at home and
+            household income come from the American Community Survey 2018–2022 five-year estimates.
+          </p>
+          <h3>Spatial methods</h3>
+          <ul>
+            <li><b>Markets:</b> each client and ZCTA is assigned to its nearest office by geodesic distance
+              (<code>ST_Distance</code> on <code>geography</code>). A market is everything within 30 miles.</li>
+            <li><b>Reach:</b> clients per 100,000 residents per ZCTA, smoothed with global empirical Bayes so that
+              small populations don't produce extreme rates.</li>
+            <li><b>Hot spots:</b> Getis-Ord Gi* on smoothed lucrative clients per resident, with queen-contiguity
+              neighbors, across the 640 ZCTAs within 60 miles of an office.</li>
+            <li><b>Missing clients:</b> expected clients = ZCTA population × the firm-wide rate for its distance
+              ring. The gap is expected minus actual.</li>
+            <li><b>Word of mouth:</b> distance from each new client to the nearest client whose first matter came
+              earlier.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Limits</h3>
+          <ul>
+            <li>The data begins in 2021, so clients from before then are counted in the 2021 group.</li>
+            <li>Straight-line distance stands in for travel time.</li>
+            <li>Revenue per hour ignores differences in attorney cost.</li>
+            <li>Reach benchmarks assume every market could match Ontario. Competition and demand differ, so the
+              dollar figures are for scale only.</li>
+            <li>One firm's records; the patterns may not hold for other firms.</li>
+            <li>Client records are anonymized. No map shows anything finer than a point or ZIP area.</li>
+          </ul>
+          <h3>Tools</h3>
+          <p>
+            PostGIS for joins, distances and views; QGIS for the market close-up maps (Exhibits 2.2–2.4); Python
+            (GeoPandas, matplotlib) for smoothing, hot spots and the other maps; Chart.js for charts. Everything after
+            the database export can be rebuilt with <code>python analysis/build_story.py</code>.
+          </p>
+        </div>
+      </div>
+
+      <div class="db-diagrams">
+        <figure class="db-fig">
+          <img src="data/ERDiagram.PNG" data-zoom
+            alt="Entity-relationship diagram: Contact sits Within a ZipCodeArea; each Matter links a client to billable Activity hours and Transaction flows, with originating and responsible attorney roles on Employee" />
+          <figcaption>Entity-relationship diagram. Each client sits within a ZIP area; each matter incurs hours and bills
+            transactions, with one attorney originating and another responsible.</figcaption>
+        </figure>
+        <figure class="db-fig">
+          <img src="data/RelationalSchema.PNG" data-zoom
+            alt="Relational schema: MATTER is the central table, joined to CONTACT, EMPLOYEE, ACTIVITY, TRANSACTION and ZIPCODEAREA" />
+          <figcaption>Relational schema. <code>MATTER</code> is the central table linking clients, attorneys, hours,
+            money and ZIP areas.</figcaption>
+        </figure>
+      </div>
+
+      <div id="appendix" class="appendix">
+        <h3>SQL appendix</h3>
+        <p>The core queries behind each chapter. The full set is in <code>PostGIS_Functions.md</code>.</p>
+
+        <details>
+          <summary>Chapter 1 · Client tier view (<code>v_client_tier</code>)</summary>
           <pre><code>CREATE OR REPLACE VIEW public.v_client_tier AS
 WITH client_revenue AS (
-  SELECT client_id,
-         SUM(funds_in - funds_out) AS net_revenue
+  SELECT client_id, SUM(funds_in - funds_out) AS net_revenue
   FROM transaction GROUP BY client_id
 ),
 client_hours AS (
-  SELECT m.client_id,
-         SUM(a.hours) AS total_hours
+  SELECT m.client_id, SUM(a.hours) AS total_hours
   FROM activity a JOIN matter m ON a.matter_id = m.id
   GROUP BY m.client_id
 )
 SELECT
-  c.id   AS client_id,
-  c.geom,
-  COALESCE(r.net_revenue, 0)       AS net_revenue,
-  COALESCE(h.total_hours, 0)       AS total_hours,
-  ROUND((r.net_revenue / NULLIF(h.total_hours,0))::numeric, 2)
-                                   AS revenue_per_hour,
-  NTILE(4) OVER (ORDER BY r.net_revenue DESC NULLS LAST)
-                                   AS revenue_quartile,
-  NTILE(4) OVER (ORDER BY r.net_revenue / NULLIF(h.total_hours,0)
-                  DESC NULLS LAST) AS efficiency_quartile,
+  c.id AS client_id, c.geom,
+  COALESCE(r.net_revenue, 0) AS net_revenue,
+  COALESCE(h.total_hours, 0) AS total_hours,
+  ROUND((r.net_revenue / NULLIF(h.total_hours, 0))::numeric, 2) AS revenue_per_hour,
   CASE
     WHEN NTILE(4) OVER (ORDER BY r.net_revenue DESC NULLS LAST) = 1
-     AND NTILE(4) OVER (ORDER BY r.net_revenue / NULLIF(h.total_hours,0)
-                        DESC NULLS LAST) = 1 THEN 'Star'
-    WHEN NTILE(4) OVER (ORDER BY r.net_revenue DESC NULLS LAST) = 1
-      THEN 'High Value'
-    WHEN NTILE(4) OVER (ORDER BY r.net_revenue / NULLIF(h.total_hours,0)
-                        DESC NULLS LAST) = 1 THEN 'Efficient'
+     AND NTILE(4) OVER (ORDER BY r.net_revenue / NULLIF(h.total_hours, 0) DESC NULLS LAST) = 1 THEN 'Star'
+    WHEN NTILE(4) OVER (ORDER BY r.net_revenue DESC NULLS LAST) = 1 THEN 'High Value'
+    WHEN NTILE(4) OVER (ORDER BY r.net_revenue / NULLIF(h.total_hours, 0) DESC NULLS LAST) = 1 THEN 'Efficient'
     ELSE 'Standard'
   END AS client_tier
 FROM contact c
@@ -210,1462 +903,137 @@ LEFT JOIN client_revenue r ON c.id = r.client_id
 LEFT JOIN client_hours   h ON c.id = h.client_id
 WHERE c.isclient = true;</code></pre>
         </details>
-      </section>
 
-      <!-- ── CHAPTER 1 · Scatter plot ─────────────────────────────────── -->
-      <section class="story-section" data-viz="tier-scatter">
-        <div class="chapter-label">Chapter 1 · Data View</div>
-        <h2>The Four Tiers at a Glance</h2>
-        <p>
-          Plotting all 1,071 clients on two axes — <strong>net revenue</strong>
-          (vertical) and <strong>revenue per hour</strong> (horizontal) —
-          shows exactly how the four tiers separate in practice.
-        </p>
-        <div class="insight-box">
-          <strong>Classification Thresholds:</strong> the top 25% by revenue
-          begins at <strong>$6,095</strong>; the top 25% by hourly rate begins
-          at <strong>$261/hr</strong>. Clients above both lines are considered <strong style="color:#434b8b">Star</strong>.
-        </div>
-        <!-- <div class="note">
-          248 clients with no recorded activity hours are excluded from this
-          chart — they cannot be placed on the efficiency axis.
-        </div> -->
-      </section>
-
-      <!-- ── CHAPTER 1 · Los Angeles ────────────────────────────────────── -->
-      <section class="story-section" data-viz="tier-la">
-        <div class="chapter-label">Chapter 1 · Los Angeles</div>
-        <h2>Los Angeles: The Core Market</h2>
-        <p>
-          The <strong>Los Angeles</strong> basin holds the largest share of
-          the firm's clients by revenue. Lucrative clients are concentrated in the
-          South Los Angeles area, while Standard clients
-          are distributed more broadly across the region.
-        </p>
-      </section>
-
-      <!-- ── CHAPTER 1 · Ontario ────────────────────────── -->
-      <section class="story-section" data-viz="tier-on">
-        <div class="chapter-label">Chapter 1 · Inland Empire</div>
-        <h2>Ontario &amp; the Inland Empire</h2>
-        <p>
-          The Inland Empire is the firm's highest-volume market.
-          <strong style="color:#cc586f">High Value</strong> clients are spread from
-          Pomona and Rancho Cucamonga through Fontana, San Bernardino and
-          Moreno Valley. Unlike Los Angeles, where fewer
-          but larger <strong style="color:#434b8b">Star</strong> clients
-          dominate, Ontario's growth comes from breadth: more cases, more
-          consistently, across a wider area.
-        </p>
-      </section>
-
-      <!-- ── CHAPTER 1 · San Diego ─────────────────────────────────────── -->
-      <section class="story-section" data-viz="tier-sd">
-        <div class="chapter-label">Chapter 1 · San Diego</div>
-        <h2>San Diego: A Market to Develop</h2>
-        <p>
-          San Diego is the firm's least-saturated office market. Dots are
-          sparse and scattered from Escondido in the north through downtown
-          to Chula Vista — and all four tiers appear in roughly equal measure,
-          with no single type dominating. This distribution signals a potentially
-          underdeveloped client base.
-        </p>
-        <p>
-          The upside: large portions of San Diego county could be ripe for targeted outreach. 
-          Given the county's active real estate market and growing population in the
-          south (Chula Vista, National City), a structured marketing push
-          could replicate the High-Value density the firm already sees in Ontario.
-        </p>
-      </section>
-
-      <!-- ── CHAPTER 2 ────────────────────────────────────────────────── -->
-      <section id="ch2" class="story-section" data-viz="quality">
-        <div class="chapter-label">Chapter 2</div>
-        <h2>Mapping the Territory: Volume × Quality</h2>
-        <p>
-          Each ZIP Code Tabulation Area (ZCTA) receives two independent
-          rankings using <code>NTILE(3)</code>:
-        </p>
-        <ul>
-          <li><strong>Volume rank (1–3)</strong> — how many total clients live there.</li>
-          <li><strong>Quality rank (1–3)</strong> — what share of those clients are Lucrative.</li>
-        </ul>
-        <p>
-          This 3 × 3 grid shows nine values from two variables: volume and quality. 
-          <strong style="color:#be64ac">Purple</strong> areas are more 
-          lucrative, <strong style="color:#5ac8c8">teal</strong> areas have more client volume, 
-          <strong style="color:#5a64ac">blue</strong> areas have the best of both worlds, more of each.
-        </p>
-        <div class="bivariate-legend">
-          <div class="bv-y-label">→ Quality (lucrative%)</div>
-          <div class="bv-grid-wrap">
-            <div class="bv-grid">
-              <div class="bv-cell bv-corner" style="background:#be64ac" title="Low volume · High quality">Hidden<br>gems
-              </div>
-              <div class="bv-cell" style="background:#ac64ac" title="Mid volume · High quality"></div>
-              <div class="bv-cell bv-corner" style="background:#5a64ac" title="High volume · High quality">
-                Core<br>market</div>
-              <div class="bv-cell" style="background:#dfb0d6" title="Low volume · Mid quality"></div>
-              <div class="bv-cell" style="background:#acb0d6" title="Mid volume · Mid quality"></div>
-              <div class="bv-cell" style="background:#5ab0c8" title="High volume · Mid quality"></div>
-              <div class="bv-cell bv-corner" style="background:#e8e8e8;color:rgba(0,0,0,.55)"
-                title="Low volume · Low quality">Low<br>priority</div>
-              <div class="bv-cell" style="background:#ace4e4" title="Mid volume · Low quality"></div>
-              <div class="bv-cell bv-corner" style="background:#5ac8c8" title="High volume · Low quality">High<br>volume</div>
-            </div>
-            <div class="bv-x-label">→ Volume (clients per ZCTA)</div>
-          </div>
-        </div>
-        <details class="sql-block">
-          <summary>View SQL — Volume × Quality View</summary>
-          <pre><code>WITH counts AS (
-  SELECT z.zcta5ce20, z.geom,
-    COUNT(*) AS all_clients,
-    COUNT(*) FILTER (WHERE ct.client_tier != 'Standard')
-             AS lucrative_clients
+        <details>
+          <summary>Chapter 2 · Nearest office and 30-mile markets</summary>
+          <pre><code>WITH office(name, geom) AS (VALUES
+  ('Los Angeles', ST_SetSRID(ST_MakePoint(-118.2587514, 34.04860677), 4326)),
+  ('Ontario',     ST_SetSRID(ST_MakePoint(-117.6110578, 34.06634171), 4326)),
+  ('San Diego',   ST_SetSRID(ST_MakePoint(-117.177125,  32.75891346), 4326))
+),
+nearest AS (
+  SELECT ct.client_id, ct.client_tier, ct.net_revenue, o.name AS office,
+         ST_Distance(ct.geom::geography, o.geom::geography) / 1609.34 AS miles
   FROM v_client_tier ct
-  JOIN zcta z ON ST_Within(ct.geom, z.geom)
-  GROUP BY z.zcta5ce20, z.geom
+  CROSS JOIN LATERAL (
+    SELECT name, geom FROM office
+    ORDER BY ct.geom::geography &lt;-&gt; geom::geography LIMIT 1
+  ) o
 )
-SELECT
-  ROW_NUMBER() OVER ()  AS gid,
-  zcta5ce20,
-  all_clients,
-  lucrative_clients,
-  ROUND(lucrative_clients::numeric
-        / NULLIF(all_clients, 0) * 100, 1) AS lucrative_pct,
-  NTILE(3) OVER (ORDER BY all_clients)     AS volume_rank,
-  NTILE(3) OVER (ORDER BY lucrative_clients::numeric
-        / NULLIF(all_clients, 0))          AS quality_rank,
-  geom
-FROM counts;</code></pre>
+SELECT office, COUNT(*) AS clients,
+       ROUND(AVG((client_tier &lt;&gt; 'Standard')::int) * 100, 1) AS lucrative_pct,
+       ROUND(SUM(net_revenue)::numeric) AS revenue
+FROM nearest
+WHERE miles &lt;= 30
+GROUP BY office;</code></pre>
         </details>
-      </section>
 
-      <!-- ── CHAPTER 3 · All Clients ──────────────────────────────────── -->
-      <section id="ch3" class="story-section" data-viz="temporal-all">
-        <div class="chapter-label">Chapter 3</div>
-        <h2>The Story Over Time: Shifting Geography</h2>
-        <p>
-          Where did clients come from in 2021? Did that change by 2025? 
-          By grouping new matters by year and ZIP Code Tabulation Area (ZCTA), we can animate the
-          spatial distribution of case activity across the years.
-        </p>
-        <div class="choropleth-legend">
-          <div class="cl-item">
-            <div class="cl-swatch" style="background:#ffffcc"></div><span>1–2 matters</span>
-          </div>
-          <div class="cl-item">
-            <div class="cl-swatch" style="background:#a1dab4"></div><span>2–4 matters</span>
-          </div>
-          <div class="cl-item">
-            <div class="cl-swatch" style="background:#41b6c4"></div><span>4–6 matters</span>
-          </div>
-          <div class="cl-item">
-            <div class="cl-swatch" style="background:#225ea8"></div><span>6–8 matters</span>
-          </div>
-        </div>
-        <p>
-          Two trends emerge across 2021–2025. First, a gradual shift
-          <strong>outward from downtown cores to suburban corridors</strong>:
-          early business was concentrated in city center ZCTAs.
-          By 2024–2025, growth spread into the Inland Empire
-          and throughout Los Angeles. Second, the
-          <strong>total geographic footprint grows larger each year</strong>
-          — the firm continually reaches new communities. 
-          Business isn't just growing out from the office sites, 
-          it's developing corridors into a regional network.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Temporal Query (All Clients)</summary>
-          <pre><code>SELECT
-  DATE_TRUNC('year', m.open_date)::date  AS year_date,
-  z.zcta5ce20,
-  COUNT(*)                               AS new_matters,
-  z.geom
-FROM matter m
-JOIN contact c ON m.client_id = c.id
-JOIN zcta z    ON ST_Within(c.geom, z.geom)
-WHERE m.open_date IS NOT NULL
-GROUP BY year_date, z.zcta5ce20, z.geom
-ORDER BY year_date, new_matters DESC;</code></pre>
+        <details>
+          <summary>Chapter 3 · Clients per ZCTA (input to reach, hot spots and missing clients)</summary>
+          <pre><code>SELECT z.zcta5ce20,
+       COUNT(ct.client_id) AS clients,
+       COUNT(ct.client_id) FILTER (WHERE ct.client_tier &lt;&gt; 'Standard') AS lucrative_clients,
+       COALESCE(SUM(ct.net_revenue), 0) AS revenue,
+       z.geom
+FROM zcta z
+LEFT JOIN v_client_tier ct ON ST_Within(ct.geom, z.geom)
+GROUP BY z.zcta5ce20, z.geom;
+-- Joined to ACS population in Python; empirical Bayes smoothing and Gi*
+-- are computed in analysis/build_story.py.</code></pre>
         </details>
-      </section>
 
-      <!-- ── CHAPTER 3 · Lucrative Clients ─────────────────────────────── -->
-      <section class="story-section" data-viz="temporal-lucrative">
-        <div class="chapter-label">Chapter 3 · Lucrative Clients</div>
-        <h2>Do High-Value Clients Follow the Same Pattern?</h2>
-        <p>
-          Running the same animation for <strong>Lucrative</strong> clients 
-          reveals whether <strong style="color:#434b8b">Star</strong>, <strong style="color:#cc586f">High Value</strong> 
-          and/or <strong style="color:#368acc">Efficient</strong> clients show similar or different distributions.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Lucrative Clients</summary>
-          <pre><code>SELECT
-  DATE_TRUNC('year', m.open_date)::date  AS year_date,
-  z.zcta5ce20,
-  COUNT(*)                               AS new_matters,
-  z.geom
-FROM matter m
-JOIN v_client_tier ct ON m.client_id = ct.client_id
-JOIN zcta z           ON ST_Within(ct.geom, z.geom)
-WHERE m.open_date IS NOT NULL
-  AND ct.client_tier != 'Standard'
-GROUP BY year_date, z.zcta5ce20, z.geom
-ORDER BY year_date, new_matters DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 3 · § 3.3 Churn Risk ────────────────────────────── -->
-      <section class="story-section" data-viz="churn">
-        <div class="chapter-label">Chapter 3 · § 3.3</div>
-        <h2>Who Has Gone Silent?</h2>
-        <p>
-          New client matters, but client retention is everything. 
-          Flagging Lucrative clients with no activity in over
-          <strong>730 days</strong> could give us a priority list for re-engagement.
-        </p>
-        <p>
-          In total, <strong>313 Lucrative clients</strong> have gone silent,
-          representing <strong>$4.73M</strong> in revenue from their last
-          active matters — money that could return with the right outreach.
-        </p>
-        <div class="tier-grid">
-          <div class="tier-card star">
-            <strong style="color:#434b8b">Star — At Risk</strong>
-            <p>Our highest-value dormant clients. Each averaged $30K in
-              their last engagement — the most urgent re-engagement targets.</p>
-            <div class="tier-stats">
-              <span>63 clients</span>
-              <span>avg $30K last revenue</span>
-              <span>avg 4.1 yrs inactive</span>
-            </div>
-          </div>
-          <div class="tier-card high-value">
-            <strong style="color:#cc586f">High Value — At Risk</strong>
-            <p>The largest dormant group by count, and the biggest share
-              of recoverable revenue at $2.6M combined.</p>
-            <div class="tier-stats">
-              <span>126 clients</span>
-              <span>avg $20K last revenue</span>
-              <span>avg 3.9 yrs inactive</span>
-            </div>
-          </div>
-          <div class="tier-card efficient">
-            <strong style="color:#368acc">Efficient — At Risk</strong>
-            <p>Lower individual revenue but high volume — 124 clients
-              who closed cases quickly and may be ready for the next one.</p>
-            <div class="tier-stats">
-              <span>124 clients</span>
-              <span>avg $2K last revenue</span>
-              <span>avg 4.1 yrs inactive</span>
-            </div>
-          </div>
-        </div>
-        <p>
-          The at-risk clients concentrate <strong>around the urban cores</strong>, 
-          where the earliest cases came from. 
-          This is most evident near the LA office and through the Pomona–Ontario
-          corridor. Even limited outreach could entrench repeat business.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — At-Risk Lucrative Clients</summary>
-          <pre><code>WITH last_activity AS (
-  SELECT client_id,
-         MAX(open_date)  AS last_matter_date,
-         COUNT(*)        AS total_matters
-  FROM matter
-  WHERE open_date IS NOT NULL
-  GROUP BY client_id
+        <details>
+          <summary>Chapter 4 · First-12-month revenue by intake year</summary>
+          <pre><code>WITH first_matter AS (
+  SELECT client_id, MIN(open_date) AS first_open
+  FROM matter GROUP BY client_id
 )
-SELECT
-  ct.client_id,
-  ct.client_tier,
-  ct.net_revenue,
-  la.last_matter_date,
-  la.total_matters,
-  (CURRENT_DATE - la.last_matter_date::date) AS days_inactive,
-  ct.geom
+SELECT EXTRACT(YEAR FROM f.first_open)::int AS cohort,
+       COUNT(DISTINCT f.client_id) AS clients,
+       ROUND((SUM(t.funds_in - t.funds_out)
+              / COUNT(DISTINCT f.client_id))::numeric) AS first_12m_revenue
+FROM first_matter f
+LEFT JOIN transaction t
+  ON t.client_id = f.client_id
+ AND t.date &gt;= f.first_open
+ AND t.date &lt;  f.first_open + INTERVAL '12 months'
+WHERE f.first_open &lt;= DATE '2025-03-31'   -- only clients with a full year observed
+GROUP BY 1 ORDER BY 1;</code></pre>
+        </details>
+
+        <details>
+          <summary>Chapter 5 · Revenue per hour by practice area (same pattern for retainer, channel, language)</summary>
+          <pre><code>WITH matter_revenue AS (
+  SELECT matter_id, SUM(funds_in - funds_out) AS net_revenue
+  FROM transaction GROUP BY matter_id
+),
+matter_hours AS (
+  SELECT matter_id, SUM(hours) AS total_hours
+  FROM activity GROUP BY matter_id
+)
+SELECT COALESCE(TRIM(m.practice_area), 'Unspecified') AS practice_area,
+       COUNT(DISTINCT m.client_id) AS clients,
+       ROUND(SUM(COALESCE(r.net_revenue, 0))::numeric, 2) AS revenue,
+       ROUND((SUM(COALESCE(r.net_revenue, 0))
+              / NULLIF(SUM(COALESCE(h.total_hours, 0)), 0))::numeric, 2) AS revenue_per_hour
+FROM matter m
+LEFT JOIN matter_revenue r ON r.matter_id = m.id
+LEFT JOIN matter_hours   h ON h.matter_id = m.id
+GROUP BY 1
+ORDER BY revenue DESC;</code></pre>
+        </details>
+
+        <details>
+          <summary>Chapter 6 · Lucrative clients with no new matter in two years</summary>
+          <pre><code>WITH last_matter AS (
+  SELECT client_id, MAX(open_date) AS last_open, COUNT(*) AS matters
+  FROM matter GROUP BY client_id
+)
+SELECT ct.client_id, ct.client_tier, ct.net_revenue, lm.last_open, lm.matters, ct.geom
 FROM v_client_tier ct
-JOIN last_activity la ON ct.client_id = la.client_id
-WHERE (CURRENT_DATE - la.last_matter_date::date) > 730
-  AND ct.client_tier != 'Standard'
+JOIN last_matter lm ON lm.client_id = ct.client_id
+WHERE ct.client_tier &lt;&gt; 'Standard'
+  AND lm.last_open &lt; DATE '2026-04-09' - 730   -- fixed snapshot, not CURRENT_DATE
 ORDER BY ct.net_revenue DESC;</code></pre>
         </details>
-      </section>
-
-      <!-- ── CHAPTER 3 · § 3.4 Cohort Analysis ───────────────────────── -->
-      <section class="story-section" data-viz="cohort">
-        <div class="chapter-label">Chapter 3 · § 3.4</div>
-        <h2>Cohort Analysis: Long-Term Value by Intake Year</h2>
-        <p>
-          Grouping clients by the year of their <strong>earliest matter</strong>
-          reveals which intake cohorts (2021, 2022, ... 2025, etc.) generated the most revenue
-          and the highest percentage of lucrative clients. This could allow the firm
-          to reverse-engineer the causes of the year's productivity.
-        </p>
-        <p>
-          The 2021 cohort leads on both average revenue ($9,719) and lucrative
-          client rate (56%). More recent cohorts appear weaker, but these numbers may be deceiving:
-          cases opened in 2024–2026 may not have yet fully matured.
-        </p>
-        <div class="note">
-          2025* and 2026* are partial cohorts — many matters are still active
-          and final revenue has not yet accrued.
-        </div>
-        <details class="sql-block">
-          <summary>View SQL — Long-Term Value by Intake Year</summary>
-          <pre><code>WITH first_matter AS (
-  SELECT
-    client_id,
-    MIN(open_date)                                             AS first_open_date
-  FROM matter
-  WHERE open_date IS NOT NULL
-  GROUP BY client_id
-),
-cohort AS (
-  SELECT
-    DATE_TRUNC('year', fm.first_open_date)::date               AS cohort_year,
-    ct.client_id,
-    ct.net_revenue,
-    ct.client_tier
-  FROM first_matter fm
-  JOIN v_client_tier ct ON fm.client_id = ct.client_id
-)
-SELECT
-  cohort_year,
-  COUNT(DISTINCT client_id)                                    AS cohort_size,
-  ROUND(SUM(net_revenue)::numeric, 2)                          AS total_revenue,
-  ROUND(AVG(net_revenue)::numeric, 2)                          AS avg_revenue_per_client,
-  COUNT(DISTINCT client_id)
-    FILTER (WHERE client_tier != 'Standard')                   AS lucrative_count,
-  ROUND(
-    COUNT(DISTINCT client_id) FILTER (WHERE client_tier != 'Standard')::numeric
-    / NULLIF(COUNT(DISTINCT client_id), 0) * 100, 1
-  )                                                            AS lucrative_rate_pct
-FROM cohort
-WHERE cohort_year IS NOT NULL
-GROUP BY cohort_year
-ORDER BY cohort_year;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.1 Revenue Chart ─────────────────────────── -->
-      <section id="ch4" class="story-section" data-viz="practice-revenue">
-        <div class="chapter-label">Chapter 4 · § 4.1</div>
-        <h2>Total Revenue by Practice Area</h2>
-        <p>
-          <strong style="color: #6bdb7a;">Civil Litigation</strong> dominates total revenue at
-          $5.02M across 457 clients, making it the firm's largest practice-area
-          revenue engine. <strong style="color: #888888;">Other</strong> follows at $1.24M, while <strong style="color: #d4d738;">Probate</strong> contributes
-          $708.6K from 108 clients.
-        </p>
-        <p>
-          <strong style="color: #637def;">Negotiations</strong> brings in $622.6K
-          across 331 clients, the highest client count in the mid-tier practices.
-          <strong style="color: #d41f73;">Estate Planning</strong> ($220.4K),
-          <strong style="color: #f08f35;">Drafting</strong> ($167.5K), and
-          <strong style="color: #d67dff;">Case Review</strong> ($164.6K) are smaller
-          by total revenue, but their hourly yield tells a different story.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Practice Area Summary</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-matter_metrics AS (
-  SELECT
-    m.id,
-    m.client_id,
-    CASE
-      WHEN TRIM(m.practice_area) IN (
-        'Civil Litigation', 'Negotiations', 'Drafting',
-        'Estate Planning', 'Case Review', 'Probate'
-      ) THEN TRIM(m.practice_area)
-      ELSE 'Other'
-    END AS practice_area_group,
-    COALESCE(r.net_revenue, 0) AS net_revenue,
-    COALESCE(h.total_hours, 0) AS total_hours
-  FROM matter m
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-  WHERE m.practice_area IS NOT NULL
-)
-SELECT
-  practice_area_group,
-  COUNT(DISTINCT client_id)                                AS client_count,
-  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
-  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
-  ROUND((SUM(net_revenue)
-         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
-FROM matter_metrics
-GROUP BY practice_area_group
-ORDER BY total_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.1 Efficiency Chart ───────────────────────────────────── -->
-      <section class="story-section" data-viz="practice-chart">
-        <div class="chapter-label">Chapter 4 · § 4.1</div>
-        <h2>Revenue Efficiency by Practice Area</h2>
-        <p>
-          Revenue per hour isolates true profitability - a practice area
-          with high total revenue but low hourly yield may be consuming
-          disproportionate attorney time.
-        </p>
-        <p>
-          <strong style="color: #d67dff;">Case Review</strong> leads at $229.82/hr,
-          followed closely by <strong style="color: #f08f35;">Drafting</strong>
-          ($221.17/hr) and <strong style="color: #637def;">Negotiations</strong>
-          ($220.74/hr). <strong style="color: #6bdb7a;">Civil Litigation</strong>
-          remains the scale leader, but its $195.77/hr yield is closer to the
-          middle of the practice mix.
-        </p>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.1 Map ────────────────────────────────────── -->
-      <section class="story-section" data-viz="practice-img">
-        <div class="chapter-label">Chapter 4 · § 4.1</div>
-        <h2>Practice Area: Where Cases Come From</h2>
-        <p>
-          Across the firm's service area, practice types show no strong
-          spatial clustering — Civil Litigation, Negotiations, Estate Planning,
-          and Probate all appear intermixed within the same ZCTAs. Geography
-          alone is not a reliable predictor of case type. That said, targeting
-          specific practice areas remains feasible by layering in other client
-          features — demographics, acquisition channel, corporate vs. individual
-          status or language — which the following sections explore.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Practice Area</summary>
-          <pre><code>WITH revenue_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.practice_area,
-        SUM(t.funds_in - t.funds_out) AS area_net_revenue
-    FROM transaction t
-    JOIN matter m ON t.matter_id = m.id
-    GROUP BY m.client_id, m.practice_area
-),
-hours_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.practice_area,
-        SUM(a.hours) AS area_total_hours
-    FROM activity a
-    JOIN matter m ON a.matter_id = m.id
-    GROUP BY m.client_id, m.practice_area
-)
-SELECT 
-    c.id,
-    c.geom,
-    r.practice_area,
-    COALESCE(r.area_net_revenue, 0) AS net_revenue,
-    COALESCE(h.area_total_hours, 0) AS total_hours,
-    ROUND(CAST(
-        COALESCE(r.area_net_revenue, 0) / NULLIF(h.area_total_hours, 0) 
-    AS numeric), 2) AS rev_per_hour
-FROM contact c
-JOIN revenue_per_area r ON c.id = r.client_id
-LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.practice_area IS NOT DISTINCT FROM h.practice_area
-ORDER BY c.id, net_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.1 Seasonal Demand ────────────────────────── -->
-      <section class="story-section" data-viz="seasonal">
-        <div class="chapter-label">Chapter 4 · § 4.1</div>
-        <h2>Seasonal Demand Patterns</h2>
-        <p>
-          Aggregating new matters by calendar month reveals clear peaks and
-          troughs in demand. <strong>February</strong> sees the highest
-          volume (289 matters), while <strong>December</strong> dips to the
-          yearly low (122 matters) — likely reflecting year-end slowdowns and
-          holiday schedules.
-        </p>
-        <p>
-          <strong style="color:#6bdb7a">Civil Litigation</strong> and <strong
-            style="color:#637def">Negotiations</strong>
-          together account for the majority of matters every month. Notably,
-          when Civil Litigation drops to its December low (21 matters), Negotiations
-          holds relatively steady (30 matters) — suggesting it is less sensitive to
-          year-end slowdowns. <strong style="color:#d41f73">Estate Planning</strong> spikes in spring
-          (Apr–May, 24–25 matters), consistent with tax-season estate reviews.
-          <strong style="color:#d4d738">Probate</strong> shows an outsized February surge (28 matters)
-          worth monitoring for staffing purposes.
-        </p>
-        <details class="sql-block">
-          <summary>SQL — seasonal demand by practice area (aggregated)</summary>
-          <pre><code>SELECT
-  EXTRACT(MONTH FROM open_date)::int AS month,
-  CASE
-    WHEN TRIM(practice_area) IN (
-      'Civil Litigation', 'Drafting',
-      'Estate Planning', 'Case Review', 'Probate'
-    ) THEN TRIM(practice_area)
-    ELSE 'Other'
-  END AS practice_area_group,
-  COUNT(*) AS matter_count
-FROM matter
-WHERE open_date IS NOT NULL
-GROUP BY month, practice_area_group
-ORDER BY month, matter_count DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.2 Revenue Chart ─────────────────────────── -->
-      <section class="story-section" data-viz="scope-revenue">
-        <div class="chapter-label">Chapter 4 · § 4.2</div>
-        <h2>Total Revenue by Scope of Representation</h2>
-        <p>
-          <strong style="color: #888;">Unspecified</strong> matters - those with no scope recorded -
-          account for the largest share at $4.93M across 938 clients, signaling
-          a data quality gap worth closing. Among labeled scopes,
-          <strong style="color: #5571d7;">Full Litigation</strong> leads at $2.73M
-          (299 clients), followed by
-          <strong style="color: #d65296;">Full Litigation - Sub into Case</strong>
-          at $818.3K. <strong style="color: #64efe3;">Negotiations</strong>
-          contributes $684.6K from 277 clients.
-        </p>
-        <p>
-          <strong style="color: #a6c91a;">Flat Fee</strong> ($318.3K) and
-          <strong style="color: #9110db;">Estate Planning</strong> ($59.7K)
-          generate modest total revenue, but their hourly efficiency tells a
-          different story on the next chart.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Scope of Representation Summary</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-matter_metrics AS (
-  SELECT
-    m.id,
-    m.client_id,
-    COALESCE(m.scope_of_representation, 'Unspecified') AS scope_of_representation,
-    COALESCE(r.net_revenue, 0) AS net_revenue,
-    COALESCE(h.total_hours, 0) AS total_hours
-  FROM matter m
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-)
-SELECT
-  scope_of_representation,
-  COUNT(DISTINCT client_id)                                AS client_count,
-  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
-  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
-  ROUND((SUM(net_revenue)
-         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
-FROM matter_metrics
-GROUP BY scope_of_representation
-ORDER BY revenue_per_hour DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.2 Efficiency Chart ───────────────────────────────────── -->
-      <section class="story-section" data-viz="scope-chart">
-        <div class="chapter-label">Chapter 4 · § 4.2</div>
-        <h2>Revenue Efficiency by Scope of Representation</h2>
-        <p>
-          <strong style="color: #9110db;">Estate Planning</strong> scope leads at $295.39/hr,
-          reflecting structured, low-hour work. Among higher-volume categories,
-          <strong style="color: #64efe3;">Negotiations</strong> ($235.12/hr),
-          <strong style="color: #a6c91a;">Flat Fee</strong> ($227.24/hr), and
-          <strong style="color: #d65296;">Full Litigation - Sub into Case</strong>
-          ($198.95/hr) outperform standard Full Litigation ($187.05/hr).
-        </p>
-        <p>
-          <strong style="color: #888;">Unspecified</strong> matters average $188.69/hr,
-          close to Full Litigation, which suggests the unlabeled caseload is not
-          low-value work and deserves proper classification. <strong style="color: #56cf5c;">Limited Scope Litigation</strong>
-          performs well at $233.07/hr, but only across 7 clients.
-        </p>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.2 Map ────────────────────────────────────── -->
-      <section class="story-section" data-viz="scope-img">
-        <div class="chapter-label">Chapter 4 · § 4.2</div>
-        <h2>Scope of Representation: Where Each Type Operates</h2>
-        <p>
-          The map is dominated by <strong style="color: #888;">Unspecified</strong> records scattered
-          uniformly across the entire service area — a visual reminder of how
-          much of the caseload lacks a scope label. <strong style="color: #5571d7;">Full Litigation</strong>
-          shows mild spatial clustering in select areas, but no category
-          exhibits strong geographic concentration. As with practice area,
-          scope of representation appears to be driven more by client need
-          than by location.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Scope of Representation</summary>
-          <pre><code>WITH revenue_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.scope_of_representation,
-        SUM(t.funds_in - t.funds_out) AS area_net_revenue
-    FROM transaction t
-    JOIN matter m ON t.matter_id = m.id
-    GROUP BY m.client_id, m.scope_of_representation
-),
-hours_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.scope_of_representation,
-        SUM(a.hours) AS area_total_hours
-    FROM activity a
-    JOIN matter m ON a.matter_id = m.id
-    GROUP BY m.client_id, m.scope_of_representation
-)
-SELECT 
-    c.id,
-    c.geom,
-    r.scope_of_representation,
-    COALESCE(r.area_net_revenue, 0) AS net_revenue,
-    COALESCE(h.area_total_hours, 0) AS total_hours,
-    ROUND(CAST(
-        COALESCE(r.area_net_revenue, 0) / NULLIF(h.area_total_hours, 0) 
-    AS numeric), 2) AS rev_per_hour
-FROM contact c
-JOIN revenue_per_area r ON c.id = r.client_id
-LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.scope_of_representation IS NOT DISTINCT FROM h.scope_of_representation
-ORDER BY c.id, net_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.3 Chart ───────────────────────────────────── -->
-      <section class="story-section" data-viz="corp-chart">
-        <div class="chapter-label">Chapter 4 · § 4.3</div>
-        <h2>Revenue Efficiency: Corporate vs. Individual</h2>
-        <p>
-          <strong style="color: #47c597;">Individual</strong> clients make up <strong>99.3%</strong> of the client
-          base (1,060 vs. 8). Revenue per hour remains similar -
-          $192.32 for <strong style="color: #47c597;">individuals</strong> vs. $175.26 for <strong
-            style="color: #7b6df7;">corporate</strong> clients - meaning
-          the firm's pricing model is broadly consistent across both segments.
-        </p>
-        <p>
-          Corporate work is still a very small sample, with $59.4K in total revenue
-          compared with $7.09M from individual clients. Growth here may diversify the
-          client base, but the current data is too thin to make a strong efficiency claim.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Corporate vs. Individual Summary</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-matter_metrics AS (
-  SELECT
-    m.id,
-    m.client_id,
-    c.iscompany,
-    COALESCE(r.net_revenue, 0) AS net_revenue,
-    COALESCE(h.total_hours, 0) AS total_hours
-  FROM matter m
-  JOIN contact c ON m.client_id = c.id
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-)
-SELECT
-  iscompany,
-  COUNT(DISTINCT client_id)                                AS client_count,
-  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
-  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
-  ROUND((SUM(net_revenue)
-         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
-FROM matter_metrics
-GROUP BY iscompany
-ORDER BY total_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.3 Map ────────────────────────────────────── -->
-      <section class="story-section" data-viz="corp-img">
-        <div class="chapter-label">Chapter 4 · § 4.3</div>
-        <h2>Corporate vs. Individual Clients</h2>
-        <p>
-          The map overlays corporate and individual client locations across
-          the service area. <strong style="color: #7b6df7;">Corporate</strong> clients are rare but geographically
-          distinct — they tend to cluster near commercial corridors rather
-          than residential ZIP codes.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Corporate vs. Individual</summary>
-          <pre><code>WITH revenue_per_area AS (
-    SELECT 
-        m.client_id, 
-        c.iscompany,
-        SUM(t.funds_in - t.funds_out) AS area_net_revenue
-    FROM transaction t
-    JOIN matter m ON t.matter_id = m.id
-    JOIN contact c     ON m.client_id = c.id
-    GROUP BY m.client_id, c.iscompany
-),
-hours_per_area AS (
-    SELECT 
-        m.client_id, 
-        c.iscompany,
-        SUM(a.hours) AS area_total_hours
-    FROM activity a
-    JOIN matter m ON a.matter_id = m.id
-    JOIN contact c     ON m.client_id = c.id
-    GROUP BY m.client_id, c.iscompany
-)
-SELECT 
-    c.id,
-    c.geom,
-    r.iscompany,
-    COALESCE(r.area_net_revenue, 0) AS net_revenue,
-    COALESCE(h.area_total_hours, 0) AS total_hours,
-    ROUND(CAST(
-        COALESCE(r.area_net_revenue, 0) / NULLIF(h.area_total_hours, 0) 
-    AS numeric), 2) AS rev_per_hour
-FROM contact c
-JOIN revenue_per_area r ON c.id = r.client_id
-LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.iscompany IS NOT DISTINCT FROM h.iscompany
-ORDER BY c.id, net_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.4 Chart ───────────────────────────────────── -->
-      <section class="story-section" data-viz="channel-chart">
-        <div class="chapter-label">Chapter 4 · § 4.4</div>
-        <h2>Revenue Efficiency by Acquisition Channel</h2>
-        <p>
-          <strong style="color: #ba6aba;">Referral</strong> leads total revenue at $1.63M across 300 clients, while <strong style="color: #ea8424;">Google</strong>
-          is close behind at $1.55M across 330 clients. These two channels remain the
-          firm's highest-volume acquisition engines.
-        </p>
-        <p>
-          On hourly yield, <strong style="color: #7cc8e6;">RERM</strong> leads at
-          $255.70/hr, though from only 5 clients. Among larger channels,
-          <strong style="color: #ea8424;">Google</strong> ($202.23/hr),
-          <strong style="color: #ba6aba;">Referral</strong> ($193.51/hr), and
-          <strong style="color: #df505a;">Spanish Google</strong> ($189.16/hr)
-          are tightly clustered.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Acquisition Channel Summary</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-normalised AS (
-  SELECT
-    CASE
-      WHEN m.client_source ILIKE '%web%'      THEN 'Official Website'
-      WHEN m.client_source ILIKE '%refer%'
-        OR m.client_source ILIKE '%client%'
-        OR m.client_source ILIKE '%former%'
-        OR m.client_source ILIKE '%family%'
-        OR m.client_source ILIKE '%network%'
-        OR m.client_source ILIKE '%previous%' THEN 'Referral'
-      ELSE m.client_source
-    END                                        AS source_group,
-    m.client_id,
-    COALESCE(r.net_revenue, 0)                 AS net_revenue,
-    COALESCE(h.total_hours, 0)                 AS total_hours
-  FROM matter m
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-  WHERE m.client_source IS NOT NULL
-),
-aggregated AS (
-  SELECT source_group,
-    COUNT(DISTINCT client_id)  AS client_count,
-    SUM(net_revenue)           AS total_revenue,
-    SUM(total_hours)           AS total_hours
-  FROM normalised GROUP BY source_group
-),
-ranked AS (
-  SELECT *, RANK() OVER (ORDER BY total_revenue DESC) AS revenue_rank
-  FROM aggregated
-)
-SELECT
-  CASE WHEN revenue_rank <= 5 THEN source_group ELSE 'Others' END AS client_source,
-  SUM(client_count)                                                AS client_count,
-  ROUND(SUM(total_revenue)::numeric, 2)                           AS total_revenue,
-  ROUND((SUM(total_revenue)
-         / NULLIF(SUM(total_hours), 0))::numeric, 2)              AS revenue_per_hour
-FROM ranked
-GROUP BY 1
-ORDER BY total_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.4 Cross-Tab ─────────────────────────────── -->
-      <section class="story-section" data-viz="channel-crosstab">
-        <div class="chapter-label">Chapter 4 · § 4.4</div>
-        <h2>Channel × Tier: Which Source Brings the Best Clients?</h2>
-        <p>
-          Total client volume alone is misleading — what matters is the
-          share of those clients who are <strong>Lucrative</strong>.
-          <strong style="color: #7cc8e6;">RERM</strong> converts 75% of its intake to Lucrative
-          status, and <strong style="color: #33a442;">Official Website</strong> and
-          <strong style="color: #dfc750;">Yelp</strong> both hit 50%, despite low absolute counts.
-        </p>
-        <p>
-          <strong style="color: #ba6aba;">Referral</strong> (43%) and <strong style="color: #ea8424;">Google</strong>
-          (43%) are virtually tied on lucrative rate while delivering the
-          largest client volumes — reinforcing them as the firm's twin
-          workhorses. <strong style="color: #df505a;">Spanish Google</strong> trails at 33%,
-          suggesting room to improve intake quality from that channel.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Channel × Tier Cross-Tab</summary>
-          <pre><code>WITH source_by_client AS (
-  SELECT
-    m.client_id,
-    CASE
-      WHEN m.client_source ILIKE '%web%'      THEN 'Official Website'
-      WHEN m.client_source ILIKE '%refer%'
-        OR m.client_source ILIKE '%client%'
-        OR m.client_source ILIKE '%former%'
-        OR m.client_source ILIKE '%family%'
-        OR m.client_source ILIKE '%network%'
-        OR m.client_source ILIKE '%previous%' THEN 'Referral'
-      ELSE m.client_source
-    END                                        AS source_group
-  FROM matter m
-  WHERE m.client_source IS NOT NULL
-  GROUP BY m.client_id, source_group
-),
-normalised AS (
-  SELECT
-    s.source_group,
-    ct.client_id,
-    ct.client_tier,
-    ct.net_revenue
-  FROM source_by_client s
-  JOIN v_client_tier ct ON s.client_id = ct.client_id
-),
-top5 AS (
-  SELECT source_group FROM (
-    SELECT source_group,
-           RANK() OVER (ORDER BY COUNT(DISTINCT client_id) DESC) AS rk
-    FROM normalised GROUP BY source_group
-  ) sub WHERE rk <= 5
-),
-aggregated AS (
-  SELECT
-    CASE WHEN t5.source_group IS NOT NULL
-         THEN n.source_group ELSE 'Others' END         AS source_group,
-    COUNT(DISTINCT n.client_id)                        AS total_clients,
-    COUNT(DISTINCT n.client_id)
-      FILTER (WHERE n.client_tier != 'Standard')       AS lucrative_clients
-  FROM normalised n
-  LEFT JOIN top5 t5 ON n.source_group = t5.source_group
-  GROUP BY 1
-)
-SELECT
-  source_group                                         AS client_source,
-  total_clients,
-  lucrative_clients,
-  ROUND(lucrative_clients::numeric
-        / NULLIF(total_clients, 0) * 100, 1)          AS lucrative_rate_pct
-FROM aggregated
-ORDER BY lucrative_rate_pct DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.4 Map ────────────────────────────────────── -->
-      <section class="story-section" data-viz="channel-img">
-        <div class="chapter-label">Chapter 4 · § 4.4</div>
-        <h2>Client Acquisition Channel: Where Clients Come From</h2>
-        <p>
-          The map shows how acquisition channels distribute across the service
-          area. <strong style="color: #ba6aba;">Referral</strong> and <strong style="color: #ea8424;">Google</strong>
-          clients
-          are widespread.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Acquisition Channel</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-normalised AS (
-  SELECT
-    m.client_id,
-    CASE
-      WHEN m.client_source ILIKE '%web%'       THEN 'Official Website'
-      WHEN m.client_source ILIKE '%refer%'
-        OR m.client_source ILIKE '%client%'
-        OR m.client_source ILIKE '%former%'
-        OR m.client_source ILIKE '%family%'
-		    OR m.client_source ILIKE '%network%'
-        OR m.client_source ILIKE '%previous%'  THEN 'Referral'
-      ELSE m.client_source
-    END                                         AS source_group,
-    COALESCE(r.net_revenue, 0)                  AS net_revenue,
-    COALESCE(h.total_hours, 0)                  AS total_hours
-  FROM matter m
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-  WHERE m.client_source IS NOT NULL
-),
-top5 AS (
-  SELECT source_group
-  FROM (
-    SELECT source_group,
-           RANK() OVER (ORDER BY SUM(net_revenue) DESC) AS rk
-    FROM normalised
-    GROUP BY source_group
-  ) sub
-  WHERE rk <= 5
-),
-client_agg AS (
-  SELECT
-    n.client_id,
-    CASE WHEN t5.source_group IS NOT NULL
-         THEN n.source_group ELSE 'Others' END  AS source_group,
-    SUM(n.net_revenue)                           AS net_revenue,
-    SUM(n.total_hours)                           AS total_hours
-  FROM normalised n
-  LEFT JOIN top5 t5 ON n.source_group = t5.source_group
-  GROUP BY n.client_id,
-           CASE WHEN t5.source_group IS NOT NULL
-                THEN n.source_group ELSE 'Others' END
-)
-SELECT
-  c.id,
-  c.geom,
-  ca.source_group                                                  AS client_source,
-  ROUND(ca.net_revenue::numeric, 2)                                AS net_revenue,
-  ROUND(ca.total_hours::numeric, 2)                                AS total_hours,
-  ROUND((ca.net_revenue / NULLIF(ca.total_hours, 0))::numeric, 2)  AS rev_per_hour
-FROM contact c
-JOIN client_agg ca ON c.id = ca.client_id
-ORDER BY c.id, net_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.5 Chart ───────────────────────────────────── -->
-      <section class="story-section" data-viz="language-chart">
-        <div class="chapter-label">Chapter 4 · § 4.5</div>
-        <h2>Revenue Efficiency by Client Language</h2>
-        <p>
-          <strong style="color:#8966d1">Spanish</strong>-speaking clients generate <strong>$195.82/hr</strong> —
-          marginally higher than <strong style="color:#2ea227">English</strong>-speaking clients at $194.38/hr.
-          This is a striking finding: the firm's second-largest language
-          segment is equally, if not more, profitable per attorney hour.
-        </p>
-        <p>
-          With 327 <strong style="color:#8966d1">Spanish</strong>-speaking clients (19% of the client base), the
-          <strong style="color:#8966d1">Spanish</strong>-speaking segment is far from a niche. It represents a
-          material share of revenue and operates at premium efficiency,
-          making it a top priority for retention and growth investment.
-        </p>
-        <div class="note">
-          Cantonese (1 client) is included for completeness but is not
-          statistically meaningful at this sample size.
-        </div>
-        <details class="sql-block">
-          <summary>View SQL — Client Language Summary</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-matter_metrics AS (
-  SELECT
-    m.id,
-    m.client_id,
-    m.client_language,
-    COALESCE(r.net_revenue, 0) AS net_revenue,
-    COALESCE(h.total_hours, 0) AS total_hours
-  FROM matter m
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-  WHERE m.client_language IS NOT NULL
-)
-SELECT
-  client_language,
-  COUNT(DISTINCT client_id)                                AS client_count,
-  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
-  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
-  ROUND((SUM(net_revenue)
-         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
-FROM matter_metrics
-GROUP BY client_language
-ORDER BY total_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.5 Map (points) ──────────────────────────── -->
-      <section class="story-section" data-viz="language-img">
-        <div class="chapter-label">Chapter 4 · § 4.5</div>
-        <h2>Client Language: A Bilingual Practice</h2>
-        <p>
-          The point map reveals a spatially distinct Spanish-speaking client
-          base. Spanish-language clients do not simply mirror the overall
-          distribution — they cluster in specific communities, reflecting
-          the demographics of those neighbourhoods.
-        </p>
-        <p>
-          Scroll to see how this pattern holds at the ZIP code level.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Client Language Summary</summary>
-          <pre><code>WITH revenue_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.client_language,
-        SUM(t.funds_in - t.funds_out) AS area_net_revenue
-    FROM transaction t
-    JOIN matter m ON t.matter_id = m.id
-    GROUP BY m.client_id, m.client_language
-),
-hours_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.client_language,
-        SUM(a.hours) AS area_total_hours
-    FROM activity a
-    JOIN matter m ON a.matter_id = m.id
-    GROUP BY m.client_id, m.client_language
-)
-SELECT 
-    c.id,
-    c.geom,
-    r.client_language,
-    COALESCE(r.area_net_revenue, 0) AS net_revenue,
-    COALESCE(h.area_total_hours, 0) AS total_hours,
-    ROUND(CAST(
-        COALESCE(r.area_net_revenue, 0) / NULLIF(h.area_total_hours, 0) 
-    AS numeric), 2) AS rev_per_hour
-FROM contact c
-JOIN revenue_per_area r ON c.id = r.client_id
-LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.client_language IS NOT DISTINCT FROM h.client_language
-ORDER BY c.id, net_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.5 Map (ZCTA) ─────────────────────────────── -->
-      <section class="story-section" data-viz="language-zcta">
-        <div class="chapter-label">Chapter 4 · § 4.5</div>
-        <h2>Spanish-Speaking Clients by ZIP Code Area</h2>
-        <p>
-          Aggregated to ZIP Code Tabulation Areas, the spatial signal
-          sharpens. A small number of ZCTAs account for a
-          disproportionate share of Spanish-language intake — these are
-          the firm's highest-density bilingual communities.
-        </p>
-      </section>
-
-
-      <!-- ── CHAPTER 4 · § 4.6 Chart ───────────────────────────────────── -->
-      <section class="story-section" data-viz="retainer-chart">
-        <div class="chapter-label">Chapter 4 · § 4.6</div>
-        <h2>Revenue Efficiency by Retainer Type</h2>
-        <p>
-          <strong style="color: #cc477c;">Flat Fee</strong> matters now show the highest yield
-          at $222.61/hr across 707 clients, narrowly ahead of
-          <strong style="color: #1e6ce1;">Hourly - Bonus</strong> at $222.43/hr.
-          These structured engagements continue to capture strong value with
-          relatively low time investment.
-        </p>
-        <p>
-          <strong style="color: #888;">Unspecified</strong> records are the least efficient
-          at $135.69/hr, while <strong style="color: #c585f0;">Probate</strong>
-          follows at $137.31/hr. <strong style="color: #50cabe;">Hourly - No Bonus</strong>
-          remains the dominant volume category with 988 clients and $6.46M in
-          total revenue.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Retainer Type Summary</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-matter_metrics AS (
-  SELECT
-    m.id,
-    m.client_id,
-    COALESCE(m.retainer_type, 'Unspecified') AS retainer_type,
-    COALESCE(r.net_revenue, 0) AS net_revenue,
-    COALESCE(h.total_hours, 0) AS total_hours
-  FROM matter m
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-)
-SELECT
-  retainer_type,
-  COUNT(DISTINCT client_id)                                AS client_count,
-  ROUND(SUM(net_revenue)::numeric, 2)                      AS total_revenue,
-  ROUND(SUM(total_hours)::numeric, 2)                      AS total_hours,
-  ROUND((SUM(net_revenue)
-         / NULLIF(SUM(total_hours), 0))::numeric, 2)       AS revenue_per_hour
-FROM matter_metrics
-GROUP BY retainer_type
-ORDER BY total_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.6 Map ────────────────────────────────────── -->
-      <section class="story-section" data-viz="retainer-img">
-        <div class="chapter-label">Chapter 4 · § 4.6</div>
-        <h2>Retainer Type: How Cases Are Billed</h2>
-        <p>
-          The map shows how retainer structures distribute across the service
-          area. <strong style="color: #1e6ce1;">Hourly</strong> billing dominates everywhere, but
-          <strong style="color: #cc477c;">Flat Fee</strong> matters — the most efficient retainer
-          type — appear across a wide geographic spread, suggesting they
-          are not confined to any single community type.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Retainer Type</summary>
-          <pre><code>WITH revenue_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.retainer_type,
-        SUM(t.funds_in - t.funds_out) AS area_net_revenue
-    FROM transaction t
-    JOIN matter m ON t.matter_id = m.id
-    GROUP BY m.client_id, m.retainer_type
-),
-hours_per_area AS (
-    SELECT 
-        m.client_id, 
-        m.retainer_type,
-        SUM(a.hours) AS area_total_hours
-    FROM activity a
-    JOIN matter m ON a.matter_id = m.id
-    GROUP BY m.client_id, m.retainer_type
-)
-SELECT 
-    c.id,
-    c.geom,
-    r.retainer_type,
-    COALESCE(r.area_net_revenue, 0) AS net_revenue,
-    COALESCE(h.area_total_hours, 0) AS total_hours,
-    ROUND(CAST(
-        COALESCE(r.area_net_revenue, 0) / NULLIF(h.area_total_hours, 0) 
-    AS numeric), 2) AS rev_per_hour
-FROM contact c
-JOIN revenue_per_area r ON c.id = r.client_id
-LEFT JOIN hours_per_area h ON r.client_id = h.client_id 
-    AND r.retainer_type IS NOT DISTINCT FROM h.retainer_type
-ORDER BY c.id, net_revenue DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.7 Originating Attorney ──────────────────── -->
-      <section class="story-section" data-viz="attorney-orig">
-        <div class="chapter-label">Chapter 4 · § 4.7</div>
-        <h2>Attorney Performance: Revenue Originated</h2>
-        <p>
-          The originating attorney is the one who brought in the client. 
-          <strong>Attorney #2</strong> leads with 733
-          clients and $4.83M in generated revenue, followed by
-          <strong>Attorney #4</strong> at 389 clients and $3.77M.
-          Together they account for the vast majority of the firm's
-          client acquisition.
-        </p>
-        <p>
-          The long list of attorneys with fewer than 10 clients originated
-          suggests that business development is highly concentrated.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Originating Attorney</summary>
-          <pre><code>SELECT
-  m.originating_attorney                                    AS attorney_no,
-  COUNT(DISTINCT m.client_id)                               AS clients_originated,
-  COUNT(DISTINCT m.id)                                      AS matters_originated,
-  ROUND(SUM(t.funds_in - t.funds_out)::numeric, 2)          AS total_revenue_generated
-FROM matter m
-JOIN transaction t ON t.matter_id = m.id
-WHERE m.originating_attorney IS NOT NULL
-GROUP BY m.originating_attorney
-ORDER BY total_revenue_generated DESC;</code></pre>
-        </details>
-      </section>
-
-      <!-- ── CHAPTER 4 · § 4.7 Responsible Attorney ────────────────────── -->
-      <section class="story-section" data-viz="attorney-resp">
-        <div class="chapter-label">Chapter 4 · § 4.7</div>
-        <h2>Attorney Performance: Execution Efficiency</h2>
-        <p>
-          The responsible attorney is the one tasked to get the case done.
-          <strong>Attorney #19</strong> leads at
-          $314.28/hr, though from only 5 matters. Among higher-volume
-          attorneys, <strong>#4</strong> ($199.86/hr, 369 matters),
-          <strong>#7</strong> ($192.69/hr, 149 matters), and
-          <strong>#2</strong> ($188.92/hr, 674 matters) combine scale with steady efficiency.
-        </p>
-        <details class="sql-block">
-          <summary>View SQL — Responsible Attorney</summary>
-          <pre><code>WITH matter_revenue AS (
-  SELECT matter_id,
-         SUM(funds_in - funds_out) AS net_revenue
-  FROM transaction
-  GROUP BY matter_id
-),
-matter_hours AS (
-  SELECT matter_id,
-         SUM(hours) AS total_hours
-  FROM activity
-  GROUP BY matter_id
-),
-matter_metrics AS (
-  SELECT
-    m.id,
-    m.responsible_attorney,
-    COALESCE(r.net_revenue, 0) AS net_revenue,
-    COALESCE(h.total_hours, 0) AS total_hours
-  FROM matter m
-  LEFT JOIN matter_revenue r ON r.matter_id = m.id
-  LEFT JOIN matter_hours   h ON h.matter_id = m.id
-  WHERE m.responsible_attorney IS NOT NULL
-)
-SELECT
-  responsible_attorney                                      AS attorney_no,
-  COUNT(DISTINCT id)                                        AS matters_managed,
-  ROUND(SUM(net_revenue)::numeric, 2)                       AS total_revenue,
-  ROUND(SUM(total_hours)::numeric, 2)                       AS total_hours,
-  ROUND((SUM(net_revenue)
-         / NULLIF(SUM(total_hours), 0))::numeric, 2)        AS revenue_per_hour
-FROM matter_metrics
-GROUP BY responsible_attorney
-ORDER BY revenue_per_hour DESC;</code></pre>
-        </details>
-      </section>
-
-    </div><!-- /scroll-sections -->
-  </div><!-- /story-wrapper -->
-
-  <!-- ── FINDINGS ───────────────────────────────────────────────────────── -->
-  <section id="findings" class="full-section bg-dark">
-    <h2>Key Findings &amp; Recommendations</h2>
-    <div class="findings-grid">
-      <div class="finding-card">
-        <div class="finding-num">01</div>
-        <h3>42% of clients are Lucrative — but they cluster</h3>
-        <p>The four-tier model separates 450 of 1,071 clients into Star,
-          High Value, or Efficient tiers. These clients are not evenly spread:
-          they concentrate in South Los Angeles, the Pomona–Ontario corridor,
-          and a handful of San Diego ZCTAs.</p>
-      </div>
-      <div class="finding-card">
-        <div class="finding-num">02</div>
-        <h3>Target quality over volume in geographic markets</h3>
-        <p>Bivariate Volume × Quality analysis reveals "hidden gem" ZCTAs
-          with a high Lucrative share but still-low client count — ripe for further exploration. 
-          These areas, not the already-dense urban cores, 
-          could be the highest-priority outreach zones for new business. 
-          San Diego shows great potential.</p>
-      </div>
-      <div class="finding-card">
-        <div class="finding-num">03</div>
-        <h3>Client geography is expanding</h3>
-        <p>New matter intake has shifted steadily outward from downtown cores
-          into suburban corridors since 2021, and the total geographic footprint
-          grows each year. The 2021 cohort remains the strongest —
-          56% Lucrative and $9,719 average revenue per client.</p>
-      </div>
-      <div class="finding-card">
-        <div class="finding-num">04</div>
-        <h3>$4.73M in recoverable revenue is sitting dormant</h3>
-        <p>313 Lucrative clients have gone silent for 2+ years. Star clients
-          alone averaged $30K in their last matter. The dormant population
-          concentrates around the LA core and the Pomona–Ontario corridor.
-          Targeted outreach could reactivate meaningful volume at low cost.</p>
-      </div>
-      <div class="finding-card">
-        <div class="finding-num">05</div>
-        <h3>Referral and the Spanish-speaking segment merit prioritization</h3>
-        <p>Referral and Google deliver the most acquisition volume, while RERM shows the strongest hourly yield ($255.70/hr) and the highest lucrative conversion rate (75%). Spanish-speaking clients rival English at $195.82/hr and represent 19% of the client base, with clear spatial clustering in specific communities - a growth opportunity.</p>
-      </div>
-      <div class="finding-card">
-        <div class="finding-num">06</div>
-        <h3>Fix billing mix and data gaps; diversify business development</h3>
-        <p>Flat Fee matters average $222.61/hr with relatively low time investment —
-          the most efficient retainer structure. Unspecified and Probate are the weakest
-          at $135.69/hr and $137.31/hr. Over $4.93M in revenue sits under "Unspecified" scope,
-          obscuring strategy. Separately, Attorney #2 and #4 originated the
-          vast majority of new clients — a concentration risk that structured
-          team-wide referral incentives could begin to address.</p>
       </div>
     </div>
   </section>
 
-  <!-- ── METHODOLOGY ───────────────────────────────────────────────────── -->
-  <section id="methodology" class="full-section bg-light">
-    <h2>Methodology</h2>
-    <div class="db-diagrams">
-      <figure class="db-fig">
-        <img src="data/ERDiagram.PNG"
-          alt="Entity-relationship diagram: Contact sits Within a ZipCodeArea; each Matter links a client to billable Activity hours and Transaction flows, with originating and responsible attorney roles on Employee" />
-        <figcaption>ER Diagram</figcaption>
-        <p>Entities (rectangles) are connected by relationships (diamonds).
-          <em>Contact</em> sits <em>Within</em> a ZipCodeArea, enabling
-          spatial joins. Each <em>Matter</em> <em>Incurs</em> activity hours
-          and <em>Bills</em> to transactions, with one attorney originating
-          and another responsible for execution.
-        </p>
-      </figure>
-      <figure class="db-fig">
-        <img src="data/RelationalSchema.PNG"
-          alt="Relational schema: MATTER is the central table, joined to CONTACT (client), EMPLOYEE (originating and responsible attorneys), ACTIVITY (billable hours), TRANSACTION (funds in/out), and ZIPCODEAREA (spatial boundary)" />
-        <figcaption>Relational Schema</figcaption>
-        <p><code>MATTER</code> is the central table, linking each case to a
-          client (<code>CONTACT</code>), attorneys (<code>EMPLOYEE</code>),
-          billable hours (<code>ACTIVITY</code>), and money flows
-          (<code>TRANSACTION</code>). <code>ZIPCODEAREA</code> anchors
-          each client to a spatial ZIP code boundary.</p>
-      </figure>
-    </div>
-    <div class="method-grid">
-      <div class="method-item">
-        <h3>Database</h3>
-        <p>PostgreSQL 18 + PostGIS 3.6. Four relational tables —
-          <code>contact</code>, <code>matter</code>, <code>transaction</code>,
-          and <code>activity</code> — joined to a <code>zcta</code> geometry
-          layer. All geometry stored in EPSG:4326; all spatial operations run
-          server-side. <code>COALESCE</code> normalizes NULL fields (retainer
-          type, scope) to <em>Unspecified</em>; <code>ILIKE</code> pattern
-          matching consolidates acquisition channel variants into consistent
-          categories.
-        </p>
-      </div>
-      <div class="method-item">
-        <h3>Client Tier Classification</h3>
-        <p><code>NTILE(4)</code> window functions applied independently on
-          net revenue and revenue-per-hour across all 1,071 clients.
-          Star = top quartile on <em>both</em> dimensions; High Value = top
-          revenue quartile only; Efficient = top hourly-yield quartile only;
-          Standard = all others. Results are displayed as the
-          <code>v_client_tier</code> view, which underpins every subsequent
-          analysis.
-        </p>
-      </div>
-      <div class="method-item">
-        <h3>Visualization</h3>
-        <p>QGIS 3.x (DB Manager) loads all PostGIS views directly and renders
-          spatial outputs as static map exports, including the bivariate
-          choropleth (Bivariate Renderer plugin) and temporal animation series.
-          Interactive charts are built with Chart.js 4. The scrollytelling
-          layout — a sticky visualization panel that updates as the user scrolls
-          through narrative sections — is driven by the
-          <code>IntersectionObserver</code> API.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
   <footer id="footer">
-    <p>Geog 574 — Advanced GIS Applications · University of Wisconsin–Madison · Spring 2026</p>
-    <p>Eugenie Huang &amp; Reid Osborn</p>
+    <p>Geog 574 Advanced GIS Applications, University of Wisconsin–Madison, spring 2026. Eugenie Huang and Reid Osborn.</p>
     <p class="footer-note">
-      Built with PostGIS, QGIS, and Chart.js.
-      Data: proprietary law firm records (anonymized).
+      Firm data: proprietary law firm records, anonymized. Census data: 2020 ZCTA boundaries and ACS 2018–2022
+      five-year estimates. Built with PostGIS, QGIS, GeoPandas and Chart.js.
     </p>
   </footer>
 
-  <!-- Lightbox modal -->
-  <div id="img-modal" class="img-modal hidden" role="dialog" aria-modal="true">
+  <!-- legend used on the QGIS close-up maps, which have none of their own -->
+  <template id="lg-tier">
+    <p class="lg-title">Client tier</p>
+    <ul>
+      <li><i class="dot" style="--c:var(--star)"></i>Star</li>
+      <li><i class="dot" style="--c:var(--hv)"></i>High Value</li>
+      <li><i class="dot" style="--c:var(--eff)"></i>Efficient</li>
+      <li><i class="dot" style="--c:var(--std)"></i>Standard</li>
+      <li><i class="diamond"></i>Office</li>
+    </ul>
+    <p class="lg-note">Bigger circle = more net revenue</p>
+  </template>
+
+  <!-- lightbox -->
+  <div id="img-modal" class="img-modal hidden" role="dialog" aria-modal="true" aria-label="Enlarged map">
     <button id="img-modal-close" class="img-modal-close" aria-label="Close">&#10005;</button>
-    <img id="img-modal-img" src="" alt="" />
+    <div class="img-modal-frame">
+      <img id="img-modal-img" src="" alt="" />
+      <div id="img-modal-legend" class="scrolly-legend"></div>
+    </div>
     <p id="img-modal-caption"></p>
   </div>
 
-  <!-- Libraries — for offline: download files and update these paths -->
-  <!-- SQL popup -->
-  <div id="sql-modal" class="sql-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sql-modal-title">
-    <section class="sql-modal-panel">
-      <header class="sql-modal-header">
-        <h2 id="sql-modal-title">SQL</h2>
-        <button id="sql-modal-close" class="sql-modal-close" aria-label="Close SQL">&#10005;</button>
-      </header>
-      <pre><code id="sql-modal-code"></code></pre>
-    </section>
-  </div>
-
   <script src="lib/chart.min.js"></script>
+  <script src="data/story.js"></script>
   <script src="js/main.js"></script>
-  <script>
-    (function () {
-      const navLinks = Array.from(document.querySelectorAll('.nav-links a'));
-      const targets  = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
-
-      function setActive() {
-        const scrollY = window.scrollY + 80;
-        let current = targets[0];
-        for (const el of targets) {
-          if (el.getBoundingClientRect().top + window.scrollY <= scrollY) current = el;
-        }
-        navLinks.forEach(a => {
-          a.classList.toggle('active', a.getAttribute('href') === '#' + current.id);
-        });
-      }
-
-      window.addEventListener('scroll', setActive, { passive: true });
-      setActive();
-    })();
-  </script>
 </body>
 
 </html>
