@@ -41,8 +41,7 @@ SpatialBusinessIntelligence/
 │   ├── maps/*.png            # Generated maps with legend, scale bar and call-outs
 │   ├── LucrativeCustomerTier_{LA,ON,SD}.png   # QGIS close-ups used in Chapter 2
 │   └── ERDiagram.PNG, RelationalSchema.PNG
-├── PostGIS_Functions.md      # All SQL, by research question
-└── VERIFICATION_NOTES.md     # Inferences and numbers to confirm before publishing
+└── PostGIS_Functions.md      # All SQL, by research question
 ```
 
 ---

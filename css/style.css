@@ -22,6 +22,11 @@
   --good: #1c5c55;
   --bad:  #b2182b;
 
+  /* one-hue green ramp for the opening charts, before tiers are introduced */
+  --g-top:  #1c5c55;
+  --g-luc:  #4a8573;
+  --g-rest: #b9cdc4;
+
   --font:    'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-hd: 'Oswald', 'Roboto', sans-serif;
   --mono:    'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -146,15 +151,15 @@ a:hover { color: var(--forest); }
   margin-bottom: .45rem; font-size: .85rem;
 }
 .hbar span { color: var(--muted); }
-.hbar i { display: block; height: 1.35rem; width: var(--w); background: #a9bdb4; border-radius: 0 4px 4px 0; }
-.hbar i.hi { background: var(--good); }
+.hbar i { display: block; height: 1.35rem; width: var(--w); background: var(--g-rest); border-radius: 0 4px 4px 0; }
+.hbar i.hi { background: var(--g-top); }
 .hbar b { font-variant-numeric: tabular-nums; }
 
 .cols { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; height: 8.5rem; }
 .col { display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; min-width: 0; }
 .col b { font-size: .78rem; text-align: center; margin-bottom: .2rem; font-variant-numeric: tabular-nums; }
-.col i { display: block; height: calc(var(--h) * .68); background: #a9bdb4; border-radius: 4px 4px 0 0; }
-.col i.hi { background: var(--good); }
+.col i { display: block; height: calc(var(--h) * .68); background: var(--g-rest); border-radius: 4px 4px 0 0; }
+.col i.hi { background: var(--g-top); }
 .col span { font-size: .72rem; color: var(--muted); text-align: center; white-space: nowrap; border-top: 1px solid var(--ink); padding-top: .25rem; }
 
 .begin {
@@ -249,6 +254,7 @@ a:hover { color: var(--forest); }
 .split-wide-right { grid-template-columns: var(--cols-text); }
 .split-even       { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .word-of-mouth > .prose { align-self: center; }
+.split-wide-right > .prose { max-width: none; }
 
 /* ── About the project ───────────────────────────────────────────────── */
 .about-wrap { max-width: var(--wrap); margin: 0 auto; }
@@ -269,17 +275,20 @@ a:hover { color: var(--forest); }
 
 .about-sub { font-size: 1.3rem; margin: clamp(2.5rem, 5vw, 3.5rem) 0 1rem; }
 .scope-tiles {
-  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .6fr) minmax(0, .9fr) minmax(0, 1.5fr) minmax(0, 1.5fr);
   gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden;
 }
 .scope-tiles div { background: var(--white); padding: 1rem 1.2rem; }
 .scope-tiles dt { font-size: .85rem; color: var(--muted); }
 .scope-tiles dd { font-family: var(--font-hd); font-size: clamp(1.4rem, 2.2vw, 1.9rem); color: var(--forest); line-height: 1.2; }
-
-.about-notes {
-  display: grid; grid-template-columns: var(--cols-visual); gap: var(--col-gap);
-  margin-top: clamp(2rem, 4vw, 3rem); font-size: 1.08rem;
+.scope-tiles dd.share {
+  font-family: var(--font); font-size: .9rem; color: var(--muted); line-height: 1.4; margin-top: .5rem;
 }
+.scope-tiles dd.share b { color: var(--ink); }
+.meter { display: block; height: 6px; margin-bottom: .4rem; border-radius: 3px; background: var(--g-rest); overflow: hidden; }
+.meter::before { content: ''; display: block; height: 100%; width: var(--p); background: var(--g-top); }
+
+.about-notes { max-width: 60rem; margin-top: clamp(2rem, 4vw, 3rem); font-size: 1.08rem; }
 .about-notes h3 { font-size: 1.3rem; }
 
 /* ── Ledger tables ───────────────────────────────────────────────────── */
@@ -319,7 +328,8 @@ a:hover { color: var(--forest); }
 /* ── Charts ──────────────────────────────────────────────────────────── */
 .chart-figure { min-width: 0; }
 .chart-box { position: relative; height: clamp(300px, 48vh, 620px); }
-.chart-box.square { height: auto; aspect-ratio: 1 / 1; max-height: min(78vh, 820px); }
+/* fills its column; the height cap only shortens it, so no empty space opens beside the chart */
+.chart-box.square { height: auto; aspect-ratio: 4 / 3; max-height: min(80vh, 860px); }
 .chart-box canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
 .chart-figure .prose { margin-top: 1.4rem; }
 
@@ -577,7 +587,10 @@ a:hover { color: var(--forest); }
   .exhibit { grid-template-columns: minmax(0, 1fr); }
   .exhibit-notes { position: static; }
   .plan { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .scope-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* 3 small tiles on top, the two share tiles below */
+  .scope-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .scope-tiles div { grid-column: span 2; }
+  .scope-tiles .tile-share { grid-column: span 3; }
   .years-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
@@ -585,7 +598,8 @@ a:hover { color: var(--forest); }
   .findings { grid-template-columns: minmax(0, 1fr); row-gap: 1rem; }
   .finding { grid-row: auto; grid-template-rows: none; }
   .plan { grid-template-columns: minmax(0, 1fr); }
-  .scope-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .scope-tiles { grid-template-columns: minmax(0, 1fr); }
+  .scope-tiles div, .scope-tiles .tile-share { grid-column: auto; }
 
   .nav-brand { display: none; }
   .about-grid, .about-notes, .split-visual, .split-wide-right, .split-even,

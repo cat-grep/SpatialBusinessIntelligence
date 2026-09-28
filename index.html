@@ -31,34 +31,32 @@
         <li class="finding">
           <span class="finding-num" aria-hidden="true">1</span>
           <h2>A small group of clients brings in most of the revenue</h2>
-          <figure class="finding-viz" aria-label="Share of clients and share of revenue by tier">
-            <p class="viz-title">Share of mapped clients and of revenue, by tier</p>
+          <figure class="finding-viz" aria-label="Share of clients and share of revenue: top clients, other lucrative clients, all other clients">
+            <p class="viz-title">Share of mapped clients and of revenue</p>
             <div class="stack-row">
               <span class="stack-label">Clients</span>
               <div class="stack">
-                <i style="--g:8;--c:var(--star)" title="Star: 8% of clients"></i>
-                <i style="--g:17;--c:var(--hv)" title="High Value: 17% of clients">17%</i>
-                <i style="--g:17;--c:var(--eff)" title="Efficient: 17% of clients">17%</i>
-                <i style="--g:58;--c:var(--std)" title="Standard: 58% of clients">58%</i>
+                <i style="--g:8;--c:var(--g-top)" title="Top clients: 8% of clients"></i>
+                <i style="--g:34;--c:var(--g-luc)" title="Other lucrative clients: 34% of clients">34%</i>
+                <i style="--g:58;--c:var(--g-rest)" title="All other clients: 58% of clients">58%</i>
               </div>
             </div>
             <div class="stack-row">
               <span class="stack-label">Revenue</span>
               <div class="stack">
-                <i style="--g:33.4;--c:var(--star)" title="Star: 33% of revenue">33%</i>
-                <i style="--g:50.8;--c:var(--hv)" title="High Value: 51% of revenue">51%</i>
-                <i style="--g:5.2;--c:var(--eff)" title="Efficient: 5% of revenue"></i>
-                <i style="--g:10.6;--c:var(--std)" title="Standard: 11% of revenue">11%</i>
+                <i style="--g:33.4;--c:var(--g-top)" title="Top clients: 33% of revenue">33%</i>
+                <i style="--g:56;--c:var(--g-luc)" title="Other lucrative clients: 56% of revenue">56%</i>
+                <i style="--g:10.6;--c:var(--g-rest)" title="All other clients: 11% of revenue">11%</i>
               </div>
             </div>
             <figcaption class="viz-key">
-              <span><i class="dot" style="--c:var(--star)"></i>Star</span>
-              <span><i class="dot" style="--c:var(--hv)"></i>High Value</span>
-              <span><i class="dot" style="--c:var(--eff)"></i>Efficient</span>
-              <span><i class="dot" style="--c:var(--std)"></i>Standard</span>
+              <span><i class="dot" style="--c:var(--g-top)"></i>Top 8%</span>
+              <span><i class="dot" style="--c:var(--g-luc)"></i>Other lucrative</span>
+              <span><i class="dot" style="--c:var(--g-rest)"></i>All other clients</span>
             </figcaption>
           </figure>
-          <p><b>42%</b> of mapped clients bring in <b>89%</b> of revenue. The top 8% alone bring in a third.</p>
+          <p>The top 8% and the other lucrative clients together are <b>42%</b> of mapped clients and bring in
+            <b>89%</b> of revenue. The top 8% alone bring in a third.</p>
         </li>
 
         <li class="finding">
@@ -150,34 +148,24 @@
         <div><dt>Period</dt><dd>Jan 2021 – Apr 2026</dd></div>
         <div><dt>Offices</dt><dd>3</dd></div>
         <div><dt>Matters (cases)</dt><dd>2,066</dd></div>
-        <div><dt>Clients</dt><dd>1,874</dd></div>
-        <div><dt>Net revenue</dt><dd>$9.57M</dd></div>
-        <div><dt>Clients on the maps</dt><dd>1,071</dd></div>
+        <div class="tile-share">
+          <dt>Clients</dt><dd>1,874</dd>
+          <dd class="share"><span class="meter" style="--p:57%"></span><b>1,071</b> on the maps (57%)</dd>
+        </div>
+        <div class="tile-share">
+          <dt>Net revenue</dt><dd>$9.57M</dd>
+          <dd class="share"><span class="meter" style="--p:74%"></span><b>$7.05M</b> from clients on the maps (74%)</dd>
+        </div>
       </dl>
 
       <div class="about-notes">
-        <div>
-          <h3>About the data</h3>
-          <p>
-            Firm records are anonymized: no names, and no map shows anything finer than a client point or ZIP area.
-            Population and language come from the U.S. Census (American Community Survey 2018–2022).
-          </p>
-          <p>
-            Only <b>1,071 clients have an address on file</b> ($7.05M of revenue). The maps and every location-based
-            number use this group. Chapter 5 uses all 1,874 clients where it can.
-          </p>
-        </div>
-        <div>
-          <h3>About the maps</h3>
-          <p>
-            Maps and charts are numbered as exhibits, and each map carries its own legend and scale. Click any map
-            to enlarge it.
-          </p>
-          <p>
-            The <span class="office-glyph" aria-hidden="true"></span> orange diamonds are the firm's three offices.
-            A client's <em>market</em> is the office nearest to them, up to 30 miles away.
-          </p>
-        </div>
+        <h3>About the data</h3>
+        <p>
+          Firm records are anonymized: no names, and no map shows anything finer than a client point or ZIP area.
+          Only clients with an address on file can be mapped, so the maps and every location-based number use the
+          clients on the maps. Population and language come from the U.S. Census (American Community Survey
+          2018–2022).
+        </p>
       </div>
     </div>
   </section>
@@ -308,14 +296,14 @@
         <article class="step" data-img="data/maps/region_tiers.png" data-legend=""
           data-caption="Exhibit 2.1 · All mapped clients by tier, Southern California"
           data-alt="Regional map of clients colored by tier with 30-mile rings around the three offices">
-          <h3>Nine in ten mapped clients live within 60 miles of an office</h3>
+          <h3>Eight in ten mapped clients live within 30 miles of an office</h3>
           <p>
-            992 of the 1,071 mapped clients live within 60 miles of an office. The rest are scattered farther afield
-            and are left out of the regional analysis.
+            <b>878 of the 1,071</b> mapped clients (82%) live within 30 miles of an office. The dashed rings mark
+            that distance, and each ring is treated as that office's market.
           </p>
           <p>
-            The dashed rings mark 30 miles from each office. We treat each ring as that office's market. Bigger
-            circles mean more revenue.
+            The Los Angeles and Ontario rings overlap. There, each client and ZIP area counts toward the nearer
+            office only, so no one is counted twice.
           </p>
         </article>
 
@@ -356,8 +344,7 @@
             highest share of the three markets (on a small sample).
           </p>
           <p>
-            The gap in San Diego appears to be the number of clients rather than their quality. Chapter 3 looks at
-            where more clients might be found.
+            The gap in San Diego appears to be the number of clients rather than their quality.
           </p>
         </article>
 
@@ -372,8 +359,12 @@
           </p>
           <p>
             Los Angeles has 14 smaller hot spots, just south-west of the office. <b>San Diego has none.</b>
-            The blue cold spots, north of Glendale and around Anaheim, have significantly fewer lucrative clients per
-            resident than their surroundings.
+          </p>
+          <p>
+            The blue <b>cold spots</b>, north of Glendale and around Anaheim, are the opposite: few lucrative
+            clients <em>for the number of people who live there</em>. A cold spot can still have clients, and it
+            doesn't mean the clients there are less valuable. It means the firm reaches few residents there. The
+            large one north of Glendale is mostly mountains with few residents.
           </p>
         </article>
       </div>
@@ -436,7 +427,7 @@
               <td>7</td>
             </tr>
             <tr>
-              <th scope="row">Hot-spot ZIP areas (95%+)</th>
+              <th scope="row">Hot-spot ZIP areas (95%+, within 60 miles)</th>
               <td>14</td>
               <td class="best">40</td>
               <td class="worst">0</td>
@@ -444,6 +435,9 @@
           </tbody>
         </table>
       </div>
+      <p class="fine compare-note">Each client and ZIP area counts toward its nearest office only, so where the Los
+        Angeles and Ontario rings overlap, the area is split between the two markets. Hot-spot counts cover ZIP areas
+        up to 60 miles from their nearest office.</p>
     </div>
   </section>
 
@@ -885,7 +879,8 @@
           <h3>Spatial methods</h3>
           <ul>
             <li><b>Markets:</b> each client and ZCTA is assigned to its nearest office by geodesic distance
-              (<code>ST_Distance</code> on <code>geography</code>). A market is everything within 30 miles.</li>
+              (<code>ST_Distance</code> on <code>geography</code>). A market is everything within 30 miles; where two
+              offices' rings overlap, the nearer office takes the client or ZIP area.</li>
             <li><b>Reach:</b> clients per 100,000 residents per ZCTA, smoothed with global empirical Bayes so that
               small populations don't produce extreme rates.</li>
             <li><b>Hot spots:</b> Getis-Ord Gi* on smoothed lucrative clients per resident, with queen-contiguity
