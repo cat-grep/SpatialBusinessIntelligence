@@ -623,6 +623,7 @@
     <div class="drivers">
       <figure class="driver">
         <figcaption>
+          <span class="exhibit-label">Exhibit 5.1 · Revenue per hour by practice area</span>
           <h3>Civil litigation brings the money. Short matters earn more per hour.</h3>
           <p>Civil litigation is $5.0M of revenue at $196/hr. Case review, drafting and negotiations earn $221–230/hr
             on far fewer hours. Probate is the weakest at $140/hr.</p>
@@ -632,6 +633,7 @@
 
       <figure class="driver">
         <figcaption>
+          <span class="exhibit-label">Exhibit 5.2 · Revenue per hour by retainer type</span>
           <h3>Flat fees beat hourly billing</h3>
           <p>Flat-fee matters earn $223/hr across 707 clients. Standard hourly billing earns $198/hr, but it covers most
             of the firm's revenue ($6.46M).</p>
@@ -641,6 +643,7 @@
 
       <figure class="driver">
         <figcaption>
+          <span class="exhibit-label">Exhibit 5.3 · Share of lucrative clients by acquisition channel</span>
           <h3>Referral and Google bring equally good clients</h3>
           <p>About 42% of clients from each channel turn out lucrative. Spanish-language Google ads do worse, at 33%.
             Channels with fewer than 20 clients are too small to judge.</p>
@@ -650,6 +653,7 @@
 
       <figure class="driver">
         <figcaption>
+          <span class="exhibit-label">Exhibit 5.4 · Revenue per hour by client language</span>
           <h3>Spanish-speaking clients are just as profitable</h3>
           <p>327 Spanish-speaking clients (19% of those with a recorded language) earn $195.82/hr, the same as
             English-speaking clients at $194.38/hr.</p>
@@ -669,6 +673,7 @@
         <p class="fine">Clients within 60 miles of an office, 2021–2026.</p>
       </div>
       <table class="ledger mini">
+        <caption>Exhibit 5.5 · Distance from each new client to an earlier client</caption>
         <thead>
           <tr><th scope="col">First channel</th><th scope="col" class="num">Median distance to an earlier client</th><th scope="col" class="num">Within 1 mile</th></tr>
         </thead>
@@ -849,8 +854,7 @@
           <h3>Tools</h3>
           <p>
             PostGIS for joins, distances and views; QGIS for the market close-up maps (Exhibits 2.2–2.4); Python
-            (GeoPandas, matplotlib) for smoothing, hot spots and the other maps; Chart.js for charts. Everything after
-            the database export can be rebuilt with <code>python analysis/build_story.py</code>.
+            (GeoPandas, matplotlib) for smoothing, hot spots and the other maps; Chart.js for charts.
           </p>
         </div>
       </div>
@@ -872,7 +876,7 @@
 
       <div id="appendix" class="appendix">
         <h3>SQL appendix</h3>
-        <p>The core queries behind each chapter. The full set is in <code>PostGIS_Functions.md</code>.</p>
+        <p>The core queries behind each chapter.</p>
 
         <details>
           <summary>Chapter 1 · Client tier view (<code>v_client_tier</code>)</summary>
@@ -906,12 +910,8 @@ WHERE c.isclient = true;</code></pre>
 
         <details>
           <summary>Chapter 2 · Nearest office and 30-mile markets</summary>
-          <pre><code>WITH office(name, geom) AS (VALUES
-  ('Los Angeles', ST_SetSRID(ST_MakePoint(-118.2587514, 34.04860677), 4326)),
-  ('Ontario',     ST_SetSRID(ST_MakePoint(-117.6110578, 34.06634171), 4326)),
-  ('San Diego',   ST_SetSRID(ST_MakePoint(-117.177125,  32.75891346), 4326))
-),
-nearest AS (
+          <pre><code>-- office(name, geom): the three office points, kept out of this page
+WITH nearest AS (
   SELECT ct.client_id, ct.client_tier, ct.net_revenue, o.name AS office,
          ST_Distance(ct.geom::geography, o.geom::geography) / 1609.34 AS miles
   FROM v_client_tier ct
@@ -938,8 +938,8 @@ GROUP BY office;</code></pre>
 FROM zcta z
 LEFT JOIN v_client_tier ct ON ST_Within(ct.geom, z.geom)
 GROUP BY z.zcta5ce20, z.geom;
--- Joined to ACS population in Python; empirical Bayes smoothing and Gi*
--- are computed in analysis/build_story.py.</code></pre>
+-- Joined to ACS population in Python, where the empirical Bayes
+-- smoothing and Gi* statistics are also computed.</code></pre>
         </details>
 
         <details>
@@ -1008,7 +1008,7 @@ ORDER BY ct.net_revenue DESC;</code></pre>
     </p>
   </footer>
 
-  <!-- legend used on the QGIS close-up maps, which have none of their own -->
+  <!-- legend for the Chapter 2 close-up maps -->
   <template id="lg-tier">
     <p class="lg-title">Client tier</p>
     <ul>

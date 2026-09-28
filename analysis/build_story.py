@@ -6,7 +6,7 @@ Steps
      with read-only queries. Needs PGPASSWORD in the environment.
   2. join clients to ZCTAs and to 2022 ACS 5-year estimates (population,
      Spanish spoken at home, median household income).
-  3. compute every number the page quotes -> data/story.json
+  3. compute every number the page quotes -> data/story.js
   4. render the new maps (legend, scale bar and call-outs baked in) -> data/maps/
 
 Usage
@@ -43,7 +43,7 @@ COUNTY_SHP = PROJECT / 'Analysis' / 'ImportData' / 'cb_2025_us_county_500k.shp'
 PLACE_SHP = PROJECT / 'Analysis' / 'ImportData' / 'cb_2025_us_place_500k.shp'
 BIG_CITY = PROJECT / 'Analysis' / 'ExportData' / 'california_big_city.geojson'
 OFFICE_CSV = PROJECT / 'Analysis' / 'ImportData' / 'office_location.csv'
-OUT_JSON = REPO / 'data' / 'story.json'           # story.js is written next to it
+OUT_JS = REPO / 'data' / 'story.js'
 MAP_DIR = REPO / 'data' / 'maps'
 
 PSQL = r'C:\Program Files\PostgreSQL\18\bin\psql.exe'
@@ -654,10 +654,9 @@ def main():
         export_from_db()
     offices, c, m, tx, z = load()
     out, S = analyse(offices, c, m, tx, z)
-    OUT_JSON.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding='utf-8')
-    # same payload as a script so index.html works from file:// (no fetch needed)
-    OUT_JSON.with_suffix('.js').write_text('window.STORY = ' + json.dumps(out, ensure_ascii=False) + ';\n', encoding='utf-8')
-    print('wrote', OUT_JSON, 'and story.js')
+    # a script rather than JSON, so index.html works from file:// (no fetch needed)
+    OUT_JS.write_text('window.STORY = ' + json.dumps(out, ensure_ascii=False) + ';\n', encoding='utf-8')
+    print('wrote', OUT_JS)
     if not a.no_maps:
         draw_maps(offices, c, S, out)
 

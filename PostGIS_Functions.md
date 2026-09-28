@@ -4,9 +4,11 @@
 
 ---
 
-This document mirrors the SQL and analysis shown in `index.html`. Revenue and
-hour metrics are aggregated before they are joined together so totals are not
-inflated by many-to-many joins between `transaction` and `activity`.
+SQL behind the StoryMap. Sections 1–4 are the exploratory queries, grouped by
+research question. Section 6 holds the queries behind the current chapters.
+Revenue and hour metrics are aggregated before they are joined together so
+totals are not inflated by many-to-many joins between `transaction` and
+`activity`.
 
 ---
 
@@ -96,10 +98,6 @@ WHERE c.isclient = true;
 
 Rank each ZCTA independently on two dimensions using `NTILE(3)` (1 = low, 2 = mid, 3 = high). This allows a 3 x 3 strategic matrix rather than a simple binary split.
 
-This matches the page's "Mapping the Territory: Volume x Quality" section:
-high-volume/high-quality ZIP areas are already strong markets, while low-volume
-but high-quality areas are treated as hidden growth opportunities.
-
 ```sql
 -- CREATE OR REPLACE VIEW public.v_map_comparison AS
 WITH counts AS (
@@ -142,9 +140,6 @@ FROM counts;
 ## 3. Temporal Spatial Analysis (Has Client Clustering Shifted Over Time?)
 
 Group matters by year and ZCTA using `matter.open_date` to observe how the spatial distribution of cases and clients changes over time.
-
-The page emphasizes a shift from downtown cores toward suburban corridors in
-2021-2025, especially the Inland Empire and wider Los Angeles region.
 
 ### 3.1 All Clients
 
@@ -192,10 +187,6 @@ Output can be loaded directly into QGIS and animated using the Temporal Controll
 
 Identify clients who have generated revenue in the past but have not opened a new matter within a defined window, with a focus on Lucrative-tier churn:
 
-In the page narrative, 313 Lucrative clients have been inactive for more than
-two years. Star clients are the highest-priority dormant group because each
-averaged roughly $30K in revenue.
-
 ```sql
 WITH last_activity AS (
   SELECT
@@ -226,9 +217,6 @@ ORDER BY ct.net_revenue DESC;
 ### 3.4 Cohort Analysis (Long-Term Value by Intake Year)
 
 Group clients by the year of their first matter to compare cohort size, cumulative revenue, and Lucrative conversion rate across intake years:
-
-The page calls out 2021 as the strongest cohort by long-term value: fewer
-clients than later years, but much higher cumulative value per client.
 
 ```sql
 WITH first_matter AS (
@@ -286,10 +274,6 @@ both revenue and hour totals.
 ### 4.1 Practice Area (`practice_area`)
 
 Which practice areas generate the highest total revenue, and which are most efficient?
-
-The page identifies Civil Litigation as the dominant total-revenue practice.
-Case Review, Drafting, and Negotiations lead hourly efficiency, while Civil
-Litigation remains the scale leader with a mid-range revenue-per-hour yield.
 
 ```sql
 -- summary
@@ -373,12 +357,10 @@ LEFT JOIN hours_per_area h ON r.client_id = h.client_id
     AND r.practice_area IS NOT DISTINCT FROM h.practice_area
 ORDER BY c.id, net_revenue DESC;
 ```
-Seasonal Demand Patterns
+**Seasonal Demand Patterns**
+
 
 Aggregate by month to identify peak and off-peak periods for case intake, allowing marketing efforts to be timed ahead of high-demand seasons:
-
-The page notes February as the highest-volume month and December as the lowest.
-Civil Litigation and Negotiations account for much of the month-to-month volume.
 
 ```sql
 -- summary
@@ -401,10 +383,6 @@ ORDER BY month, matter_count DESC;
 ### 4.2 Scope of Representation (`scope_of_representation`)
 
 Which representation scope generates the highest total revenue and best hourly efficiency?
-
-The page highlights a data-quality issue: "Unspecified" scope represents the
-largest revenue share. Among labeled scopes, Full Litigation and related
-litigation categories drive much of the volume.
 
 ```sql
 -- summary
@@ -485,10 +463,6 @@ ORDER BY c.id, net_revenue DESC;
 ### 4.3 Corporate vs. Individual Clients (`iscompany`)
 
 Are corporate clients or individual clients more valuable in terms of total revenue and hourly efficiency?
-
-The page emphasizes that individual clients dominate the client base, while
-corporate and individual clients have relatively similar revenue-per-hour
-performance.
 
 ```sql
 -- summary
@@ -572,10 +546,6 @@ ORDER BY c.id, net_revenue DESC;
 ### 4.4 Client Acquisition Channel (`client_source`)
 
 Which acquisition channel generates the highest total revenue and best hourly efficiency?
-
-The page highlights Referral and Google as the highest-volume acquisition
-engines by clients and total revenue. RERM has the strongest hourly yield, but
-only across a very small client sample.
 
 ```sql
 -- summary (with source normalisation + top-5, rest -> 'Others')
@@ -713,10 +683,6 @@ ORDER BY c.id, net_revenue DESC;
 
 Answers "which acquisition channel brings in the highest share of Lucrative clients?" - directly informing marketing budget allocation ROI:
 
-The page calls out RERM, Official Website, and Yelp as high-conversion channels,
-while Referral and Google remain important because they deliver the largest
-absolute client volumes.
-
 ```sql
 WITH source_by_client AS (
   SELECT
@@ -782,10 +748,6 @@ ORDER BY lucrative_rate_pct DESC;
 ### 4.5 Client Language (`client_language`)
 
 Which client language groups generate the most revenue and highest efficiency?
-
-The page compares English- and Spanish-speaking clients and notes that Spanish
-clients are both a substantial share of the client base and similarly profitable
-per hour.
 
 ```sql
 -- summary
@@ -887,10 +849,6 @@ In QGIS, use `client_language` as the category field for symbology to visualise 
 ### 4.6 Retainer Type (`retainer_type`)
 
 Which billing arrangement generates the highest total revenue and best hourly efficiency?
-
-The page highlights Flat Fee matters as efficient, structured engagements with
-low average hours. It also flags "Unspecified" retainer type as a category that
-needs data cleanup before making strong operational conclusions.
 
 ```sql
 -- summary
@@ -1030,24 +988,9 @@ ORDER BY revenue_per_hour DESC;
 
 ---
 
-## 5. Key Findings Reflected in the Page
+## 5. Methodology Notes
 
-These findings summarize the narrative in `index.html` and connect the SQL
-outputs to business recommendations.
-
-| Finding | Evidence / Interpretation |
-|---|---|
-| 42% of clients are Lucrative | The four-tier model identifies 450 of 1,071 clients as Star, High Value, or Efficient. |
-| Lucrative clients are spatially clustered | High-value clients concentrate in South Los Angeles, the Pomona-Ontario corridor, and selected San Diego ZCTAs. |
-| Some low-volume areas are high-quality | The Volume x Quality matrix helps identify hidden-gem ZIP areas for targeted growth. |
-| Client geography is shifting outward | New matter intake expands from downtown cores into suburban corridors from 2021-2025. |
-| Dormant Lucrative clients are a retention priority | 313 Lucrative clients have gone silent for 2+ years, with Star clients representing the highest-value re-engagement group. |
-| Referrals are the strongest acquisition channel | Referral combines high total revenue, strong hourly efficiency, and a high Lucrative conversion rate. |
-| Flat Fee matters are operationally efficient | Flat Fee matters average relatively low hours while producing strong revenue per hour. |
-
-## 6. Methodology Notes
-
-The page uses PostgreSQL/PostGIS queries and QGIS visualization:
+The analysis uses PostgreSQL/PostGIS queries and QGIS visualization:
 
 | Component | Role |
 |---|---|
@@ -1067,12 +1010,12 @@ Core analytical choices:
 
 ---
 
-## 7. Added for the revised story (2026 revision)
+## 6. Queries Behind the Current StoryMap
 
-These queries back the new Chapters 2–4 and 6. Python (`analysis/build_story.py`) adds the steps
+These queries back Chapters 2–4 and 6 of the page. Python (`analysis/build_story.py`) adds the steps
 PostGIS doesn't do: joining ACS population, empirical Bayes smoothing and Getis-Ord Gi*.
 
-### 7.1 Two populations
+### 6.1 Two populations
 
 Matter-level analyses cover every client in `matter` (1,874 clients, $9.57M). Location-based
 analyses only cover clients in `contact` with `isclient = true` (1,071 clients, $7.05M). 806
@@ -1088,15 +1031,12 @@ FROM mc LEFT JOIN contact c ON c.id = mc.client_id
 GROUP BY 1;
 ```
 
-### 7.2 Nearest office and 30-mile markets
+### 6.2 Nearest office and 30-mile markets
 
 ```sql
-WITH office(name, geom) AS (VALUES
-  ('Los Angeles', ST_SetSRID(ST_MakePoint(-118.2587514, 34.04860677), 4326)),
-  ('Ontario',     ST_SetSRID(ST_MakePoint(-117.6110578, 34.06634171), 4326)),
-  ('San Diego',   ST_SetSRID(ST_MakePoint(-117.177125,  32.75891346), 4326))
-),
-nearest AS (
+-- office(name, geom): the three office points. Their exact coordinates are
+-- kept out of the repository because they would identify the firm.
+WITH nearest AS (
   SELECT ct.client_id, ct.client_tier, ct.net_revenue, o.name AS office,
          ST_Distance(ct.geom::geography, o.geom::geography) / 1609.34 AS miles
   FROM v_client_tier ct
@@ -1113,7 +1053,7 @@ WHERE miles <= 30
 GROUP BY office;
 ```
 
-### 7.3 First-12-month revenue by intake year
+### 6.3 First-12-month revenue by intake year
 
 Replaces lifetime revenue per cohort, which favors older cohorts.
 
@@ -1133,7 +1073,7 @@ WHERE f.first_open <= DATE '2025-03-31'
 GROUP BY 1 ORDER BY 1;
 ```
 
-### 7.4 Dormant lucrative clients on a fixed snapshot
+### 6.4 Dormant lucrative clients on a fixed snapshot
 
 Section 3.3 used `CURRENT_DATE`, so its result changed every day. The revision fixes the snapshot
 at the last matter date in the extract (2026-04-09).
