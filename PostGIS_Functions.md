@@ -1090,3 +1090,20 @@ WHERE ct.client_tier <> 'Standard'
   AND lm.last_open < DATE '2026-04-09' - 730
 ORDER BY ct.net_revenue DESC;
 ```
+
+### 7.5 Natural Earth countries (base map for Mexico)
+
+Natural Earth 1:10m Admin 0 Countries, loaded so the maps can show Mexico as land south of San Diego.
+
+```bash
+shp2pgsql -s 4326 -I -D -W UTF-8 ne_10m_admin_0_countries.shp public.ne_10m_admin_0_countries > ne10m.sql
+psql -d final_project_sbm -f ne10m.sql
+```
+
+```sql
+-- the part of Mexico the maps need, clipped to Southern California
+SELECT ST_Intersection(geom, ST_MakeEnvelope(-120, 31, -114, 35.5, 4326)) AS geom
+FROM public.ne_10m_admin_0_countries
+WHERE admin = 'Mexico';
+```
+

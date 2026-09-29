@@ -5,8 +5,9 @@ const S = window.STORY || {};
 
 const TIER = { 'Star': '#434b8b', 'High Value': '#cc586f', 'Efficient': '#368acc', 'Standard': '#9a9a9a' };
 const C = {
-  good: '#1c5c55', gold: '#c0944c', goldDk: '#8a6429', bad: '#b2182b', grey: '#b9b3a8',
-  la: '#434b8b', on: '#1c5c55', sd: '#e8740c'
+  good: '#1c5c55', goodLt: '#a8d5bd', gold: '#c0944c', goldDk: '#8a6429', bad: '#e69f00', grey: '#b9b3a8',
+  mid: '#8a948d', muted: '#d6d0c6',
+  la: '#434b8b', on: '#1c5c55', sd: '#c0944c'
 };
 const money = v => '$' + Math.round(v).toLocaleString();
 const moneyK = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : v >= 1e3 ? '$' + Math.round(v / 1e3) + 'K' : '$' + Math.round(v);
@@ -63,7 +64,8 @@ function initLightbox() {
     const scrolly = img.closest('.scrolly');
     if (scrolly) return scrolly.querySelector('.scrolly-caption').textContent;
     const fig = img.closest('figure');
-    const label = fig && fig.querySelector('.exhibit-label');
+    // a figure's label may sit outside it, in the text column (Chapter 3)
+    const label = fig && (document.getElementById(fig.getAttribute('aria-labelledby')) || fig.querySelector('.exhibit-label'));
     if (label) return label.textContent;
     const fc = fig && fig.querySelector('figcaption');
     return fc ? fc.textContent.trim() : img.alt;
@@ -299,7 +301,7 @@ function cohortChart(dark) {
     data: {
       labels: c.map(d => d.year),
       datasets: [
-        { label: 'Total revenue so far', data: c.map(d => d.lifetime_avg), backgroundColor: C.grey, borderRadius: 2 },
+        { label: 'Total revenue so far', data: c.map(d => d.lifetime_avg), backgroundColor: C.goodLt, borderRadius: 2 },
         { label: 'Revenue in first 12 months', data: c.map(d => d.first12_avg), backgroundColor: C.good, borderRadius: 2 }
       ]
     },
@@ -317,12 +319,30 @@ function cohortChart(dark) {
   };
 }
 
-// Chapter 5: revenue per hour by category. Green = well above the firm average, red = well below.
+// a legend that explains what each bar colour means (single dataset, so Chart.js can't build one itself)
+function colourKey(t, items) {
+  return {
+    display: true, position: 'bottom', onClick: null,
+    labels: {
+      color: t.text, boxWidth: 12, boxHeight: 12, padding: 14,
+      generateLabels: () => items.map(([text, color]) => ({ text, fillStyle: color, strokeStyle: color, lineWidth: 0, fontColor: t.text }))
+    }
+  };
+}
+
+// Chapter 5: revenue per hour by category, coloured against the firm-wide average
 function rphChart(rows, { grey = [], showClients = false }, dark) {
   const t = theme(dark);
   const data = [...rows].sort((a, b) => b.rph - a.rph);
   const firm = S.ops.practice.reduce((s, d) => s + d.rev, 0) / S.ops.practice.reduce((s, d) => s + d.hours, 0);
-  const color = d => grey.includes(d.label) ? '#d6d0c6' : d.rph >= firm * 1.08 ? C.good : d.rph <= firm * 0.85 ? C.bad : '#8a948d';
+  const hi = firm * 1.08, lo = firm * 0.85;
+  const color = d => grey.includes(d.label) ? C.muted : d.rph >= hi ? C.good : d.rph <= lo ? C.bad : C.mid;
+  const key = [
+    [`8%+ above firm average ($${Math.round(firm)}/hr)`, C.good],
+    ['Near average', C.mid],
+    ['15%+ below average', C.bad]
+  ];
+  if (data.some(d => grey.includes(d.label))) key.push(['Not recorded or other', C.muted]);
   return {
     type: 'bar',
     plugins: [barLabels],
@@ -335,7 +355,7 @@ function rphChart(rows, { grey = [], showClients = false }, dark) {
       maintainAspectRatio: false,
       layout: { padding: { right: showClients ? 110 : 50 } },
       plugins: {
-        legend: { display: false },
+        legend: colourKey(t, key),
         barLabels: { color: t.text, format: i => '$' + Math.round(data[i].rph) + (showClients ? ` · ${data[i].clients} clients` : '') },
         tooltip: { callbacks: { label: i => { const d = data[i.dataIndex]; return [` ${money(d.rph)}/hr`, ` ${moneyK(d.rev)} revenue`, ` ${d.clients} clients`]; } } }
       },
@@ -358,7 +378,7 @@ function channelChart(dark) {
       labels: rows.map(d => d.label),
       datasets: [{
         data: rows.map(d => d.luc_rate),
-        backgroundColor: rows.map(d => small(d) ? '#dcd6cc' : d.label === 'Spanish Google' ? C.bad : C.good),
+        backgroundColor: rows.map(d => small(d) ? C.muted : d.label === 'Spanish Google' ? C.bad : C.good),
         borderRadius: 2, barPercentage: .78
       }]
     },
@@ -367,7 +387,11 @@ function channelChart(dark) {
       maintainAspectRatio: false,
       layout: { padding: { right: 110 } },
       plugins: {
-        legend: { display: false },
+        legend: colourKey(t, [
+          ['Channel with 20+ clients', C.good],
+          ['Below the other large channels', C.bad],
+          ['Under 20 clients: too few to judge', C.muted]
+        ]),
         barLabels: { color: t.text, format: i => `${rows[i].luc_rate}% · ${rows[i].clients} clients` },
         tooltip: { callbacks: { label: i => ` ${rows[i.dataIndex].luc_rate}% of ${rows[i.dataIndex].clients} mapped clients are lucrative` } }
       },

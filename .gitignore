@@ -5,3 +5,6 @@ __pycache__/
 MAP_PRODUCTION_GUIDE.md
 MAP_PRODUCTION_GUIDE_EN.md
 story_layers.gpkg*
+
+# editable vector copies of the maps (build_story.py --maps --svg)
+map_svg/

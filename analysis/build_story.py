@@ -15,6 +15,7 @@ Usage
   python analysis/build_story.py --export
   python analysis/build_story.py            (re-use the last export)
   python analysis/build_story.py --maps     (also redraw data/maps/*.png; overwrites them)
+  python analysis/build_story.py --maps --svg   (plus editable SVG copies in map_svg/)
 
 Raw exports stay OUTSIDE the repo (../Analysis/StoryBuild) because they hold
 client-level records. Only aggregated numbers and rendered maps land in data/.
@@ -33,9 +34,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patheffects
+import matplotlib.font_manager
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from pyproj import Transformer
 
 REPO = Path(__file__).resolve().parents[1]
 PROJECT = REPO.parent
@@ -47,6 +50,8 @@ BIG_CITY = PROJECT / 'Analysis' / 'ExportData' / 'california_big_city.geojson'
 OFFICE_CSV = PROJECT / 'Analysis' / 'ImportData' / 'office_location.csv'
 OUT_JS = REPO / 'data' / 'story.js'
 MAP_DIR = REPO / 'data' / 'maps'
+SVG_DIR = None                             # set by --svg: editable vector copies go to REPO / 'map_svg'
+FONT_DIR = WORK / 'fonts'                  # Roboto-Regular/Medium/Bold.ttf, same face as the web page
 
 PSQL = r'C:\Program Files\PostgreSQL\18\bin\psql.exe'
 DB = dict(user='postgres', host='localhost', dbname='final_project_sbm')
@@ -63,6 +68,9 @@ TIER_COLORS = {'Star': '#434b8b', 'High Value': '#cc586f', 'Efficient': '#368acc
 OFFICE_COLOR = '#e8740c'
 OCEAN = '#dfe6ea'
 LAND = '#f6f4f0'
+FOREIGN = '#ebe8e2'                         # Mexico: land, but outside the study area
+NEW_STD = '#8ccaa6'                         # 4.1: new standard client (light green)
+EARLIER = '#c7c2b8'                         # 4.1: clients from earlier years (grey, darker than the land)
 
 EXPORTS = {
     'clients.csv': """
@@ -83,6 +91,11 @@ EXPORTS = {
         left join (select matter_id, sum(hours) hrs from activity group by 1) h
                on h.matter_id = m.id""",
     'tx.csv': 'select client_id, matter_id, date, funds_in - funds_out net from transaction',
+    # Natural Earth 1:10m countries, loaded with shp2pgsql; clipped to Southern California so the file stays small
+    'mexico.csv': """
+        select st_astext(st_intersection(geom, st_makeenvelope(-120, 31, -114, 35.5, 4326))) wkt
+        from public.ne_10m_admin_0_countries
+        where admin = 'Mexico'""",
 }
 
 
@@ -418,6 +431,12 @@ def analyse(offices, c, m, tx, z):
 class Basemap:
     def __init__(self, offices):
         self.counties = gpd.read_file(COUNTY_SHP, bbox=(-120, 32.3, -114, 35.5)).to_crs(3310)
+        self.mexico = None
+        mx = WORK / 'mexico.csv'
+        if mx.exists():
+            wkt = pd.read_csv(mx).wkt
+            # buffered 600 m and drawn under the counties, so the two sources' borders leave no sliver of 'ocean'
+            self.mexico = gpd.GeoSeries.from_wkt(wkt, crs=4326).to_crs(3310).buffer(600)
         cities = gpd.read_file(BIG_CITY)
         cities = cities[cities.STATEFP == '06'].to_crs(3310)
         cities['pt'] = cities.geometry.representative_point()
@@ -426,6 +445,8 @@ class Basemap:
 
     def frame(self, ax, extent):
         ax.set_facecolor(OCEAN)
+        if self.mexico is not None:           # without it, Tijuana would read as ocean
+            self.mexico.plot(ax=ax, color=FOREIGN, edgecolor='none', zorder=-1)
         self.counties.plot(ax=ax, color=LAND, edgecolor='none', zorder=0)
         ax.set_xlim(extent[0], extent[2])
         ax.set_ylim(extent[1], extent[3])
@@ -434,8 +455,14 @@ class Basemap:
         for s in ax.spines.values():
             s.set_edgecolor('#b9b2a6')
 
-    def overlay(self, ax, extent, labels=True, city_min_pop=150000, office_labels=True, fs=9):
+    def overlay(self, ax, extent, labels=True, city_min_pop=150000, office_labels=True, fs=9, office_gap=13000):
         self.counties.boundary.plot(ax=ax, color='#a09a90', linewidth=.6, zorder=4)
+        x0, y0, x1, y1 = extent
+        if self.mexico is not None and labels:
+            mx, my = Transformer.from_crs(4326, 3310, always_xy=True).transform(-116.85, 32.40)
+            if x0 < mx < x1 and y0 < my < y1:
+                ax.text(mx, my, 'MEXICO', fontsize=fs, color='#9a948a', ha='center', va='center', zorder=7,
+                        fontweight='medium')
         if labels:
             x0, y0, x1, y1 = extent
             placed = [(o.geometry.x, o.geometry.y) for _, o in self.offices.iterrows()]
@@ -443,7 +470,7 @@ class Basemap:
                 p = cty.pt
                 if not (x0 < p.x < x1 and y0 < p.y < y1):
                     continue
-                if any(np.hypot(p.x - a, p.y - b) < 13000 for a, b in placed):
+                if any(np.hypot(p.x - a, p.y - b) < office_gap for a, b in placed):
                     continue
                 placed.append((p.x, p.y))
                 if True:
@@ -461,43 +488,104 @@ class Basemap:
                             path_effects=[matplotlib.patheffects.withStroke(linewidth=3, foreground='white')])
 
     @staticmethod
-    def scalebar(ax, miles=20, loc=(0.04, 0.05), fs=8):
+    def graticule(ax, step=0.5, labels=True, fs=8):
+        """Lon/lat grid in place of a scale bar and north arrow; labels sit on the left and bottom edges."""
         x0, x1 = ax.get_xlim()
         y0, y1 = ax.get_ylim()
-        L = miles * 1609.34
-        bx = x0 + (x1 - x0) * loc[0]
-        by = y0 + (y1 - y0) * loc[1]
-        h = (y1 - y0) * 0.008
-        ax.add_patch(plt.Rectangle((bx, by), L / 2, h, color='#333', zorder=10))
-        ax.add_patch(plt.Rectangle((bx + L / 2, by), L / 2, h, facecolor='white', edgecolor='#333', zorder=10))
-        for frac, lab in ((0, '0'), (.5, str(miles // 2)), (1, f'{miles} mi')):
-            ax.text(bx + L * frac, by + h * 2.2, lab, ha='center', va='bottom', fontsize=fs, zorder=10, color='#333')
-        ax.annotate('N', xy=(bx + L * 1.35, by + h * 6), xytext=(bx + L * 1.35, by),
-                    ha='center', va='bottom', fontsize=fs + 1, fontweight='bold', color='#333', zorder=10,
-                    arrowprops=dict(arrowstyle='-|>', color='#333', lw=1.2))
+        tf = Transformer.from_crs(4326, 3310, always_xy=True)
+        along_lat = np.linspace(31, 36.5, 400)
+        along_lon = np.linspace(-121.5, -113.5, 400)
+        xticks, xlabels, yticks, ylabels = [], [], [], []
+        for lon in np.arange(-121, -114 + 1e-9, step):
+            xs, ys = tf.transform(np.full_like(along_lat, lon), along_lat)
+            ax.plot(xs, ys, color=GRID, lw=.45, alpha=.6, zorder=8)
+            xb = np.interp(y0, ys, xs)               # where the meridian meets the bottom edge
+            if x0 < xb < x1:
+                xticks.append(xb)
+                xlabels.append(f'{abs(lon):g}°W')
+        for lat in np.arange(31.5, 36 + 1e-9, step):
+            xs, ys = tf.transform(along_lon, np.full_like(along_lon, lat))
+            ax.plot(xs, ys, color=GRID, lw=.45, alpha=.6, zorder=8)
+            yb = np.interp(x0, xs, ys)               # where the parallel meets the left edge
+            if y0 < yb < y1:
+                yticks.append(yb)
+                ylabels.append(f'{lat:g}°N')
+        ax.set_xlim(x0, x1)
+        ax.set_ylim(y0, y1)
+        if labels:
+            ax.set_xticks(xticks, xlabels, fontsize=fs, color='#5c685f')
+            ax.set_yticks(yticks, ylabels, fontsize=fs, color='#5c685f')
+            ax.tick_params(length=0, pad=3)
 
 
-def extent_from(lonlat_box):
-    g = gpd.GeoSeries(gpd.points_from_xy([lonlat_box[0], lonlat_box[2]], [lonlat_box[1], lonlat_box[3]]), crs=4326).to_crs(3310)
-    return (g.x.min(), g.y.min(), g.x.max(), g.y.max())
+# 1:1 square around all three offices (EPSG:3310), the extent given in MAP_PRODUCTION_GUIDE.md
+REGION = (98919, -609406, 317202, -391123)
+GRID = '#8a8278'
 
 
-REGION = extent_from((-118.75, 32.52, -116.75, 34.45))
+def map_title(ax, text, sub=None, fs=15):
+    """Title band above the map frame. Titles never go inside the legend."""
+    ax.set_title(text, loc='left', fontsize=fs, fontweight='bold', color='#1f2a24', pad=24 if sub else 8)
+    if sub:
+        ax.text(0, 1.012, sub, transform=ax.transAxes, fontsize=fs * .66, color='#5c685f', va='bottom', ha='left')
 
 
-def legend_box(ax, handles, title, loc='lower left', fs=9, ncol=1, anchor=(0.02, 0.12)):
-    # default sits over the Pacific, clear of every market
-    lg = ax.legend(handles=handles, title=title, loc=loc, bbox_to_anchor=anchor, fontsize=fs, title_fontsize=fs + .5,
+def legend_box(ax, handles, heading=None, loc='lower left', fs=9, ncol=1, anchor=(0.02, 0.03)):
+    # default sits over the Pacific, clear of every market; heading is a short group name, never the map title
+    lg = ax.legend(handles=handles, title=heading, loc=loc, bbox_to_anchor=anchor, fontsize=fs, title_fontsize=fs + .5,
                    frameon=True, framealpha=.95, edgecolor='#cfc8bc', ncol=ncol, alignment='left')
+    lg.set_zorder(20)
+    ax.add_artist(lg)                        # keep it when a second (size) legend is added
+    return lg
+
+
+def size_items(area_pt2, values):
+    """Reference circles at exactly the size used on the map (scatter area in pt² -> marker diameter in pt)."""
+    return [Line2D([], [], marker='o', ls='', mfc='#dcd6cc', mec='#6b6358', mew=.6, ms=np.sqrt(area_pt2(v)),
+                   label=f'${v // 1000:,}K') for v in values]
+
+
+def group_legend(ax, groups, loc='lower left', anchor=(0.02, 0.03), fs=9):
+    """Every legend group in one frame, each under a bold heading (e.g. Client tier, then Net revenue)."""
+    handles, heads = [], []
+    for n, (heading, items) in enumerate(groups):
+        heads.append(len(handles))
+        # a blank line before every heading but the first keeps the groups apart inside the frame
+        handles.append(Line2D([], [], ls='', marker='', label=('\n' if n else '') + heading))
+        handles += items
+    lg = ax.legend(handles=handles, loc=loc, bbox_to_anchor=anchor, fontsize=fs, frameon=True, framealpha=.95,
+                   edgecolor='#cfc8bc', labelspacing=.8, borderpad=.9, handletextpad=.8, handlelength=1.8)
+    for i, txt in enumerate(lg.get_texts()):
+        if i in heads:
+            txt.set_fontweight('bold')
     lg.set_zorder(20)
     return lg
 
 
-def save(fig, name):
-    MAP_DIR.mkdir(parents=True, exist_ok=True)
-    fig.savefig(MAP_DIR / name, dpi=300, bbox_inches='tight', pad_inches=0.05, facecolor='white')
+def save(fig, name, folder=None):
+    folder = folder or MAP_DIR
+    folder.mkdir(parents=True, exist_ok=True)
+    fig.savefig(folder / name, dpi=300, bbox_inches='tight', pad_inches=0.08, facecolor='white')
+    if SVG_DIR:
+        SVG_DIR.mkdir(parents=True, exist_ok=True)
+        fig.savefig(SVG_DIR / (Path(name).stem + '.svg'), bbox_inches='tight', pad_inches=0.08, facecolor='white')
     plt.close(fig)
     print('map', name)
+
+
+def use_roboto():
+    """Draw the maps in Roboto, as the guide specifies, when the font files are available."""
+    files = [FONT_DIR / f'Roboto-{w}.ttf' for w in ('Regular', 'Medium', 'Bold')]
+    if not all(f.exists() for f in files):
+        print('Roboto not found in', FONT_DIR, '- using the default font')
+        return
+    for f in files:
+        matplotlib.font_manager.fontManager.addfont(str(f))
+    plt.rcParams['font.family'] = 'Roboto'
+
+
+plt.rcParams['svg.fonttype'] = 'none'      # keep labels as live text in the SVGs
+plt.rcParams['svg.hashsalt'] = 'story'     # stable ids, so re-exports diff cleanly
 
 
 def rings(ax, bm, miles=(10, 20, 30)):
@@ -507,31 +595,81 @@ def rings(ax, bm, miles=(10, 20, 30)):
                                     lw=.8, ec='#6b5b45', alpha=.55, zorder=6))
 
 
+def tier_size(v):                  # scatter marker area (pt²) for the tier maps
+    return 6 + np.sqrt(np.clip(v, 0, None)) / 4
+
+
+def dormant_size(v):
+    return 6 + np.sqrt(np.clip(v, 0, None)) / 3.2
+
+
+RING = lambda label: Line2D([], [], ls=(0, (4, 3)), color='#6b5b45', label=label)
+OFFICE = Line2D([], [], marker='D', ls='', color=OFFICE_COLOR, mec='white', ms=7, label='Office')
+
+
 def draw_maps(offices, c, S, out):
     bm = Basemap(offices)
     Sp = S.to_crs(3310)
     cp = gpd.GeoDataFrame(c, geometry=gpd.points_from_xy(c.lon, c.lat), crs=4326).to_crs(3310)
+    size_values = (5000, 25000, 75000, 125000)
 
-    # 1. where clients are, by tier (replaces the continental-US overview)
-    fig, ax = plt.subplots(figsize=(11, 10))
+    # 1. where clients are, by tier
+    fig, ax = plt.subplots(figsize=(10, 10))
     bm.frame(ax, REGION)
     Sp.boundary.plot(ax=ax, color='#e2ddd4', linewidth=.3, zorder=1)
     for tier in ['Standard', 'Efficient', 'High Value', 'Star']:
-        g = cp[cp.tier == tier]
-        size = 6 + np.sqrt(g.net_revenue.clip(lower=0)) / 4
-        g.plot(ax=ax, color=TIER_COLORS[tier], markersize=size, alpha=.75 if tier != 'Standard' else .45,
+        g = cp[cp.tier == tier].sort_values('net_revenue', ascending=False)
+        g.plot(ax=ax, color=TIER_COLORS[tier], markersize=tier_size(g.net_revenue), alpha=.75 if tier != 'Standard' else .45,
                edgecolor='white', linewidth=.3, zorder=5)
     rings(ax, bm, (30,))
     bm.overlay(ax, REGION)
-    bm.scalebar(ax)
-    h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f"{k}  ({out['tiers'][k]['n']})") for k in ['Star', 'High Value', 'Efficient', 'Standard']]
-    h += [Line2D([], [], marker='D', ls='', color=OFFICE_COLOR, ms=7, label='Office'),
-          Line2D([], [], ls=(0, (4, 3)), color='#6b5b45', label='30-mile market')]
-    legend_box(ax, h, 'Client tier  ·  circle size = net revenue')
+    bm.graticule(ax)
+    map_title(ax, 'All mapped clients by tier',
+              f"{out['scope']['clients_mapped']:,} clients with an address on file · 30-mile market around each office")
+    h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f"{k}  ({out['tiers'][k]['n']})")
+         for k in ['Star', 'High Value', 'Efficient', 'Standard']]
+    group_legend(ax, [('Client tier', h + [OFFICE, RING('30-mile market')]),
+                      ('Net revenue', size_items(tier_size, size_values))])
     save(fig, 'region_tiers.png')
 
+    # 1b. market close-ups: one scale for all three, only this market's clients at full strength
+    markets = {'Los Angeles': ('LucrativeCustomerTier_LA.png', 'Los Angeles market'),
+               'Ontario': ('LucrativeCustomerTier_ON.png', 'Ontario and Inland Empire market'),
+               'San Diego': ('LucrativeCustomerTier_SD.png', 'San Diego market')}
+    half = CATCHMENT_MILES * 1609.34 + 3000
+    for office, (fname, name) in markets.items():
+        o = bm.offices[bm.offices.office == office].geometry.iloc[0]
+        ext = (o.x - half, o.y - half, o.x + half, o.y + half)
+        fig, ax = plt.subplots(figsize=(10, 10))
+        bm.frame(ax, ext)
+        Sp.boundary.plot(ax=ax, color='#e2ddd4', linewidth=.3, zorder=1)
+        mine = (cp.office == office) & (cp.dist <= CATCHMENT_MILES)
+        for tier in ['Standard', 'Efficient', 'High Value', 'Star']:
+            g = cp[~mine & (cp.tier == tier)]
+            g.plot(ax=ax, color=TIER_COLORS[tier], markersize=tier_size(g.net_revenue), alpha=.2, linewidth=0, zorder=4)
+        for tier in ['Standard', 'Efficient', 'High Value', 'Star']:
+            g = cp[mine & (cp.tier == tier)].sort_values('net_revenue', ascending=False)
+            g.plot(ax=ax, color=TIER_COLORS[tier], markersize=tier_size(g.net_revenue),
+                   alpha=.75 if tier != 'Standard' else .45, edgecolor='white', linewidth=.3, zorder=5)
+        for mi in (10, 20, 30):
+            ax.add_patch(plt.Circle((o.x, o.y), mi * 1609.34, fill=False, ls=(0, (4, 3)), lw=.8, ec='#6b5b45',
+                                    alpha=.55, zorder=6))
+        bm.overlay(ax, ext, city_min_pop=100000, fs=10, office_gap=5000)
+        bm.graticule(ax, step=0.25)
+        map_title(ax, name, f'Clients by tier within {CATCHMENT_MILES} miles of the office')
+        counts = cp[mine].tier.value_counts()
+        h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f'{k}  ({counts.get(k, 0)})')
+             for k in ['Star', 'High Value', 'Efficient', 'Standard']]
+        h += [Line2D([], [], marker='o', ls='', color='#9a9a9a', alpha=.3, ms=8, label='Client in another market'),
+              OFFICE, RING('10 / 20 / 30 mi from office')]
+        # Ontario's lower left is Orange County land, so its legends sit in the empty mountains up top
+        top = office == 'Ontario'
+        group_legend(ax, [('Client tier', h), ('Net revenue', size_items(tier_size, size_values))],
+                     loc='upper left' if top else 'lower left', anchor=(0.02, 0.97) if top else (0.02, 0.03))
+        save(fig, fname, folder=REPO / 'data')
+
     # 2. penetration choropleth
-    fig, ax = plt.subplots(figsize=(11, 10))
+    fig, ax = plt.subplots(figsize=(10, 10))
     bm.frame(ax, REGION)
     bins = [0, 1, 3, 6, 10, 1e9]
     cols = ['#f2efe9', '#c9e3d8', '#86c3b0', '#3f9383', '#1c5c55']
@@ -540,15 +678,17 @@ def draw_maps(offices, c, S, out):
     Sp[Sp['pop'] < 1000].plot(ax=ax, color='#e8e5df', hatch='////', edgecolor='#d7d2c9', linewidth=0, zorder=3)
     rings(ax, bm, (10, 20, 30))
     bm.overlay(ax, REGION)
-    bm.scalebar(ax)
+    bm.graticule(ax)
+    map_title(ax, 'Market reach', 'Clients per 100,000 residents by ZIP area, smoothed · 30-mile markets')
     labs = ['< 1', '1 – 3', '3 – 6', '6 – 10', '10 +']
-    h = [Patch(color=cols[i], label=labs[i]) for i in range(5)] + [Patch(facecolor='#e8e5df', hatch='////', edgecolor='#cfc8bc', label='< 1,000 residents')]
-    h += [Line2D([], [], ls=(0, (4, 3)), color='#6b5b45', label='10 / 20 / 30 mi from office')]
-    legend_box(ax, h, 'Clients per 100,000 residents\n(smoothed, by ZIP area)')
+    h = [Patch(color=cols[i], label=labs[i]) for i in range(5)]
+    h += [Patch(facecolor='#e8e5df', hatch='////', edgecolor='#cfc8bc', label='< 1,000 residents'), OFFICE,
+          RING('10 / 20 / 30 mi from office')]
+    legend_box(ax, h, 'Clients per 100,000')
     save(fig, 'penetration.png')
 
     # 3. hot spots
-    fig, ax = plt.subplots(figsize=(11, 10))
+    fig, ax = plt.subplots(figsize=(10, 10))
     bm.frame(ax, REGION)
     hc = {'hot99': '#b2182b', 'hot95': '#ef8a62', 'ns': '#ece8e1', 'cold': '#67a9cf'}
     for k, col in hc.items():
@@ -556,39 +696,41 @@ def draw_maps(offices, c, S, out):
         if len(g):
             g.plot(ax=ax, color=col, edgecolor='white', linewidth=.25, zorder=2)
     bm.overlay(ax, REGION)
-    bm.scalebar(ax)
+    bm.graticule(ax)
+    map_title(ax, 'Hot spots of lucrative clients',
+              'Getis-Ord Gi* on lucrative clients per 100,000 residents · ZIP areas within 30 mi of an office')
     h = [Patch(color=hc['hot99'], label='Hot spot (99% confidence)'), Patch(color=hc['hot95'], label='Hot spot (95%)'),
-         Patch(color=hc['ns'], label='Not significant'), Patch(color=hc['cold'], label='Cold spot (95%+)')]
-    legend_box(ax, h, 'Getis-Ord Gi*  ·  lucrative clients\nper 100,000 residents')
+         Patch(color=hc['ns'], label='Not significant'), Patch(color=hc['cold'], label='Cold spot (95%+)'), OFFICE]
+    legend_box(ax, h)
     save(fig, 'hotspots.png')
 
     # 4. opportunity
-    fig, ax = plt.subplots(figsize=(11, 10))
+    fig, ax = plt.subplots(figsize=(10, 10))
     bm.frame(ax, REGION)
     Sp.plot(ax=ax, color='#ece8e1', edgecolor='white', linewidth=.25, zorder=1)
     g = Sp[(Sp.dist <= OPPORTUNITY_MILES) & (Sp.gap > 0)]
     obins = [0, 1, 2, 3, 1e9]
-    ocols = ['#fde4c8', '#f9b77a', '#ec7f38', '#b54a0a']
+    ocols = ['#d4ecf1', '#8fcbdc', '#3f9dbd', '#1b6585']
     ocm = ListedColormap(ocols)
     g.plot(ax=ax, column='gap', cmap=ocm, norm=BoundaryNorm(obins, ocm.N), edgecolor='white', linewidth=.25, zorder=2)
     rings(ax, bm, (OPPORTUNITY_MILES,))
     bm.overlay(ax, REGION, city_min_pop=250000)
-    top = Sp[Sp.opp_rank.notna()]
-    for _, v in top.iterrows():
+    for _, v in Sp[Sp.opp_rank.notna()].iterrows():
         p = v.geometry.representative_point()
         ax.annotate(str(int(v.opp_rank)), (p.x, p.y), ha='center', va='center', fontsize=8.5, fontweight='bold',
-                    color='white', zorder=12,
-                    bbox=dict(boxstyle='circle,pad=0.25', fc='#1a2d22', ec='white', lw=1))
-    bm.scalebar(ax)
+                    color='white', zorder=12, bbox=dict(boxstyle='circle,pad=0.25', fc='#1a2d22', ec='white', lw=1))
+    bm.graticule(ax)
+    map_title(ax, f'Missing clients within {OPPORTUNITY_MILES} miles of an office',
+              'Expected minus actual clients, given population and distance · top 10 ZIP areas numbered')
     labs = ['0 – 1', '1 – 2', '2 – 3', '3 +']
     h = [Patch(color=ocols[i], label=labs[i]) for i in range(4)]
     h += [Line2D([], [], marker='o', ls='', mfc='#1a2d22', mec='white', ms=10, label='Top-10 target ZIP area'),
-          Line2D([], [], ls=(0, (4, 3)), color='#6b5b45', label=f'{OPPORTUNITY_MILES} mi from office')]
-    legend_box(ax, h, 'Missing clients\n(expected − actual, given distance)')
+          OFFICE, RING(f'{OPPORTUNITY_MILES} mi from office')]
+    legend_box(ax, h, 'Missing clients')
     save(fig, 'opportunity.png')
 
     # 5. Spanish-speaking market vs. Spanish-speaking clients
-    fig, ax = plt.subplots(figsize=(11, 10))
+    fig, ax = plt.subplots(figsize=(10, 10))
     bm.frame(ax, REGION)
     Sp['span_pct'] = np.where(Sp.pop5 > 0, Sp.spanish_spk / Sp.pop5.replace(0, np.nan) * 100, np.nan)
     sbins = [0, 15, 30, 45, 60, 101]
@@ -596,54 +738,57 @@ def draw_maps(offices, c, S, out):
     scm = ListedColormap(scols)
     Sp.plot(ax=ax, column='span_pct', cmap=scm, norm=BoundaryNorm(sbins, scm.N), edgecolor='white', linewidth=.25,
             zorder=2, missing_kwds={'color': '#ece8e1'})
-    sc = cp[cp.spanish]
-    sc.plot(ax=ax, color='#f2c14e', markersize=16, edgecolor='#5a4300', linewidth=.5, zorder=8)
+    cp[cp.spanish & (cp.dist <= STUDY_MILES)].plot(ax=ax, color='#f2c14e', markersize=16, edgecolor='#5a4300',
+                                                   linewidth=.5, zorder=8)
     bm.overlay(ax, REGION)
-    bm.scalebar(ax)
+    bm.graticule(ax)
+    map_title(ax, 'Spanish-speaking residents and clients', 'ACS 2018–22 · 30-mile markets')
     labs = ['< 15%', '15 – 30%', '30 – 45%', '45 – 60%', '60% +']
     h = [Patch(color=scols[i], label=labs[i]) for i in range(5)]
-    h += [Line2D([], [], marker='o', ls='', mfc='#f2c14e', mec='#5a4300', ms=7, label='Spanish-speaking client')]
-    legend_box(ax, h, 'Residents who speak Spanish at home\n(ACS 2018–22)')
+    h += [Line2D([], [], marker='o', ls='', mfc='#f2c14e', mec='#5a4300', ms=7, label='Spanish-speaking client'), OFFICE]
+    legend_box(ax, h, 'Speak Spanish at home')
     save(fig, 'spanish_gap.png')
 
     # 6. new clients by year (small multiples, one file each)
+    inside = cp[cp.dist <= STUDY_MILES]
     for y in range(2021, 2026):
-        fig, ax = plt.subplots(figsize=(6, 5.6))
+        fig, ax = plt.subplots(figsize=(5, 5))
         bm.frame(ax, REGION)
-        inside = cp[cp.dist <= STUDY_MILES]
         prev = inside[inside.year < y]
         if len(prev):
-            prev.plot(ax=ax, color='#e2ddd3', markersize=5, zorder=3, alpha=.8)
+            prev.plot(ax=ax, color=EARLIER, markersize=3, zorder=3, alpha=.9)
         g = inside[inside.year == y]
-        g[~g.luc].plot(ax=ax, color='#a9a397', markersize=10, zorder=5, alpha=.85, edgecolor='white', linewidth=.3)
-        g[g.luc].plot(ax=ax, color='#1c5c55', markersize=16, zorder=6, alpha=.9, edgecolor='white', linewidth=.3)
+        g[~g.luc].plot(ax=ax, color=NEW_STD, markersize=11, zorder=5, alpha=.95, edgecolor='white', linewidth=.3)
+        g[g.luc].plot(ax=ax, color='#1c5c55', markersize=15, zorder=6, alpha=.9, edgecolor='white', linewidth=.3)
         bm.overlay(ax, REGION, labels=False, office_labels=False)
-        ax.text(.05, .95, str(y), transform=ax.transAxes, fontsize=26, fontweight='bold', color='#1a2d22', va='top', zorder=12)
+        bm.graticule(ax, step=1, labels=False)
+        map_title(ax, str(y), f'New clients within {STUDY_MILES} mi of an office', fs=18)
         h = [Line2D([], [], marker='o', ls='', color='#1c5c55', ms=6, label='New lucrative client'),
-             Line2D([], [], marker='o', ls='', color='#a9a397', ms=5, label='New standard client'),
-             Line2D([], [], marker='o', ls='', color='#e2ddd3', ms=4, label='Earlier clients'),
-             Line2D([], [], marker='D', ls='', color=OFFICE_COLOR, ms=5, label='Office')]
-        legend_box(ax, h, f'Within {STUDY_MILES} mi of an office', fs=7.5, anchor=(0.02, 0.04))
+             Line2D([], [], marker='o', ls='', color=NEW_STD, ms=5, label='New standard client'),
+             Line2D([], [], marker='o', ls='', color=EARLIER, ms=4, label='Earlier clients'),
+             Line2D([], [], marker='D', ls='', color=OFFICE_COLOR, mec='white', ms=5, label='Office')]
+        legend_box(ax, h, fs=8)
         save(fig, f'year_{y}.png')
 
     # 7. dormant lucrative clients
     d = cp[cp.luc & ((SNAPSHOT - cp['last']).dt.days > DORMANT_DAYS)]
-    fig, ax = plt.subplots(figsize=(11, 10))
+    since = (SNAPSHOT - pd.Timedelta(days=DORMANT_DAYS)).strftime('%B %Y')
+    fig, ax = plt.subplots(figsize=(10, 10))
     bm.frame(ax, REGION)
     Sp.boundary.plot(ax=ax, color='#e2ddd4', linewidth=.3, zorder=1)
     for tier in ['Efficient', 'High Value', 'Star']:
-        g = d[d.tier == tier]
-        g.plot(ax=ax, color=TIER_COLORS[tier], markersize=6 + np.sqrt(g.net_revenue.clip(lower=0)) / 3.2,
+        g = d[d.tier == tier].sort_values('net_revenue', ascending=False)
+        g.plot(ax=ax, color=TIER_COLORS[tier], markersize=dormant_size(g.net_revenue),
                alpha=.75, edgecolor='white', linewidth=.4, zorder=5)
     rings(ax, bm, (10,))
     bm.overlay(ax, REGION)
-    bm.scalebar(ax)
-    h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f"{k}  ({out['dormant']['by_tier'][k]['n']})") for k in ['Star', 'High Value', 'Efficient']]
-    for v in (5000, 25000, 75000):
-        h.append(Line2D([], [], marker='o', ls='', mfc='none', mec='#555', ms=np.sqrt(6 + np.sqrt(v) / 3.2) * 1.0,
-                        label=f'${v // 1000}K lifetime revenue'))
-    h.append(Line2D([], [], ls=(0, (4, 3)), color='#6b5b45', label='10 mi from office'))
-    legend_box(ax, h, f'Lucrative clients with no new matter\nsince {(SNAPSHOT - pd.Timedelta(days=DORMANT_DAYS)).strftime("%b %Y")}')
+    bm.graticule(ax)
+    map_title(ax, f'Lucrative clients with no new matter since {since}',
+              f"{out['dormant']['n']} clients · data snapshot {SNAPSHOT:%d %B %Y}")
+    h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f"{k}  ({out['dormant']['by_tier'][k]['n']})")
+         for k in ['Star', 'High Value', 'Efficient']]
+    group_legend(ax, [('Client tier', h + [OFFICE, RING('10 mi from office')]),
+                      ('Lifetime net revenue', size_items(dormant_size, size_values))])
     save(fig, 'dormant.png')
 
 
@@ -679,7 +824,11 @@ def main():
     ap.add_argument('--export', action='store_true', help='re-export tables from PostGIS first')
     ap.add_argument('--maps', action='store_true',
                     help='also redraw the matplotlib maps; off by default so hand-made QGIS maps in data/maps are not overwritten')
+    ap.add_argument('--svg', action='store_true', help='with --maps, also write editable SVGs to map_svg/ (git-ignored)')
     a = ap.parse_args()
+    if a.svg:
+        global SVG_DIR
+        SVG_DIR = REPO / 'map_svg'
     if a.export:
         export_from_db()
     offices, c, m, tx, z = load()
@@ -689,6 +838,7 @@ def main():
     print('wrote', OUT_JS)
     write_layers(offices, c, S)
     if a.maps:
+        use_roboto()
         draw_maps(offices, c, S, out)
 
 

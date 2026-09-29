@@ -286,13 +286,13 @@
     <div class="scrolly" id="scrolly-where">
       <figure class="scrolly-figure">
         <div class="scrolly-frame">
-          <img class="scrolly-img" src="data/maps/region_tiers.png" alt="" data-zoom />
+          <img class="scrolly-img" src="data/maps/region_tiers.png?v=20260929" alt="" data-zoom />
         </div>
         <figcaption class="scrolly-caption"></figcaption>
       </figure>
 
       <div class="scrolly-steps">
-        <article class="step" data-img="data/maps/region_tiers.png"
+        <article class="step" data-img="data/maps/region_tiers.png?v=20260929"
           data-caption="Exhibit 2.1 · All mapped clients by tier, Southern California"
           data-alt="Regional map of clients colored by tier with 30-mile rings around the three offices">
           <h3>Eight in ten mapped clients live within 30 miles of an office</h3>
@@ -306,7 +306,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_LA.png"
+        <article class="step" data-img="data/LucrativeCustomerTier_LA.png?v=20260929"
           data-caption="Exhibit 2.2 · Los Angeles market, clients by tier"
           data-alt="Los Angeles basin, client circles colored by tier and sized by revenue, concentrated south and west of the Los Angeles office">
           <h3>Los Angeles: fewer clients, larger cases</h3>
@@ -320,7 +320,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_ON.png"
+        <article class="step" data-img="data/LucrativeCustomerTier_ON.png?v=20260929"
           data-caption="Exhibit 2.3 · Ontario and Inland Empire market, clients by tier"
           data-alt="Inland Empire map with dense client circles from Pomona and Rancho Cucamonga to Fontana and San Bernardino">
           <h3>Ontario: the firm's widest reach</h3>
@@ -334,7 +334,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_SD.png"
+        <article class="step" data-img="data/LucrativeCustomerTier_SD.png?v=20260929"
           data-caption="Exhibit 2.4 · San Diego market, clients by tier"
           data-alt="San Diego county map with sparse client circles from Escondido through downtown to Chula Vista">
           <h3>San Diego: high client quality, low reach</h3>
@@ -347,7 +347,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/maps/hotspots.png"
+        <article class="step" data-img="data/maps/hotspots.png?v=20260929"
           data-caption="Exhibit 2.5 · Hot spots of lucrative clients per resident (Getis-Ord Gi*)"
           data-alt="Hot spot map: a large block of significant red ZIP areas around Ontario, a few south-west of the Los Angeles office, none near San Diego">
           <h3>Where the clusters are statistically significant</h3>
@@ -455,14 +455,14 @@
 
     <!-- distance decay -->
     <div class="split split-visual">
-      <figure class="chart-figure">
-        <figcaption class="exhibit-label">Exhibit 3.1 · Reach and quality by distance from the nearest office</figcaption>
+      <figure class="chart-figure" aria-labelledby="ex-3-1">
         <div class="chart-box"><canvas id="c-distance"
             aria-label="Bar and line chart: clients per 100,000 residents falls from 7.4 within 5 miles to 3.1 at 20 to 30 miles; the lucrative share falls from 48% to 38%"></canvas>
         </div>
         <p class="chart-note">Bars: clients per 100,000 residents · line: share of those clients who are lucrative</p>
       </figure>
       <div class="prose">
+        <p class="exhibit-label" id="ex-3-1">Exhibit 3.1 · Reach and quality by distance from the nearest office</p>
         <h3>Reach falls with distance from an office</h3>
         <p>
           Within 10 miles of an office the firm reaches about <b>7 clients per 100,000 residents</b>. Between 20 and
@@ -482,7 +482,7 @@
     <!-- penetration exhibit -->
     <figure class="exhibit">
       <div class="exhibit-map">
-        <img src="data/maps/penetration.png" data-zoom
+        <img src="data/maps/penetration.png?v=20260929" data-zoom
           alt="Choropleth of clients per 100,000 residents by ZIP area: darkest around Ontario and the Inland Empire, lighter across Los Angeles, Orange County and San Diego" />
       </div>
       <figcaption class="exhibit-notes">
@@ -504,12 +504,12 @@
 
     <!-- opportunity -->
     <div class="split split-visual opportunity">
-      <figure class="exhibit-plain">
-        <p class="exhibit-label">Exhibit 3.3 · Missing clients within 20 miles of an office</p>
-        <img src="data/maps/opportunity.png" data-zoom
+      <figure class="exhibit-plain" aria-labelledby="ex-3-3">
+        <img src="data/maps/opportunity.png?v=20260929" data-zoom
           alt="Map of ZIP areas within 20 miles of an office shaded by missing clients, with the top ten numbered: seven around Los Angeles and three around San Diego" />
       </figure>
       <div class="prose">
+        <p class="exhibit-label" id="ex-3-3">Exhibit 3.3 · Missing clients within 20 miles of an office</p>
         <h3>Ten ZIP areas with the largest shortfall</h3>
         <p>
           For each ZIP area we compared the clients the firm actually has with the number its population and distance
@@ -562,7 +562,7 @@
     <!-- Spanish gap -->
     <figure class="exhibit">
       <div class="exhibit-map">
-        <img src="data/maps/spanish_gap.png" data-zoom
+        <img src="data/maps/spanish_gap.png?v=20260929" data-zoom
           alt="Map shading ZIP areas by share of residents who speak Spanish at home, with yellow dots for Spanish-speaking clients: many dots around Los Angeles and Ontario, almost none in the heavily Spanish-speaking areas south of San Diego" />
       </div>
       <figcaption class="exhibit-notes">
@@ -614,11 +614,11 @@
         <span class="exhibit-label">Exhibit 4.1 · New clients by year of their first matter, 30-mile markets</span>
       </figcaption>
       <ol class="years-grid">
-        <li><img src="data/maps/year_2021.png" data-zoom alt="2021: 233 new clients, mostly in the Los Angeles market" /><span><b>233</b> new clients · LA 53% · Ontario 40%</span></li>
-        <li><img src="data/maps/year_2022.png" data-zoom alt="2022: 137 new clients, more around Ontario and San Diego" /><span><b>137</b> new clients · LA 38% · Ontario 47%</span></li>
-        <li><img src="data/maps/year_2023.png" data-zoom alt="2023: 116 new clients, split evenly between Los Angeles and Ontario" /><span><b>116</b> new clients · LA 45% · Ontario 45%</span></li>
-        <li><img src="data/maps/year_2024.png" data-zoom alt="2024: 138 new clients, concentrated in the Inland Empire" /><span><b>138</b> new clients · LA 33% · Ontario 54%</span></li>
-        <li><img src="data/maps/year_2025.png" data-zoom alt="2025: 180 new clients, concentrated in the Inland Empire" /><span><b>180</b> new clients · LA 33% · Ontario 55%</span></li>
+        <li><img src="data/maps/year_2021.png?v=20260929" data-zoom alt="2021: 233 new clients, mostly in the Los Angeles market" /><span><b>233</b> new clients · LA 53% · Ontario 40%</span></li>
+        <li><img src="data/maps/year_2022.png?v=20260929" data-zoom alt="2022: 137 new clients, more around Ontario and San Diego" /><span><b>137</b> new clients · LA 38% · Ontario 47%</span></li>
+        <li><img src="data/maps/year_2023.png?v=20260929" data-zoom alt="2023: 116 new clients, split evenly between Los Angeles and Ontario" /><span><b>116</b> new clients · LA 45% · Ontario 45%</span></li>
+        <li><img src="data/maps/year_2024.png?v=20260929" data-zoom alt="2024: 138 new clients, concentrated in the Inland Empire" /><span><b>138</b> new clients · LA 33% · Ontario 54%</span></li>
+        <li><img src="data/maps/year_2025.png?v=20260929" data-zoom alt="2025: 180 new clients, concentrated in the Inland Empire" /><span><b>180</b> new clients · LA 33% · Ontario 55%</span></li>
       </ol>
     </figure>
 
@@ -675,12 +675,14 @@
       </div>
     </header>
 
-    <p class="population-note">
-      Exhibits 5.1, 5.2 and 5.4 use <b>all 2,066 matters and 1,874 clients</b> ($9.57M), including the 806 clients
-      without an address. Exhibits 5.3 and 5.5 use mapped clients within 30 miles of an office, because tiers and distances need an
-      address.
-      Revenue per hour is total revenue divided by total hours for the group.
-    </p>
+    <details class="method-peek population-peek">
+      <summary>Which clients these charts use</summary>
+      <p>
+        Exhibits 5.1, 5.2 and 5.4 use <b>all 2,066 matters and 1,874 clients</b> ($9.57M), including the 806 clients
+        without an address. Exhibits 5.3 and 5.5 use mapped clients within 30 miles of an office, because tiers and
+        distances need an address. Revenue per hour is total revenue divided by total hours for the group.
+      </p>
+    </details>
 
     <div class="drivers">
       <figure class="driver">
@@ -775,7 +777,7 @@
 
     <figure class="exhibit">
       <div class="exhibit-map">
-        <img src="data/maps/dormant.png" data-zoom
+        <img src="data/maps/dormant.png?v=20260929" data-zoom
           alt="Map of 306 lucrative clients with no new matter since April 2024, sized by lifetime revenue, clustered near the Los Angeles and Ontario offices" />
       </div>
       <figcaption class="exhibit-notes">
@@ -902,8 +904,8 @@
           </ul>
           <h3>Tools</h3>
           <p>
-            PostGIS for joins, distances and views; QGIS for the market close-up maps (Exhibits 2.2–2.4); Python
-            (GeoPandas, matplotlib) for smoothing, hot spots and the other maps; Chart.js for charts.
+            PostGIS for joins, distances and views; Python (GeoPandas, matplotlib) for smoothing, hot spots and
+            all maps; Chart.js for charts. Base layers: Census county boundaries and Natural Earth 1:10m countries (Mexico), loaded into PostGIS.
           </p>
         </div>
       </div>
@@ -1050,7 +1052,7 @@ ORDER BY ct.net_revenue DESC;</code></pre>
   </section>
 
   <footer id="footer">
-    <p>Geog 574 Advanced GIS Applications, University of Wisconsin–Madison, spring 2026. Eugenie Huang and Reid Osborn.</p>
+    <p>Geog 574 Geospatial Database Design and Development, University of Wisconsin–Madison, spring 2026. Eugenie Huang and Reid Osborn.</p>
     <p class="footer-note">
       Firm data: proprietary law firm records, anonymized. Census data: 2020 ZCTA boundaries and ACS 2018–2022
       five-year estimates. Built with PostGIS, QGIS, GeoPandas and Chart.js.

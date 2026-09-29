@@ -53,7 +53,7 @@ SpatialBusinessIntelligence/
 | Spatial database | PostgreSQL 18 + PostGIS 3.6 |
 | Spatial statistics | Python: GeoPandas, NumPy (empirical Bayes smoothing, Getis-Ord Gi*) |
 | Demographics | ACS 2018–2022 5-year: B01003 (population), C16001 (language at home), B19013 (income) |
-| Map authoring | QGIS 3.x (Chapter 2 close-ups); matplotlib (all other maps) |
+| Map authoring | matplotlib + GeoPandas (all maps); `--svg` also writes editable vector copies to `map_svg/` (git-ignored) |
 | Interactive charts | Chart.js 4 |
 | Front-end | HTML, CSS, vanilla JS, no build step |
 
@@ -66,7 +66,8 @@ SpatialBusinessIntelligence/
 set PGPASSWORD=<your password>          # PowerShell: $env:PGPASSWORD = '...'
 python analysis/build_story.py --export # pull fresh tables from PostGIS, then rebuild
 python analysis/build_story.py          # rebuild from the last export
-python analysis/build_story.py --maps   # also redraw the draft maps (overwrites data/maps/*.png)
+python analysis/build_story.py --maps   # also redraw the maps (overwrites data/maps/*.png and data/LucrativeCustomerTier_*.png)
+python analysis/build_story.py --maps --svg   # plus editable SVGs in map_svg/
 ```
 
 Raw exports, the ACS downloads and the office locations are kept outside the repository, because they contain client-level records or would identify the firm. Only aggregated numbers and rendered maps are written into `data/`.

@@ -20,7 +20,7 @@
   --eff:  #368acc;
   --std:  #9a9a9a;
   --good: #1c5c55;
-  --bad:  #b2182b;
+  --bad:  #a85a00;   /* dark orange: readable on paper, avoids red/green pairs */
 
   /* one-hue green ramp for the opening charts, before tiers are introduced */
   --g-top:  #1c5c55;
@@ -320,7 +320,7 @@ a:hover { color: var(--forest); }
 .chapter-dark .ledger th, .chapter-dark .ledger td { border-color: rgba(255,255,255,.14); }
 .chapter-dark .ledger thead th { color: rgba(255,255,255,.6); border-bottom-color: rgba(255,255,255,.55); }
 .chapter-dark .ledger .best  { color: #8fd3b8; }
-.chapter-dark .ledger .worst { color: #f19a8f; }
+.chapter-dark .ledger .worst { color: #f0a54a; }
 .chapter-dark .ledger caption { color: var(--gold); }
 
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -452,11 +452,6 @@ a:hover { color: var(--forest); }
 .years-grid img { border: 1px solid var(--rule); border-radius: var(--radius); cursor: zoom-in; background: var(--white); }
 
 /* ── Drivers grid ────────────────────────────────────────────────────── */
-.population-note {
-  max-width: var(--measure); font-size: .95rem; color: var(--muted);
-  border-left: 3px solid var(--rule); padding-left: 1rem;
-  margin-bottom: 2.2rem;
-}
 .drivers {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 4vw, 3.5rem);
@@ -522,6 +517,7 @@ a:hover { color: var(--forest); }
 .db-fig figcaption { padding: .8rem 1rem 1rem; font-size: .9rem; color: var(--muted); border-top: 1px solid var(--rule); }
 
 .method-peek { margin-top: 1rem; font-size: .95rem; max-width: var(--measure); }
+.population-peek { margin: 0 0 2.2rem; }
 .method-peek summary, .appendix summary {
   cursor: pointer; color: var(--gold-dk); font-weight: 500; padding: .4rem 0;
 }
