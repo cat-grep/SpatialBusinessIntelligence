@@ -1,7 +1,7 @@
 # Where Are Your Best Clients?
 ### A PostGIS-Driven Spatial Analysis of Client Value, Geography and Growth Strategy
 
-**Geog 574 · Advanced GIS Applications · University of Wisconsin–Madison · Spring 2026**  
+**Geog 574 · Geospatial Database Design and Development · University of Wisconsin–Madison · Spring 2026**  
 **Eugenie Huang & Reid Osborn**
 
 ---
@@ -93,4 +93,4 @@ The narrative text in `index.html` quotes numbers from `data/story.js`. If the d
 
 ---
 
-*Geog 574 · Advanced GIS Applications · University of Wisconsin–Madison · Spring 2026*
+*Geog 574 · Geospatial Database Design and Development · University of Wisconsin–Madison · Spring 2026*
