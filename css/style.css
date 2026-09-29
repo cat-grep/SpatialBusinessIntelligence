@@ -308,6 +308,7 @@ a:hover { color: var(--forest); }
 .ledger tbody th { font-weight: 500; }
 .ledger tfoot th, .ledger tfoot td { font-weight: 700; border-bottom: 0; border-top: 2px solid var(--ink); }
 .ledger .num { text-align: right; white-space: nowrap; }
+.ledger thead th.num { white-space: normal; }
 .ledger .best  { color: var(--good); font-weight: 700; }
 .ledger .worst { color: var(--bad);  font-weight: 700; }
 .ledger .bar {
@@ -601,4 +602,35 @@ a:hover { color: var(--forest); }
 
 @media (prefers-reduced-motion: reduce) {
   .step, .scrolly-img { transition: none; }
+}
+
+/* ── Phones: every table fits the screen, nothing is cut off on the right ── */
+@media (max-width: 600px) {
+  .ledger { font-size: .86rem; }
+  .ledger th, .ledger td { padding: .5rem .35rem; }
+  .ledger thead th { font-size: .74rem; }
+  .ledger th:first-child, .ledger td:first-child { padding-left: 0; }
+  .ledger th:last-child, .ledger td:last-child { padding-right: 0; }
+
+  /* tier table: the share bars are a desktop nicety; the numbers carry the meaning */
+  .tier-ledger .bar { display: none; }
+}
+
+/* ── Ten ZIP areas: when its column is too narrow for 7 columns (phones, tablets, the
+   two-column layout on small laptops), each row becomes a card instead of scrolling sideways ── */
+.opportunity .table-scroll { container-type: inline-size; }
+@container (max-width: 580px) {
+  .ledger.targets thead { display: none; }
+  .ledger.targets tr {
+    position: relative; display: flex; flex-wrap: wrap; align-items: baseline;
+    column-gap: .9rem; row-gap: .15rem;
+    padding: .65rem 0 .65rem 2.2rem; border-bottom: 1px solid var(--rule);
+  }
+  .ledger.targets td { border: 0; padding: 0; text-align: left; white-space: nowrap; }
+  /* rank sits in the left gutter, so every detail line lines up under the area name */
+  .ledger.targets td[data-label="Rank"] { position: absolute; left: 0; top: .65rem; }
+  .ledger.targets td[data-label="Area"] { order: -1; flex: 1 0 100%; white-space: normal; font-weight: 500; }
+  .ledger.targets td:not([data-label="Rank"]):not([data-label="Area"])::before {
+    content: attr(data-label) " "; color: var(--muted); font-size: .78rem;
+  }
 }
