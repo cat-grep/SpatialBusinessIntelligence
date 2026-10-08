@@ -4,7 +4,7 @@ Build the data and maps behind the StoryMap.
 Steps
   1. (optional, --export) pull client / matter / transaction tables out of PostGIS
      with read-only queries. Needs PGPASSWORD in the environment.
-  2. join clients to ZCTAs and to 2022 ACS 5-year estimates (population,
+  2. join clients to ZCTAs and to ACS 2020–2024 5-year estimates (population,
      Spanish spoken at home, median household income).
   3. compute every number the page quotes -> data/story.js
   4. render the maps (legend, scale bar and call-outs baked in) -> data/maps/
@@ -60,9 +60,12 @@ SNAPSHOT = pd.Timestamp('2026-04-09')      # last matter open date in the extrac
 DORMANT_DAYS = 730
 CATCHMENT_MILES = 30                       # "market" = within 30 mi of the nearest office
 STUDY_MILES = CATCHMENT_MILES              # every regional analysis uses the same 30-mile markets
+DECAY_MILES = 60                           # except the distance-decay chart, which shows the fall-off beyond them
 OPPORTUNITY_MILES = 20
 
-ACS_URL = 'https://www2.census.gov/programs-surveys/acs/summary_file/2022/table-based-SF/data/5YRData/acsdt5y2022-{}.dat'
+ACS_YEAR = 2024                            # latest 5-year release (2020–2024); uses 2020 ZCTA geography
+ACS_LABEL = f'{ACS_YEAR - 4}–{str(ACS_YEAR)[2:]}'
+ACS_URL = f'https://www2.census.gov/programs-surveys/acs/summary_file/{ACS_YEAR}/table-based-SF/data/5YRData/acsdt5y{ACS_YEAR}-{{}}.dat'
 
 TIER_COLORS = {'Star': '#434b8b', 'High Value': '#cc586f', 'Efficient': '#368acc', 'Standard': '#9a9a9a'}
 OFFICE_COLOR = '#e8740c'
@@ -113,7 +116,7 @@ def export_from_db():
 
 
 def acs_table(table, cols):
-    path = WORK / f'acs_{table}.dat'
+    path = WORK / f'acs{ACS_YEAR}_{table}.dat'
     if not path.exists():
         print('downloading ACS', table)
         urllib.request.urlretrieve(ACS_URL.format(table), path)
@@ -286,8 +289,12 @@ def analyse(offices, c, m, tx, z):
     labels = ['0–5', '5–10', '10–20', '20–30']
     S['band'] = pd.cut(S.dist, bands, labels=labels)
     b = S.groupby('band', observed=False).agg(pop=('pop', 'sum'), n=('n', 'sum'), nluc=('nluc', 'sum'), rev=('rev', 'sum'))
+    # the distance-decay chart alone looks past the 30-mile markets, to show how reach keeps falling
+    D = z[z.dist <= DECAY_MILES].copy()
+    D['band'] = pd.cut(D.dist, [0, 5, 10, 20, 30, 45, 60], labels=['0–5', '5–10', '10–20', '20–30', '30–45', '45–60'])
+    bd = D.groupby('band', observed=False).agg(pop=('pop', 'sum'), n=('n', 'sum'), nluc=('nluc', 'sum'), rev=('rev', 'sum'))
     out['distance'] = [{'band': k, 'per100k': r(v.n / v['pop'] * 1e5, 1), 'luc_rate': r(v.nluc / v.n * 100, 1),
-                        'clients': r(v.n), 'rev_per_client': r(v.rev / v.n)} for k, v in b.iterrows()]
+                        'clients': r(v.n), 'rev_per_client': r(v.rev / v.n)} for k, v in bd.iterrows()]
 
     # smoothed penetration, hot spots
     pop, n, nl = S['pop'].values, S.n.values, S.nluc.values
@@ -742,7 +749,7 @@ def draw_maps(offices, c, S, out):
                                                    linewidth=.5, zorder=8)
     bm.overlay(ax, REGION)
     bm.graticule(ax)
-    map_title(ax, 'Spanish-speaking residents and clients', 'ACS 2018–22 · 30-mile markets')
+    map_title(ax, 'Spanish-speaking residents and clients', f'ACS {ACS_LABEL} · 30-mile markets')
     labs = ['< 15%', '15 – 30%', '30 – 45%', '45 – 60%', '60% +']
     h = [Patch(color=scols[i], label=labs[i]) for i in range(5)]
     h += [Line2D([], [], marker='o', ls='', mfc='#f2c14e', mec='#5a4300', ms=7, label='Spanish-speaking client'), OFFICE]

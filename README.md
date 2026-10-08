@@ -52,7 +52,7 @@ SpatialBusinessIntelligence/
 |---|---|
 | Spatial database | PostgreSQL 18 + PostGIS 3.6 |
 | Spatial statistics | Python: GeoPandas, NumPy (empirical Bayes smoothing, Getis-Ord Gi*) |
-| Demographics | ACS 2018–2022 5-year: B01003 (population), C16001 (language at home), B19013 (income) |
+| Demographics | ACS 2020–2024 5-year (latest release): B01003 (population), C16001 (language at home), B19013 (income) |
 | Map authoring | matplotlib + GeoPandas (all maps); `--svg` also writes editable vector copies to `map_svg/` (git-ignored) |
 | Interactive charts | Chart.js 4 |
 | Front-end | HTML, CSS, vanilla JS, no build step |
@@ -87,7 +87,7 @@ The narrative text in `index.html` quotes numbers from `data/story.js`. If the d
 
 ## Data Source
 - Proprietary law firm records (anonymized)  
-- [US Census - American Community Survey 2018–2022 5-year, table-based summary files](https://www2.census.gov/programs-surveys/acs/summary_file/2022/table-based-SF/)  
+- [US Census - American Community Survey 2020–2024 5-year, table-based summary files](https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/)  
 - [US Census - 2020 ZIP Code Tabulation Areas (ZCTAs)](https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_zcta520_500k.zip)  
 - [California Department of Technology - California City Boundaries](https://gis.data.ca.gov/datasets/California::california-city-boundaries-and-identifiers/)
 

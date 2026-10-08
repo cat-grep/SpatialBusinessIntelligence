@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Where Are Your Best Clients? — Law Firm Spatial Analysis</title>
   <meta name="description"
-    content="A self-guided spatial business analysis of a Southern California civil law firm: who the valuable clients are, where they live, where the firm should grow, and what to do next." />
+    content="Business analysis and geospatial analysis combined, for a Southern California civil law firm: who the valuable clients are, where they live, where the firm should grow, and what to do next." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,8 +23,9 @@
       <p class="hero-course">Geog 574 final project, spring 2026 · Eugenie Huang &amp; Reid Osborn</p>
       <h1>Where are your best clients?</h1>
       <p class="hero-lede">
-        We mapped five years of records from a Southern California civil law firm to see who its most valuable
-        clients are, where they live, and where the firm could look for more of them. Three findings stand out.
+        We combined business analysis and geospatial analysis of five years of records from a Southern California
+        civil law firm, to see who its most valuable clients are, where they live, and where the firm could look for
+        more of them. Three findings stand out.
       </p>
 
       <ol class="findings">
@@ -65,8 +66,8 @@
           <figure class="finding-viz" aria-label="Clients per 100,000 residents within 30 miles of each office">
             <p class="viz-title">Clients per 100,000 residents, within 30 miles</p>
             <div class="hbars">
-              <div class="hbar" title="Ontario: 9.0 per 100,000 residents"><span>Ontario</span><i style="--w:100%" class="hi"></i><b>9.0</b></div>
-              <div class="hbar" title="Los Angeles: 3.7 per 100,000 residents"><span>Los Angeles</span><i style="--w:41%"></i><b>3.7</b></div>
+              <div class="hbar" title="Ontario: 8.9 per 100,000 residents"><span>Ontario</span><i style="--w:100%" class="hi"></i><b>8.9</b></div>
+              <div class="hbar" title="Los Angeles: 3.7 per 100,000 residents"><span>Los Angeles</span><i style="--w:42%"></i><b>3.7</b></div>
               <div class="hbar" title="San Diego: 3.4 per 100,000 residents"><span>San Diego</span><i style="--w:38%"></i><b>3.4</b></div>
             </div>
           </figure>
@@ -80,8 +81,8 @@
           <figure class="finding-viz" aria-label="Clients per 100,000 residents by distance from the nearest office">
             <p class="viz-title">Clients per 100,000 residents, by miles from the nearest office</p>
             <div class="cols">
-              <div class="col" title="0–5 miles: 7.4"><b>7.4</b><i style="--h:100%" class="hi"></i><span>0–5</span></div>
-              <div class="col" title="5–10 miles: 7.0"><b>7.0</b><i style="--h:95%" class="hi"></i><span>5–10</span></div>
+              <div class="col" title="0–5 miles: 7.5"><b>7.5</b><i style="--h:100%" class="hi"></i><span>0–5</span></div>
+              <div class="col" title="5–10 miles: 7.1"><b>7.1</b><i style="--h:95%" class="hi"></i><span>5–10</span></div>
               <div class="col" title="10–20 miles: 4.5"><b>4.5</b><i style="--h:61%" class="hi"></i><span>10–20</span></div>
               <div class="col" title="20–30 miles: 3.1"><b>3.1</b><i style="--h:42%"></i><span>20–30</span></div>
               <div class="col" title="30–45 miles: 3.5"><b>3.5</b><i style="--h:47%"></i><span>30–45</span></div>
@@ -124,9 +125,10 @@
             nothing on their own about <em>where</em> its clients come from.
           </p>
           <p>
-            This project adds geography to the firm's records. Using PostGIS and U.S. Census data, it maps where
-            the most valuable clients live, compares each office's market, and estimates where the firm has the
-            most room to grow.
+            This project puts two kinds of analysis together. <b>Business analysis</b> of revenue and billable hours
+            shows which clients matter most. <b>Geospatial analysis</b>, with PostGIS and U.S. Census data, shows
+            where those clients live, how each office's market compares, and where the firm has the most room to
+            grow. Neither answers the firm's questions alone.
           </p>
         </div>
         <div class="about-aims">
@@ -161,10 +163,12 @@
       <div class="about-notes">
         <h3>About the data</h3>
         <p>
-          Firm records are anonymized: no names, and no map shows anything finer than a client point or ZIP area.
-          Only clients with an address on file can be mapped, so the maps and every location-based number use the
-          clients on the maps. Population and language come from the U.S. Census (American Community Survey
-          2018–2022).
+          The firm sent its records as CSV files. Before loading them into PostGIS we removed personal details,
+          replaced names and identifiers with serial numbers, and geocoded addresses with the Google Geocoding API.
+          Because the data is proprietary, the page publishes no coordinates: every map is a static image, and no
+          map shows anything finer than a client point or ZIP area. Only clients with an address on file can be
+          mapped, so the maps and every location-based number use the clients on the maps. Population and language come from the U.S. Census (American Community Survey
+          2020–2024).
         </p>
       </div>
     </div>
@@ -286,13 +290,13 @@
     <div class="scrolly" id="scrolly-where">
       <figure class="scrolly-figure">
         <div class="scrolly-frame">
-          <img class="scrolly-img" src="data/maps/region_tiers.png?v=20260929" alt="" data-zoom />
+          <img class="scrolly-img" src="data/maps/region_tiers.png?v=20261008" alt="" data-zoom />
         </div>
         <figcaption class="scrolly-caption"></figcaption>
       </figure>
 
       <div class="scrolly-steps">
-        <article class="step" data-img="data/maps/region_tiers.png?v=20260929"
+        <article class="step" data-img="data/maps/region_tiers.png?v=20261008"
           data-caption="Exhibit 2.1 · All mapped clients by tier, Southern California"
           data-alt="Regional map of clients colored by tier with 30-mile rings around the three offices">
           <h3>Eight in ten mapped clients live within 30 miles of an office</h3>
@@ -306,7 +310,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_LA.png?v=20260929"
+        <article class="step" data-img="data/LucrativeCustomerTier_LA.png?v=20261008"
           data-caption="Exhibit 2.2 · Los Angeles market, clients by tier"
           data-alt="Los Angeles basin, client circles colored by tier and sized by revenue, concentrated south and west of the Los Angeles office">
           <h3>Los Angeles: fewer clients, larger cases</h3>
@@ -315,18 +319,18 @@
             <b>$7,984</b> each, and the most Stars (<b>35</b>).
           </p>
           <p>
-            Half of them live within about 10 miles of the office. Measured against the 9.8 million people living
+            Half of them live within about 10 miles of the office. Measured against the 9.7 million people living
             within 30 miles, though, the firm reaches <b>3.7 clients per 100,000 residents</b>.
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_ON.png?v=20260929"
+        <article class="step" data-img="data/LucrativeCustomerTier_ON.png?v=20261008"
           data-caption="Exhibit 2.3 · Ontario and Inland Empire market, clients by tier"
           data-alt="Inland Empire map with dense client circles from Pomona and Rancho Cucamonga to Fontana and San Bernardino">
           <h3>Ontario: the firm's widest reach</h3>
           <p>
-            The Ontario market has the <b>most clients (424)</b> from the smallest population (4.7 million). That works
-            out to <b>9.0 clients per 100,000 residents</b>, more than twice the reach of the other two offices.
+            The Ontario market has the <b>most clients (424)</b> from half the population of Los Angeles (4.8 million). That
+            works out to <b>8.9 clients per 100,000 residents</b>, more than twice the reach of the other two offices.
           </p>
           <p>
             Cases here are smaller, averaging <b>$5,478</b>. Clients are spread widely, from Pomona and Rancho
@@ -334,7 +338,7 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/LucrativeCustomerTier_SD.png?v=20260929"
+        <article class="step" data-img="data/LucrativeCustomerTier_SD.png?v=20261008"
           data-caption="Exhibit 2.4 · San Diego market, clients by tier"
           data-alt="San Diego county map with sparse client circles from Escondido through downtown to Chula Vista">
           <h3>San Diego: high client quality, low reach</h3>
@@ -347,17 +351,17 @@
           </p>
         </article>
 
-        <article class="step" data-img="data/maps/hotspots.png?v=20260929"
+        <article class="step" data-img="data/maps/hotspots.png?v=20261008"
           data-caption="Exhibit 2.5 · Hot spots of lucrative clients per resident (Getis-Ord Gi*)"
           data-alt="Hot spot map: a large block of significant red ZIP areas around Ontario, a few south-west of the Los Angeles office, none near San Diego">
           <h3>Where the clusters are statistically significant</h3>
           <p>
             A hot spot test asks whether a ZIP area and its neighbors have more lucrative clients per resident than
-            chance alone would give, across the 498 ZIP areas within 30 miles of an office. <b>32 ZIP areas around
+            chance alone would give, across the 498 ZIP areas within 30 miles of an office. <b>33 ZIP areas around
             Ontario</b> pass at 99% confidence, from Pomona, Chino and Upland to Rancho Cucamonga, Fontana and Rialto.
           </p>
           <p>
-            Los Angeles has 10 smaller hot spots, all at 95% confidence, just south-west of the office.
+            Los Angeles has 13 smaller hot spots, 2 of them at 99% confidence, just south-west of the office.
             <b>San Diego has none.</b>
           </p>
           <p>
@@ -392,8 +396,8 @@
           <tbody>
             <tr>
               <th scope="row">Residents</th>
-              <td>9.8M</td>
-              <td>4.7M</td>
+              <td>9.7M</td>
+              <td>4.8M</td>
               <td>2.8M</td>
             </tr>
             <tr>
@@ -405,7 +409,7 @@
             <tr>
               <th scope="row">Clients per 100,000 residents</th>
               <td>3.7</td>
-              <td class="best">9.0</td>
+              <td class="best">8.9</td>
               <td class="worst">3.4</td>
             </tr>
             <tr>
@@ -428,7 +432,7 @@
             </tr>
             <tr>
               <th scope="row">Hot-spot ZIP areas (95%+)</th>
-              <td>10</td>
+              <td>13</td>
               <td class="best">37</td>
               <td class="worst">0</td>
             </tr>
@@ -457,16 +461,18 @@
     <div class="split split-visual">
       <figure class="chart-figure" aria-labelledby="ex-3-1">
         <div class="chart-box"><canvas id="c-distance"
-            aria-label="Bar and line chart: clients per 100,000 residents falls from 7.4 within 5 miles to 3.1 at 20 to 30 miles; the lucrative share falls from 48% to 38%"></canvas>
+            aria-label="Bar and line chart: clients per 100,000 residents falls from 7.5 within 5 miles to 1.9 at 45 to 60 miles; the lucrative share falls from 48% to 33%"></canvas>
         </div>
-        <p class="chart-note">Bars: clients per 100,000 residents · line: share of those clients who are lucrative</p>
+        <p class="chart-note">Bars: clients per 100,000 residents · line: share of those clients who are lucrative ·
+          this chart alone runs past the 30-mile markets, to 60 miles</p>
       </figure>
       <div class="prose">
         <p class="exhibit-label" id="ex-3-1">Exhibit 3.1 · Reach and quality by distance from the nearest office</p>
         <h3>Reach falls with distance from an office</h3>
         <p>
           Within 10 miles of an office the firm reaches about <b>7 clients per 100,000 residents</b>. Between 20 and
-          30 miles that drops to <b>3.1</b>, less than half.
+          30 miles that drops to <b>3.1</b>, less than half, and past the 30-mile markets it keeps falling, to
+          <b>1.9</b> at 45–60 miles.
         </p>
         <p>
           Clients from farther away are also less often lucrative: <b>48%</b> within 5 miles against
@@ -482,7 +488,7 @@
     <!-- penetration exhibit -->
     <figure class="exhibit">
       <div class="exhibit-map">
-        <img src="data/maps/penetration.png?v=20260929" data-zoom
+        <img src="data/maps/penetration.png?v=20261008" data-zoom
           alt="Choropleth of clients per 100,000 residents by ZIP area: darkest around Ontario and the Inland Empire, lighter across Los Angeles, Orange County and San Diego" />
       </div>
       <figcaption class="exhibit-notes">
@@ -505,7 +511,7 @@
     <!-- opportunity -->
     <div class="split split-visual opportunity">
       <figure class="exhibit-plain" aria-labelledby="ex-3-3">
-        <img src="data/maps/opportunity.png?v=20260929" data-zoom
+        <img src="data/maps/opportunity.png?v=20261008" data-zoom
           alt="Map of ZIP areas within 20 miles of an office shaded by missing clients, with the top ten numbered: seven around Los Angeles and three around San Diego" />
       </figure>
       <div class="prose">
@@ -513,7 +519,7 @@
         <h3>Ten ZIP areas with the largest shortfall</h3>
         <p>
           For each ZIP area we compared the clients the firm actually has with the number its population and distance
-          predict. Within 20 miles of an office, the shortfall adds up to about <b>197 clients around Los Angeles</b>
+          predict. Within 20 miles of an office, the shortfall adds up to about <b>196 clients around Los Angeles</b>
           and <b>69 around San Diego</b>, against only 18 around Ontario.
         </p>
         <div class="table-scroll">
@@ -530,16 +536,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td data-label="Rank">1</td><td data-label="ZIP">90004</td><td data-label="Area">LA · Hancock Park, Koreatown</td><td class="num" data-label="Miles">3.5</td><td class="num" data-label="Residents">58,833</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">4.4</td></tr>
-              <tr><td data-label="Rank">2</td><td data-label="ZIP">92105</td><td data-label="Area">SD · City Heights</td><td class="num" data-label="Miles">5.5</td><td class="num" data-label="Residents">72,688</td><td class="num" data-label="Clients now">1</td><td class="num" data-label="Expected">5.1</td></tr>
-              <tr><td data-label="Rank">3</td><td data-label="ZIP">90034</td><td data-label="Area">LA · Palms</td><td class="num" data-label="Miles">8.5</td><td class="num" data-label="Residents">55,061</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.9</td></tr>
-              <tr><td data-label="Rank">4</td><td data-label="ZIP">90024</td><td data-label="Area">LA · Westwood</td><td class="num" data-label="Miles">9.9</td><td class="num" data-label="Residents">50,392</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.5</td></tr>
-              <tr><td data-label="Rank">5</td><td data-label="ZIP">92126</td><td data-label="Area">SD · Mira Mesa</td><td class="num" data-label="Miles">10.5</td><td class="num" data-label="Residents">78,111</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.5</td></tr>
-              <tr><td data-label="Rank">6</td><td data-label="ZIP">90065</td><td data-label="Area">LA · Glassell Park, Mt Washington</td><td class="num" data-label="Miles">4.5</td><td class="num" data-label="Residents">44,897</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.3</td></tr>
-              <tr><td data-label="Rank">7</td><td data-label="ZIP">92109</td><td data-label="Area">SD · Pacific Beach</td><td class="num" data-label="Miles">4.2</td><td class="num" data-label="Residents">44,009</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.3</td></tr>
-              <tr><td data-label="Rank">8</td><td data-label="ZIP">90027</td><td data-label="Area">LA · Los Feliz</td><td class="num" data-label="Miles">5.7</td><td class="num" data-label="Residents">45,764</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.2</td></tr>
-              <tr><td data-label="Rank">9</td><td data-label="ZIP">90042</td><td data-label="Area">LA · Highland Park</td><td class="num" data-label="Miles">5.7</td><td class="num" data-label="Residents">59,151</td><td class="num" data-label="Clients now">1</td><td class="num" data-label="Expected">4.2</td></tr>
-              <tr><td data-label="Rank">10</td><td data-label="ZIP">91402</td><td data-label="Area">LA · Panorama City</td><td class="num" data-label="Miles">16.5</td><td class="num" data-label="Residents">67,937</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.0</td></tr>
+              <tr><td data-label="Rank">1</td><td data-label="ZIP">90004</td><td data-label="Area">LA · Hancock Park, Koreatown</td><td class="num" data-label="Miles">3.5</td><td class="num" data-label="Residents">58,484</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">4.4</td></tr>
+              <tr><td data-label="Rank">2</td><td data-label="ZIP">92105</td><td data-label="Area">SD · City Heights</td><td class="num" data-label="Miles">5.5</td><td class="num" data-label="Residents">71,411</td><td class="num" data-label="Clients now">1</td><td class="num" data-label="Expected">5.0</td></tr>
+              <tr><td data-label="Rank">3</td><td data-label="ZIP">90034</td><td data-label="Area">LA · Palms</td><td class="num" data-label="Miles">8.5</td><td class="num" data-label="Residents">57,075</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">4.0</td></tr>
+              <tr><td data-label="Rank">4</td><td data-label="ZIP">90024</td><td data-label="Area">LA · Westwood</td><td class="num" data-label="Miles">9.9</td><td class="num" data-label="Residents">51,675</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.6</td></tr>
+              <tr><td data-label="Rank">5</td><td data-label="ZIP">92126</td><td data-label="Area">SD · Mira Mesa</td><td class="num" data-label="Miles">10.5</td><td class="num" data-label="Residents">76,059</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.4</td></tr>
+              <tr><td data-label="Rank">6</td><td data-label="ZIP">92109</td><td data-label="Area">SD · Pacific Beach</td><td class="num" data-label="Miles">4.2</td><td class="num" data-label="Residents">44,820</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.4</td></tr>
+              <tr><td data-label="Rank">7</td><td data-label="ZIP">90065</td><td data-label="Area">LA · Glassell Park, Mt Washington</td><td class="num" data-label="Miles">4.5</td><td class="num" data-label="Residents">44,658</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.3</td></tr>
+              <tr><td data-label="Rank">8</td><td data-label="ZIP">90027</td><td data-label="Area">LA · Los Feliz</td><td class="num" data-label="Miles">5.7</td><td class="num" data-label="Residents">46,558</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.3</td></tr>
+              <tr><td data-label="Rank">9</td><td data-label="ZIP">90042</td><td data-label="Area">LA · Highland Park</td><td class="num" data-label="Miles">5.7</td><td class="num" data-label="Residents">56,835</td><td class="num" data-label="Clients now">1</td><td class="num" data-label="Expected">4.0</td></tr>
+              <tr><td data-label="Rank">10</td><td data-label="ZIP">91402</td><td data-label="Area">LA · Panorama City</td><td class="num" data-label="Miles">16.5</td><td class="num" data-label="Residents">65,754</td><td class="num" data-label="Clients now">0</td><td class="num" data-label="Expected">3.0</td></tr>
             </tbody>
           </table>
         </div>
@@ -550,8 +556,8 @@
             revenue per client:
           </p>
           <dl>
-            <div><dt>Los Angeles</dt><dd>+260 clients, about <b>$2.1M</b></dd></div>
-            <div><dt>San Diego</dt><dd>+79 clients, about <b>$0.37M</b></dd></div>
+            <div><dt>Los Angeles</dt><dd>+252 clients, about <b>$2.0M</b></dd></div>
+            <div><dt>San Diego</dt><dd>+78 clients, about <b>$0.37M</b></dd></div>
           </dl>
           <p class="fine">An illustration of scale, not a forecast. It assumes the firm has capacity for the extra work
             and that local competition allows it.</p>
@@ -562,14 +568,14 @@
     <!-- Spanish gap -->
     <figure class="exhibit">
       <div class="exhibit-map">
-        <img src="data/maps/spanish_gap.png?v=20260929" data-zoom
+        <img src="data/maps/spanish_gap.png?v=20261008" data-zoom
           alt="Map shading ZIP areas by share of residents who speak Spanish at home, with yellow dots for Spanish-speaking clients: many dots around Los Angeles and Ontario, almost none in the heavily Spanish-speaking areas south of San Diego" />
       </div>
       <figcaption class="exhibit-notes">
         <p class="exhibit-label">Exhibit 3.4 · Spanish-speaking residents and Spanish-speaking clients</p>
         <h3>Around San Diego, the widest gap is among Spanish speakers</h3>
         <p>
-          The San Diego market has <b>626,000 residents who speak Spanish at home</b>. The firm has
+          The San Diego market has <b>631,000 residents who speak Spanish at home</b>. The firm has
           <b>4 Spanish-speaking clients</b> there.
         </p>
         <table class="ledger mini">
@@ -579,7 +585,7 @@
           </thead>
           <tbody>
             <tr><th scope="row">Ontario</th><td class="num">6.8</td><td class="num">11.0</td></tr>
-            <tr><th scope="row">Los Angeles</th><td class="num">3.1</td><td class="num">4.3</td></tr>
+            <tr><th scope="row">Los Angeles</th><td class="num">3.2</td><td class="num">4.3</td></tr>
             <tr><th scope="row">San Diego</th><td class="num worst">0.6</td><td class="num">4.5</td></tr>
           </tbody>
         </table>
@@ -614,11 +620,11 @@
         <span class="exhibit-label">Exhibit 4.1 · New clients by year of their first matter, 30-mile markets</span>
       </figcaption>
       <ol class="years-grid">
-        <li><img src="data/maps/year_2021.png?v=20260929" data-zoom alt="2021: 233 new clients, mostly in the Los Angeles market" /><span><b>233</b> new clients · LA 53% · Ontario 40%</span></li>
-        <li><img src="data/maps/year_2022.png?v=20260929" data-zoom alt="2022: 137 new clients, more around Ontario and San Diego" /><span><b>137</b> new clients · LA 38% · Ontario 47%</span></li>
-        <li><img src="data/maps/year_2023.png?v=20260929" data-zoom alt="2023: 116 new clients, split evenly between Los Angeles and Ontario" /><span><b>116</b> new clients · LA 45% · Ontario 45%</span></li>
-        <li><img src="data/maps/year_2024.png?v=20260929" data-zoom alt="2024: 138 new clients, concentrated in the Inland Empire" /><span><b>138</b> new clients · LA 33% · Ontario 54%</span></li>
-        <li><img src="data/maps/year_2025.png?v=20260929" data-zoom alt="2025: 180 new clients, concentrated in the Inland Empire" /><span><b>180</b> new clients · LA 33% · Ontario 55%</span></li>
+        <li><img src="data/maps/year_2021.png?v=20261008" data-zoom alt="2021: 233 new clients, mostly in the Los Angeles market" /><span><b>233</b> new clients · LA 53% · Ontario 40%</span></li>
+        <li><img src="data/maps/year_2022.png?v=20261008" data-zoom alt="2022: 137 new clients, more around Ontario and San Diego" /><span><b>137</b> new clients · LA 38% · Ontario 47%</span></li>
+        <li><img src="data/maps/year_2023.png?v=20261008" data-zoom alt="2023: 116 new clients, split evenly between Los Angeles and Ontario" /><span><b>116</b> new clients · LA 45% · Ontario 45%</span></li>
+        <li><img src="data/maps/year_2024.png?v=20261008" data-zoom alt="2024: 138 new clients, concentrated in the Inland Empire" /><span><b>138</b> new clients · LA 33% · Ontario 54%</span></li>
+        <li><img src="data/maps/year_2025.png?v=20261008" data-zoom alt="2025: 180 new clients, concentrated in the Inland Empire" /><span><b>180</b> new clients · LA 33% · Ontario 55%</span></li>
       </ol>
     </figure>
 
@@ -777,7 +783,7 @@
 
     <figure class="exhibit">
       <div class="exhibit-map">
-        <img src="data/maps/dormant.png?v=20260929" data-zoom
+        <img src="data/maps/dormant.png?v=20261008" data-zoom
           alt="Map of 306 lucrative clients with no new matter since April 2024, sized by lifetime revenue, clustered near the Los Angeles and Ontario offices" />
       </div>
       <figcaption class="exhibit-notes">
@@ -812,22 +818,24 @@
   <section id="plan" class="band band-forest">
     <div class="plan-head">
       <h2>Action plan</h2>
+      <p class="plan-lede">Business analysis tells the firm who; geospatial analysis tells it where. Together they
+        say what to do next.</p>
       <p>Ranked by how much each step is worth against how hard it is. Each links back to its evidence.</p>
     </div>
     <ol class="plan">
       <li>
         <h3>Bring Spanish-language outreach to San Diego</h3>
         <p class="plan-where">Chula Vista (91910, 91911), Otay Mesa–Nestor (92154), City Heights (92105)</p>
-        <p>The market has 626,000 Spanish speakers and 4 Spanish-speaking clients. Use bilingual intake and local
+        <p>The market has 631,000 Spanish speakers and 4 Spanish-speaking clients. Use bilingual intake and local
           Spanish-language ads, and track lucrative conversion, which is only 35% for Spanish Google today.</p>
-        <p class="plan-meta"><span>Worth: part of San Diego's +79 clients (~$0.37M)</span><span>Effort: medium</span><a href="#ch3">Evidence: Chapter 3</a></p>
+        <p class="plan-meta"><span>Worth: part of San Diego's +78 clients (~$0.37M)</span><span>Effort: medium</span><a href="#ch3">Evidence: Chapter 3</a></p>
       </li>
       <li>
         <h3>Grow in Los Angeles neighborhoods within 10 miles</h3>
         <p class="plan-where">Koreatown, Hancock Park, Los Feliz, Highland Park, Glassell Park, Palms, Westwood</p>
         <p>These are close to the office and populous, but have few clients. Target search ads by ZIP code
           and build local referral partners.</p>
-        <p class="plan-meta"><span>Worth: up to +260 clients (~$2.1M)</span><span>Effort: medium–high</span><a href="#ch3">Evidence: Chapter 3</a></p>
+        <p class="plan-meta"><span>Worth: up to +252 clients (~$2.0M)</span><span>Effort: medium–high</span><a href="#ch3">Evidence: Chapter 3</a></p>
       </li>
       <li>
         <h3>Turn past clients into referral sources</h3>
@@ -868,10 +876,12 @@
         <div>
           <h3>Data</h3>
           <p>
-            PostgreSQL 18 with PostGIS 3.6. Four firm tables (<code>contact</code>, <code>matter</code>,
-            <code>transaction</code>, <code>activity</code>) plus 2020 Census ZIP Code Tabulation Areas (ZCTAs).
+            The firm's CSV exports were de-identified (personal details removed, serial numbers in place of names
+            and IDs) and geocoded with the Google Geocoding API, then loaded into PostgreSQL 18 with PostGIS 3.6:
+            four firm tables (<code>contact</code>, <code>matter</code>, <code>transaction</code>,
+            <code>activity</code>) plus 2020 Census ZIP Code Tabulation Areas (ZCTAs).
             ZCTAs are the Census Bureau's stable version of ZIP codes. Population, language spoken at home and
-            household income come from the American Community Survey 2018–2022 five-year estimates.
+            household income come from the American Community Survey 2020–2024 five-year estimates, the latest release.
           </p>
           <h3>Spatial methods</h3>
           <ul>
@@ -880,7 +890,8 @@
               offices' rings overlap, the nearer office takes the client or ZIP area.</li>
             <li><b>Reach:</b> clients per 100,000 residents per ZCTA, smoothed with global empirical Bayes so that
               small populations don't produce extreme rates. Every regional figure, including hot spots, trends over
-              time and channel quality, covers the 30-mile markets only.</li>
+              time and channel quality, covers the 30-mile markets only. The one exception is the reach-by-distance
+              chart (Exhibit 3.1 and the opening summary), which runs to 60 miles to show the fall-off.</li>
             <li><b>Hot spots:</b> Getis-Ord Gi* on smoothed lucrative clients per resident, with queen-contiguity
               neighbors, across the 498 ZCTAs within 30 miles of an office.</li>
             <li><b>Missing clients:</b> expected clients = ZCTA population × the firm-wide rate for its distance
@@ -900,7 +911,8 @@
             <li>Reach benchmarks assume every market could match Ontario. Competition and demand differ, so the
               dollar figures are for scale only.</li>
             <li>One firm's records; the patterns may not hold for other firms.</li>
-            <li>Client records are anonymized. No map shows anything finer than a point or ZIP area.</li>
+            <li>Client records are de-identified and no coordinates are published; maps are static images, and
+              none shows anything finer than a point or ZIP area.</li>
           </ul>
           <h3>Tools</h3>
           <p>
@@ -1054,8 +1066,8 @@ ORDER BY ct.net_revenue DESC;</code></pre>
   <footer id="footer">
     <p>Geog 574 Geospatial Database Design and Development, University of Wisconsin–Madison, spring 2026. Eugenie Huang and Reid Osborn.</p>
     <p class="footer-note">
-      Firm data: proprietary law firm records, anonymized. Census data: 2020 ZCTA boundaries and ACS 2018–2022
-      five-year estimates. Built with PostGIS, QGIS, GeoPandas and Chart.js.
+      Firm data: proprietary law firm records, de-identified; no coordinates are published. Census data: 2020 ZCTA
+      boundaries and ACS 2020–2024 five-year estimates. Built with PostGIS, GeoPandas, matplotlib and Chart.js.
     </p>
   </footer>
 
