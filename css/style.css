@@ -478,21 +478,33 @@ a:hover { color: var(--forest); }
 .plan-head h2 { color: var(--white); margin-bottom: .5rem; }
 .plan-head p { color: rgba(255,255,255,.75); }
 .plan-head .plan-lede { font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: 300; color: var(--white); max-width: 52rem; margin-bottom: .6rem; }
+.plan-group {
+  max-width: var(--wrap); margin: 0 auto .9rem; color: var(--gold);
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+}
+.plan + .plan-group { margin-top: 2.2rem; }
 .plan {
   list-style: none; padding: 0; counter-reset: p;
   max-width: var(--wrap); margin: 0 auto;
-  /* 6 across on wide screens, 3 x 2 on laptops, 2 x 3 on tablets: never a lone card on a row */
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px; background: rgba(255,255,255,.14);
   border: 1px solid rgba(255,255,255,.14);
 }
+.plan-support { grid-template-columns: repeat(2, minmax(0, 1fr)); counter-reset: p 4; }
+/* maps need room: 2 x 2 up to large screens, 4 across only on very wide ones */
+.plan-maps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 1800px) { .plan-maps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .plan li {
   counter-increment: p; margin: 0;
-  background: var(--forest); padding: 1.5rem 1.5rem 1.3rem 4rem; position: relative;
-  display: flex; flex-direction: column;
+  background: var(--forest); display: flex; flex-direction: column;
 }
-.plan li::before {
-  content: counter(p); position: absolute; left: 1.4rem; top: 1.1rem;
+.plan-map { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--white); cursor: zoom-in; }
+.plan-body {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 1.3rem 1.4rem 1.3rem 4rem; position: relative;
+}
+.plan-body::before {
+  content: counter(p); position: absolute; left: 1.4rem; top: 1rem;
   font-family: var(--font-hd); font-size: 2.1rem; font-weight: 600; color: var(--gold); line-height: 1;
 }
 .plan h3 { color: var(--white); font-size: 1.25rem; }
@@ -559,16 +571,10 @@ a:hover { color: var(--forest); }
 #img-modal-caption { font-family: var(--font-hd); color: var(--gold); margin-top: 1rem; text-align: center; }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
-@media (min-width: 1800px) {
-  .plan { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .plan li { padding: 4rem 1.4rem 1.3rem; }
-  .plan li::before { top: 1.3rem; }
-}
 
 @media (max-width: 1080px) {
   .exhibit { grid-template-columns: minmax(0, 1fr); }
   .exhibit-notes { position: static; }
-  .plan { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* 3 small tiles on top, the two share tiles below */
   .scope-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .scope-tiles div { grid-column: span 2; }

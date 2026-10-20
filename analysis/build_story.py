@@ -39,6 +39,7 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from pyproj import Transformer
+from shapely.geometry import Point
 
 REPO = Path(__file__).resolve().parents[1]
 PROJECT = REPO.parent
@@ -58,8 +59,10 @@ DB = dict(user='postgres', host='localhost', dbname='final_project_sbm')
 
 SNAPSHOT = pd.Timestamp('2026-04-09')      # last matter open date in the extract
 DORMANT_DAYS = 730
-CATCHMENT_MILES = 30                       # "market" = within 30 mi of the nearest office
-STUDY_MILES = CATCHMENT_MILES              # every regional analysis uses the same 30-mile markets
+CATCHMENT_MILES = 20                       # "market" = within 20 mi of the nearest office
+STUDY_MILES = CATCHMENT_MILES              # every regional analysis uses the same 20-mile markets
+RING_MILES = (10, CATCHMENT_MILES)          # every map with distance rings draws both, 10 and 20 mi
+RING_LABEL = '10 / 20 mi from office'
 DECAY_MILES = 60                           # except the distance-decay chart, which shows the fall-off beyond them
 OPPORTUNITY_MILES = 20
 
@@ -258,7 +261,7 @@ def analyse(offices, c, m, tx, z):
     out['thresholds'] = {'rev': 6095, 'rph': 261}
     out['no_hours'] = int(c.rph.isna().sum())
 
-    # markets (30-mile catchments)
+    # markets (20-mile catchments)
     near_c = c[c.dist <= CATCHMENT_MILES]
     near_z = S[S.dist <= CATCHMENT_MILES]
     zm = near_z.groupby('office').agg(pop=('pop', 'sum'), spk=('spanish_spk', 'sum'), pop5=('pop5', 'sum'))
@@ -289,7 +292,7 @@ def analyse(offices, c, m, tx, z):
     labels = ['0–5', '5–10', '10–20', '20–30']
     S['band'] = pd.cut(S.dist, bands, labels=labels)
     b = S.groupby('band', observed=False).agg(pop=('pop', 'sum'), n=('n', 'sum'), nluc=('nluc', 'sum'), rev=('rev', 'sum'))
-    # the distance-decay chart alone looks past the 30-mile markets, to show how reach keeps falling
+    # the distance-decay chart alone looks past the 20-mile markets, to show how reach keeps falling
     D = z[z.dist <= DECAY_MILES].copy()
     D['band'] = pd.cut(D.dist, [0, 5, 10, 20, 30, 45, 60], labels=['0–5', '5–10', '10–20', '20–30', '30–45', '45–60'])
     bd = D.groupby('band', observed=False).agg(pop=('pop', 'sum'), n=('n', 'sum'), nluc=('nluc', 'sum'), rev=('rev', 'sum'))
@@ -553,7 +556,7 @@ def size_items(area_pt2, values):
 
 
 def group_legend(ax, groups, loc='lower left', anchor=(0.02, 0.03), fs=9):
-    """Every legend group in one frame, each under a bold heading (e.g. Client tier, then Net revenue)."""
+    """Every legend group in one frame, each under a bold heading (e.g. Client tier, then Revenue)."""
     handles, heads = [], []
     for n, (heading, items) in enumerate(groups):
         heads.append(len(handles))
@@ -595,7 +598,8 @@ plt.rcParams['svg.fonttype'] = 'none'      # keep labels as live text in the SVG
 plt.rcParams['svg.hashsalt'] = 'story'     # stable ids, so re-exports diff cleanly
 
 
-def rings(ax, bm, miles=(10, 20, 30)):
+def rings(ax, bm, miles=None):
+    miles = miles or RING_MILES
     for _, o in bm.offices.iterrows():
         for mi in miles:
             ax.add_patch(plt.Circle((o.geometry.x, o.geometry.y), mi * 1609.34, fill=False, ls=(0, (4, 3)),
@@ -628,15 +632,15 @@ def draw_maps(offices, c, S, out):
         g = cp[cp.tier == tier].sort_values('net_revenue', ascending=False)
         g.plot(ax=ax, color=TIER_COLORS[tier], markersize=tier_size(g.net_revenue), alpha=.75 if tier != 'Standard' else .45,
                edgecolor='white', linewidth=.3, zorder=5)
-    rings(ax, bm, (30,))
+    rings(ax, bm)
     bm.overlay(ax, REGION)
     bm.graticule(ax)
     map_title(ax, 'All mapped clients by tier',
-              f"{out['scope']['clients_mapped']:,} clients with an address on file · 30-mile market around each office")
+              f"{out['scope']['clients_mapped']:,} clients with an address on file · {CATCHMENT_MILES}-mile market around each office")
     h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f"{k}  ({out['tiers'][k]['n']})")
          for k in ['Star', 'High Value', 'Efficient', 'Standard']]
-    group_legend(ax, [('Client tier', h + [OFFICE, RING('30-mile market')]),
-                      ('Net revenue', size_items(tier_size, size_values))])
+    group_legend(ax, [('Client tier', h + [OFFICE, RING(RING_LABEL)]),
+                      ('Revenue', size_items(tier_size, size_values))])
     save(fig, 'region_tiers.png')
 
     # 1b. market close-ups: one scale for all three, only this market's clients at full strength
@@ -658,7 +662,7 @@ def draw_maps(offices, c, S, out):
             g = cp[mine & (cp.tier == tier)].sort_values('net_revenue', ascending=False)
             g.plot(ax=ax, color=TIER_COLORS[tier], markersize=tier_size(g.net_revenue),
                    alpha=.75 if tier != 'Standard' else .45, edgecolor='white', linewidth=.3, zorder=5)
-        for mi in (10, 20, 30):
+        for mi in RING_MILES:
             ax.add_patch(plt.Circle((o.x, o.y), mi * 1609.34, fill=False, ls=(0, (4, 3)), lw=.8, ec='#6b5b45',
                                     alpha=.55, zorder=6))
         bm.overlay(ax, ext, city_min_pop=100000, fs=10, office_gap=5000)
@@ -668,10 +672,10 @@ def draw_maps(offices, c, S, out):
         h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f'{k}  ({counts.get(k, 0)})')
              for k in ['Star', 'High Value', 'Efficient', 'Standard']]
         h += [Line2D([], [], marker='o', ls='', color='#9a9a9a', alpha=.3, ms=8, label='Client in another market'),
-              OFFICE, RING('10 / 20 / 30 mi from office')]
+              OFFICE, RING(RING_LABEL)]
         # Ontario's lower left is Orange County land, so its legends sit in the empty mountains up top
         top = office == 'Ontario'
-        group_legend(ax, [('Client tier', h), ('Net revenue', size_items(tier_size, size_values))],
+        group_legend(ax, [('Client tier', h), ('Revenue', size_items(tier_size, size_values))],
                      loc='upper left' if top else 'lower left', anchor=(0.02, 0.97) if top else (0.02, 0.03))
         save(fig, fname, folder=REPO / 'data')
 
@@ -683,14 +687,14 @@ def draw_maps(offices, c, S, out):
     cm = ListedColormap(cols)
     Sp.plot(ax=ax, column='cli_eb', cmap=cm, norm=BoundaryNorm(bins, cm.N), edgecolor='white', linewidth=.25, zorder=2)
     Sp[Sp['pop'] < 1000].plot(ax=ax, color='#e8e5df', hatch='////', edgecolor='#d7d2c9', linewidth=0, zorder=3)
-    rings(ax, bm, (10, 20, 30))
+    rings(ax, bm)
     bm.overlay(ax, REGION)
     bm.graticule(ax)
-    map_title(ax, 'Market reach', 'Clients per 100,000 residents by ZIP area, smoothed · 30-mile markets')
+    map_title(ax, 'Market reach', f'Clients per 100,000 residents by ZIP area, smoothed · {CATCHMENT_MILES}-mile markets')
     labs = ['< 1', '1 – 3', '3 – 6', '6 – 10', '10 +']
     h = [Patch(color=cols[i], label=labs[i]) for i in range(5)]
     h += [Patch(facecolor='#e8e5df', hatch='////', edgecolor='#cfc8bc', label='< 1,000 residents'), OFFICE,
-          RING('10 / 20 / 30 mi from office')]
+          RING(RING_LABEL)]
     legend_box(ax, h, 'Clients per 100,000')
     save(fig, 'penetration.png')
 
@@ -705,7 +709,7 @@ def draw_maps(offices, c, S, out):
     bm.overlay(ax, REGION)
     bm.graticule(ax)
     map_title(ax, 'Hot spots of lucrative clients',
-              'Getis-Ord Gi* on lucrative clients per 100,000 residents · ZIP areas within 30 mi of an office')
+              f'Getis-Ord Gi* on lucrative clients per 100,000 residents · ZIP areas within {CATCHMENT_MILES} mi of an office')
     h = [Patch(color=hc['hot99'], label='Hot spot (99% confidence)'), Patch(color=hc['hot95'], label='Hot spot (95%)'),
          Patch(color=hc['ns'], label='Not significant'), Patch(color=hc['cold'], label='Cold spot (95%+)'), OFFICE]
     legend_box(ax, h)
@@ -720,7 +724,7 @@ def draw_maps(offices, c, S, out):
     ocols = ['#d4ecf1', '#8fcbdc', '#3f9dbd', '#1b6585']
     ocm = ListedColormap(ocols)
     g.plot(ax=ax, column='gap', cmap=ocm, norm=BoundaryNorm(obins, ocm.N), edgecolor='white', linewidth=.25, zorder=2)
-    rings(ax, bm, (OPPORTUNITY_MILES,))
+    rings(ax, bm)
     bm.overlay(ax, REGION, city_min_pop=250000)
     for _, v in Sp[Sp.opp_rank.notna()].iterrows():
         p = v.geometry.representative_point()
@@ -732,7 +736,7 @@ def draw_maps(offices, c, S, out):
     labs = ['0 – 1', '1 – 2', '2 – 3', '3 +']
     h = [Patch(color=ocols[i], label=labs[i]) for i in range(4)]
     h += [Line2D([], [], marker='o', ls='', mfc='#1a2d22', mec='white', ms=10, label='Top-10 target ZIP area'),
-          OFFICE, RING(f'{OPPORTUNITY_MILES} mi from office')]
+          OFFICE, RING(RING_LABEL)]
     legend_box(ax, h, 'Missing clients')
     save(fig, 'opportunity.png')
 
@@ -749,7 +753,7 @@ def draw_maps(offices, c, S, out):
                                                    linewidth=.5, zorder=8)
     bm.overlay(ax, REGION)
     bm.graticule(ax)
-    map_title(ax, 'Spanish-speaking residents and clients', f'ACS {ACS_LABEL} · 30-mile markets')
+    map_title(ax, 'Spanish-speaking residents and clients', f'ACS {ACS_LABEL} · {CATCHMENT_MILES}-mile markets')
     labs = ['< 15%', '15 – 30%', '30 – 45%', '45 – 60%', '60% +']
     h = [Patch(color=scols[i], label=labs[i]) for i in range(5)]
     h += [Line2D([], [], marker='o', ls='', mfc='#f2c14e', mec='#5a4300', ms=7, label='Spanish-speaking client'), OFFICE]
@@ -787,16 +791,179 @@ def draw_maps(offices, c, S, out):
         g = d[d.tier == tier].sort_values('net_revenue', ascending=False)
         g.plot(ax=ax, color=TIER_COLORS[tier], markersize=dormant_size(g.net_revenue),
                alpha=.75, edgecolor='white', linewidth=.4, zorder=5)
-    rings(ax, bm, (10,))
+    rings(ax, bm)
     bm.overlay(ax, REGION)
     bm.graticule(ax)
     map_title(ax, f'Lucrative clients with no new matter since {since}',
               f"{out['dormant']['n']} clients · data snapshot {SNAPSHOT:%d %B %Y}")
     h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f"{k}  ({out['dormant']['by_tier'][k]['n']})")
          for k in ['Star', 'High Value', 'Efficient']]
-    group_legend(ax, [('Client tier', h + [OFFICE, RING('10 mi from office')]),
-                      ('Lifetime net revenue', size_items(dormant_size, size_values))])
+    group_legend(ax, [('Client tier', h + [OFFICE, RING(RING_LABEL)]),
+                      ('Lifetime revenue', size_items(dormant_size, size_values))])
     save(fig, 'dormant.png')
+
+    draw_action_maps(bm, Sp, cp)
+
+
+# ── action-plan thumbnails: 3:2, no title band (the card's heading is the title), gold = target area ──
+# target areas come straight from the analysis: the Spanish-gap ZIP areas near San Diego, and the top-10
+# missing-client ZIP areas within 10 miles of the Los Angeles office (the same ZIPs the action plan names)
+TARGET_ZIPS = {
+    'Chula Vista': ['91910', '91911'], 'Otay Mesa-Nestor': ['92154'], 'City Heights': ['92105'],
+    'Koreatown': ['90004'], 'Palms': ['90034'], 'Westwood': ['90024'], 'Glassell Park': ['90065'],
+    'Los Feliz': ['90027'], 'Highland Park': ['90042'],
+}
+TARGET_EDGE, TARGET_FILL = '#8a6429', '#c0944c'
+TARGET = Patch(facecolor='none', edgecolor=TARGET_FILL, lw=2.4, label='Target ZIP area')
+
+
+def fit_32(geoms, pad_m=4000):
+    """3:2 extent around the given geometries (EPSG:3310), padded."""
+    x0, y0, x1, y1 = gpd.GeoSeries(geoms, crs=3310).total_bounds
+    x0, y0, x1, y1 = x0 - pad_m, y0 - pad_m, x1 + pad_m, y1 + pad_m
+    w, h = x1 - x0, y1 - y0
+    if w / h < 1.5:
+        d = (h * 1.5 - w) / 2; x0, x1 = x0 - d, x1 + d
+    else:
+        d = (w / 1.5 - h) / 2; y0, y1 = y0 - d, y1 + d
+    return (x0, y0, x1, y1)
+
+
+def thumb_label(ax, name, pt, dx=0, dy=0, fs=11):
+    ax.annotate(name, (pt.x, pt.y), xytext=(dx, dy), textcoords='offset points', ha='center', va='center',
+                fontsize=fs, fontweight='bold', color='#3d2c10', zorder=14,
+                path_effects=[matplotlib.patheffects.withStroke(linewidth=3.2, foreground='white')])
+
+
+def draw_action_maps(bm, Sp, cp):
+    rows = [{'Name': name, 'geometry': Sp[Sp.zcta.isin(zips)].union_all()} for name, zips in TARGET_ZIPS.items()]
+    tg = gpd.GeoDataFrame(rows, crs=Sp.crs)
+    off = bm.offices.set_index('office').geometry
+    sd_names, la_names = ['Chula Vista', 'Otay Mesa-Nestor', 'City Heights'], \
+        ['Koreatown', 'Los Feliz', 'Highland Park', 'Glassell Park', 'Palms', 'Westwood']
+    # label nudges (points) so names clear each other and the office marker
+    nudge = {'Chula Vista': (20, 0), 'Otay Mesa-Nestor': (30, -16), 'City Heights': (60, 12),
+             'Koreatown': (0, -30), 'Los Feliz': (0, 40), 'Highland Park': (46, -18), 'Glassell Park': (34, 30),
+             'Palms': (-6, -26), 'Westwood': (-16, 30)}
+
+    def targets(ax, names):
+        t = tg[tg.Name.isin(names)]
+        # outline only, with a white casing, so the data underneath stays readable
+        t.boundary.plot(ax=ax, color='white', linewidth=4.2, zorder=8)
+        t.boundary.plot(ax=ax, color=TARGET_FILL, linewidth=2.4, zorder=9)
+        for _, v in t.iterrows():
+            dx, dy = nudge.get(v.Name, (0, 0))
+            thumb_label(ax, v.Name.replace('-', '–'), v.geometry.representative_point(), dx, dy)
+        return t
+
+    def ring_set(ax, office):
+        o = off[office]
+        for mi in RING_MILES:
+            ax.add_patch(plt.Circle((o.x, o.y), mi * 1609.34, fill=False, ls=(0, (4, 3)), lw=.9, ec='#6b5b45',
+                                    alpha=.6, zorder=6))
+
+    # A. San Diego: target areas over the share of residents who speak Spanish at home
+    t = tg[tg.Name.isin(sd_names)]
+    o = off['San Diego']   # reach west over the ocean, so the legend sits on water
+    ext = fit_32(list(t.geometry) + [o.buffer(3000), Point(o.x - 16000, o.y)], pad_m=5000)
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+    bm.frame(ax, ext)
+    sbins, scols = [0, 15, 30, 45, 60, 101], ['#f3eef6', '#d6c6e4', '#b09bd0', '#8966d1', '#56379e']
+    scm = ListedColormap(scols)
+    Sp[Sp.office == 'San Diego'].plot(ax=ax, column='span_pct', cmap=scm, norm=BoundaryNorm(sbins, scm.N),
+                                      edgecolor='white', linewidth=.3, alpha=.75, zorder=2,
+                                      missing_kwds={'color': '#ece8e1'})
+    ring_set(ax, 'San Diego')
+    bm.overlay(ax, ext, labels=False, office_labels=False)
+    targets(ax, sd_names)
+    sc = cp[cp.spanish & (cp.office == 'San Diego') & (cp.dist <= STUDY_MILES)]
+    sc.plot(ax=ax, color='#f2c14e', markersize=40, edgecolor='#5a4300', linewidth=.7, zorder=12)
+    h = [TARGET, Patch(color=scols[3], label='Speak Spanish at home: 45%+'),
+         Line2D([], [], marker='o', ls='', mfc='#f2c14e', mec='#5a4300', ms=7, label=f'Spanish-speaking client ({len(sc)})'),
+         OFFICE, RING(RING_LABEL)]
+    legend_box(ax, h, fs=8.5, anchor=(0.01, 0.02))
+    save(fig, 'action_sd.png')
+
+    # B. Los Angeles: target areas plus the top-10 missing-client ZIP areas
+    t = tg[tg.Name.isin(la_names)]
+    ext = fit_32(list(t.geometry) + [off['Los Angeles'].buffer(3000)], pad_m=4500)
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+    bm.frame(ax, ext)
+    Sp[Sp.office == 'Los Angeles'].plot(ax=ax, color='#ece8e1', edgecolor='white', linewidth=.3, zorder=1)
+    g = Sp[(Sp.office == 'Los Angeles') & (Sp.gap > 0)]
+    ocols = ['#d4ecf1', '#8fcbdc', '#3f9dbd', '#1b6585']
+    ocm = ListedColormap(ocols)
+    g.plot(ax=ax, column='gap', cmap=ocm, norm=BoundaryNorm([0, 1, 2, 3, 1e9], ocm.N), edgecolor='white',
+           linewidth=.3, alpha=.8, zorder=2)
+    ring_set(ax, 'Los Angeles')
+    bm.overlay(ax, ext, labels=False, office_labels=False)
+    targets(ax, la_names)
+    for _, v in Sp[Sp.opp_rank.notna() & (Sp.office == 'Los Angeles')].iterrows():
+        p = v.geometry.representative_point()
+        if ext[0] < p.x < ext[2] and ext[1] < p.y < ext[3]:
+            ax.annotate(str(int(v.opp_rank)), (p.x, p.y), ha='center', va='center', fontsize=8, fontweight='bold',
+                        color='white', zorder=13, bbox=dict(boxstyle='circle,pad=0.22', fc='#1a2d22', ec='white', lw=.8))
+    h = [TARGET, Patch(color=ocols[2], label='Missing clients: 2+'),
+         Line2D([], [], marker='o', ls='', mfc='#1a2d22', mec='white', ms=9, label='Top-10 target ZIP area'),
+         OFFICE, RING(RING_LABEL)]
+    legend_box(ax, h, fs=9, loc='lower right', anchor=(0.99, 0.02))
+    save(fig, 'action_la.png')
+
+    # C. 126 dormant lucrative clients within 10 miles: LA + Ontario, San Diego as an inset
+    d = cp[cp.luc & ((SNAPSHOT - cp['last']).dt.days > DORMANT_DAYS) & (cp.dist <= 10)]
+    ten = 10 * 1609.34
+    ext = fit_32([off['Los Angeles'].buffer(ten), off['Ontario'].buffer(ten)], pad_m=2500)
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+
+    def dormant_layer(a, extent):
+        bm.frame(a, extent)
+        Sp.boundary.plot(ax=a, color='#e2ddd4', linewidth=.3, zorder=1)
+        for o in off:
+            a.add_patch(plt.Circle((o.x, o.y), ten, facecolor=TARGET_FILL + '22', edgecolor=TARGET_EDGE, lw=1.4,
+                                   ls=(0, (4, 3)), zorder=3))
+        for tier in ['Efficient', 'High Value', 'Star']:
+            gg = d[d.tier == tier].sort_values('net_revenue', ascending=False)
+            gg.plot(ax=a, color=TIER_COLORS[tier], markersize=dormant_size(gg.net_revenue), alpha=.85,
+                    edgecolor='white', linewidth=.4, zorder=5)
+        bm.overlay(a, extent, labels=False, office_labels=False)
+
+    dormant_layer(ax, ext)
+    for name in ('Los Angeles', 'Ontario'):
+        n = int((d.office == name).sum())
+        o = off[name]
+        thumb_label(ax, f'{name}: {n}', Point(o.x, o.y + ten + 2200), 0, 0, fs=11)   # just above the 10-mi ring
+    ins = ax.inset_axes([0.375, 0.52, 0.25, 0.45])   # the empty strip between the two rings
+    sext = (off['San Diego'].x - ten * 1.25, off['San Diego'].y - ten * 1.25, off['San Diego'].x + ten * 1.25,
+            off['San Diego'].y + ten * 1.25)
+    dormant_layer(ins, sext)
+    ins.text(.5, .94, f"San Diego: {int((d.office == 'San Diego').sum())}", transform=ins.transAxes, ha='center',
+             va='top', fontsize=10, fontweight='bold', color='#3d2c10', zorder=14,
+             path_effects=[matplotlib.patheffects.withStroke(linewidth=3, foreground='white')])
+    for s in ins.spines.values():
+        s.set_edgecolor('#6b6358'); s.set_linewidth(1)
+    counts = d.tier.value_counts()
+    h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f'{k} ({counts.get(k, 0)})')
+         for k in ['Star', 'High Value', 'Efficient']]
+    h += [Patch(facecolor=TARGET_FILL + '22', edgecolor=TARGET_EDGE, ls='--', label='Within 10 mi of an office'), OFFICE]
+    legend_box(ax, h, fs=8.5, loc='lower center', anchor=(0.5, 0.02), ncol=2)
+    save(fig, 'action_dormant.png')
+
+    # D. Inland Empire core: the hot spots at 99% around Ontario
+    core = Sp[(Sp.office == 'Ontario') & (Sp.hot == 'hot99')]
+    ext = fit_32(list(core.geometry), pad_m=4000)
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+    bm.frame(ax, ext)
+    Sp.plot(ax=ax, color='#ece8e1', edgecolor='white', linewidth=.3, zorder=1)
+    Sp[(Sp.office == 'Ontario') & (Sp.hot == 'hot95')].plot(ax=ax, color='#ef8a62', alpha=.55, edgecolor='white',
+                                                             linewidth=.3, zorder=2)
+    core.plot(ax=ax, facecolor=TARGET_FILL + '55', edgecolor='white', linewidth=.4, zorder=3)
+    gpd.GeoSeries([core.union_all()], crs=3310).boundary.plot(ax=ax, color=TARGET_EDGE, linewidth=1.8, zorder=8)
+    ring_set(ax, 'Ontario')
+    bm.overlay(ax, ext, labels=True, city_min_pop=60000, office_labels=False, fs=11, office_gap=4000)
+    h = [Patch(facecolor=TARGET_FILL + '55', edgecolor=TARGET_EDGE, lw=1.6, label=f'Core: hot spot at 99% ({len(core)} ZIP areas)'),
+         Patch(color='#ef8a62', alpha=.55, label='Hot spot at 95%'), OFFICE, RING(RING_LABEL)]
+    legend_box(ax, h, fs=9, loc='lower right', anchor=(0.99, 0.02))
+    save(fig, 'action_ie.png')
 
 
 def write_layers(offices, c, S):
@@ -821,7 +988,7 @@ def write_layers(offices, c, S):
     off = gpd.GeoDataFrame(offices[['office']], geometry=gpd.points_from_xy(offices.lon, offices.lat), crs=4326).to_crs(3310)
     off.to_file(path, layer='offices', driver='GPKG')
     rings = [{'office': o.office, 'miles': mi, 'geometry': o.geometry.buffer(mi * 1609.34, 128).boundary}
-             for o in off.itertuples() for mi in (10, 20, 30)]
+             for o in off.itertuples() for mi in RING_MILES]
     gpd.GeoDataFrame(rings, crs=3310).to_file(path, layer='office_rings', driver='GPKG')
     print('wrote', path)
 

@@ -32,7 +32,7 @@ totals are not inflated by many-to-many joins between `transaction` and
 
 ## 1. Identifying High-Value Clients (Revenue x Efficiency)
 
-Aggregate `transaction` by client to calculate net revenue, and aggregate
+Aggregate `transaction` by client to calculate revenue, and aggregate
 `activity` through `matter` to calculate total hours. These two client-level
 summaries are then joined to `contact` to calculate revenue per hour. Use
 `NTILE(4)` window functions to rank clients into four tiers.
@@ -255,7 +255,7 @@ ORDER BY cohort_year;
 | Column | Description |
 |---|---|
 | `cohort_size` | Number of clients who opened their first matter that year |
-| `avg_revenue_per_client` | Average cumulative net revenue per client in the cohort |
+| `avg_revenue_per_client` | Average cumulative revenue per client in the cohort |
 | `lucrative_rate_pct` | Share of the cohort that ultimately became Lucrative clients |
 
 Which intake year produced the highest long-term value? Which cohort had the best Lucrative conversion rate? This analysis helps identify whether a specific year's marketing or intake approach is worth replicating.
@@ -1031,7 +1031,7 @@ FROM mc LEFT JOIN contact c ON c.id = mc.client_id
 GROUP BY 1;
 ```
 
-### 6.2 Nearest office and 30-mile markets
+### 6.2 Nearest office and 20-mile markets
 
 ```sql
 -- office(name, geom): the three office points. Their exact coordinates are
@@ -1049,7 +1049,7 @@ SELECT office, COUNT(*) AS clients,
        ROUND(AVG((client_tier <> 'Standard')::int) * 100, 1) AS lucrative_pct,
        ROUND(SUM(net_revenue)::numeric) AS revenue
 FROM nearest
-WHERE miles <= 30
+WHERE miles <= 20
 GROUP BY office;
 ```
 

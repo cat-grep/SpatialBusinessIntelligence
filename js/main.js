@@ -229,7 +229,7 @@ function scatterChart(dark) {
         }),
         y: axis(t, {
           type: 'logarithmic', min: 30, max: 200000,
-          title: axisTitle(t, 'Net revenue (log scale)'),
+          title: axisTitle(t, 'Revenue (log scale)'),
           ticks: { color: t.sub, callback: v => [100, 1000, 10000, 100000].includes(v) ? moneyK(v) : '' }
         })
       }
