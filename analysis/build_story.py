@@ -37,7 +37,8 @@ import matplotlib.patheffects
 import matplotlib.font_manager
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
+from matplotlib.patches import Patch, Rectangle
+from matplotlib.legend_handler import HandlerBase
 from pyproj import Transformer
 from shapely.geometry import Point
 
@@ -72,6 +73,7 @@ ACS_URL = f'https://www2.census.gov/programs-surveys/acs/summary_file/{ACS_YEAR}
 
 TIER_COLORS = {'Star': '#434b8b', 'High Value': '#cc586f', 'Efficient': '#368acc', 'Standard': '#9a9a9a'}
 OFFICE_COLOR = '#e8740c'
+HOT_COLORS = {'hot99': '#b2182b', 'hot95': '#ef8a62', 'ns': '#ece8e1', 'cold': '#67a9cf'}   # Exhibit 2.5
 OCEAN = '#dfe6ea'
 LAND = '#f6f4f0'
 FOREIGN = '#ebe8e2'                         # Mexico: land, but outside the study area
@@ -465,7 +467,9 @@ class Basemap:
         for s in ax.spines.values():
             s.set_edgecolor('#b9b2a6')
 
-    def overlay(self, ax, extent, labels=True, city_min_pop=150000, office_labels=True, fs=9, office_gap=13000):
+    def overlay(self, ax, extent, labels=True, city_min_pop=150000, office_labels=True, fs=9, office_gap=13000,
+                label_left=('San Diego',), declutter=False, label_z=7):
+        """declutter: drop any city label whose box would touch one already placed (office labels go first)."""
         self.counties.boundary.plot(ax=ax, color='#a09a90', linewidth=.6, zorder=4)
         x0, y0, x1, y1 = extent
         if self.mexico is not None and labels:
@@ -473,8 +477,29 @@ class Basemap:
             if x0 < mx < x1 and y0 < my < y1:
                 ax.text(mx, my, 'MEXICO', fontsize=fs, color='#9a948a', ha='center', va='center', zorder=7,
                         fontweight='medium')
+        self.offices.plot(ax=ax, marker='D', color=OFFICE_COLOR, markersize=70, edgecolor='white', linewidth=1.2, zorder=9)
+        boxes = []
+        rend = ax.figure.canvas.get_renderer() if declutter else None
+
+        def box(t, pad=3):
+            return t.get_window_extent(rend).expanded(1, 1).padded(pad)
+
+        if office_labels:
+            for _, o in self.offices.iterrows():
+                # San Diego sits on the coast near the frame edge: label it over the ocean instead
+                left = o.office in label_left
+                t = ax.annotate(o.office.upper() + ' OFFICE', (o.geometry.x, o.geometry.y),
+                                xytext=(-9 if left else 7, -12), ha='right' if left else 'left',
+                                textcoords='offset points', fontsize=fs, color=OFFICE_COLOR, fontweight='bold',
+                                zorder=max(9, label_z),
+                                path_effects=[matplotlib.patheffects.withStroke(linewidth=3, foreground='white')])
+                if declutter:
+                    boxes.append(box(t))
+        if declutter:
+            for _, o in self.offices.iterrows():   # keep the office marker itself clear
+                px, py = ax.transData.transform((o.geometry.x, o.geometry.y))
+                boxes.append(matplotlib.transforms.Bbox([[px - 12, py - 12], [px + 12, py + 12]]))
         if labels:
-            x0, y0, x1, y1 = extent
             placed = [(o.geometry.x, o.geometry.y) for _, o in self.offices.iterrows()]
             for _, cty in self.cities[self.cities.POP >= city_min_pop].sort_values('POP', ascending=False).iterrows():
                 p = cty.pt
@@ -482,20 +507,23 @@ class Basemap:
                     continue
                 if any(np.hypot(p.x - a, p.y - b) < office_gap for a, b in placed):
                     continue
+                ok = False
+                for dy in ((0, 12, -12) if declutter else (0,)):   # centred first, then just above or below
+                    t = ax.annotate(cty.NAME, (p.x, p.y), xytext=(0, dy), textcoords='offset points',
+                                    fontsize=fs - 1.5, color='#4a4a4a', ha='center', va='center',
+                                    zorder=label_z, fontweight='semibold',
+                                    path_effects=[matplotlib.patheffects.withStroke(linewidth=2.5, foreground='white')])
+                    if not declutter:
+                        ok = True; break
+                    b = box(t)
+                    axb = ax.get_window_extent(rend)
+                    if any(b.overlaps(o) for o in boxes) or b.x0 < axb.x0 or b.x1 > axb.x1 or b.y0 < axb.y0:
+                        t.remove()
+                        continue
+                    boxes.append(b); ok = True; break
+                if not ok:
+                    continue
                 placed.append((p.x, p.y))
-                if True:
-                    ax.annotate(cty.NAME, (p.x, p.y), fontsize=fs - 1.5, color='#4a4a4a', ha='center', va='center',
-                                zorder=7, fontweight='semibold',
-                                path_effects=[matplotlib.patheffects.withStroke(linewidth=2.5, foreground='white')])
-        self.offices.plot(ax=ax, marker='D', color=OFFICE_COLOR, markersize=70, edgecolor='white', linewidth=1.2, zorder=9)
-        if office_labels:
-            for _, o in self.offices.iterrows():
-                # San Diego sits on the coast near the frame edge: label it over the ocean instead
-                left = o.office == 'San Diego'
-                ax.annotate(o.office.upper() + ' OFFICE', (o.geometry.x, o.geometry.y), xytext=(-9 if left else 7, -12),
-                            ha='right' if left else 'left',
-                            textcoords='offset points', fontsize=fs, color=OFFICE_COLOR, fontweight='bold', zorder=9,
-                            path_effects=[matplotlib.patheffects.withStroke(linewidth=3, foreground='white')])
 
     @staticmethod
     def graticule(ax, step=0.5, labels=True, fs=8):
@@ -540,10 +568,26 @@ def map_title(ax, text, sub=None, fs=15):
         ax.text(0, 1.012, sub, transform=ax.transAxes, fontsize=fs * .66, color='#5c685f', va='bottom', ha='left')
 
 
+class Ramp(Patch):
+    """Legend entry for a stepped colour ramp: one swatch per class, drawn side by side."""
+    def __init__(self, colors, label):
+        super().__init__(label=label)
+        self.colors = colors
+
+
+class RampHandler(HandlerBase):
+    def create_artists(self, legend, orig, x0, y0, width, height, fontsize, trans):
+        w = width / len(orig.colors)
+        return [Rectangle((x0 + i * w, y0), w, height, facecolor=c, edgecolor='#8f877b', lw=.4, transform=trans)
+                for i, c in enumerate(orig.colors)]
+
+
 def legend_box(ax, handles, heading=None, loc='lower left', fs=9, ncol=1, anchor=(0.02, 0.03)):
     # default sits over the Pacific, clear of every market; heading is a short group name, never the map title
+    ramp = any(isinstance(h, Ramp) for h in handles)
     lg = ax.legend(handles=handles, title=heading, loc=loc, bbox_to_anchor=anchor, fontsize=fs, title_fontsize=fs + .5,
-                   frameon=True, framealpha=.95, edgecolor='#cfc8bc', ncol=ncol, alignment='left')
+                   frameon=True, framealpha=.95, edgecolor='#cfc8bc', ncol=ncol, alignment='left',
+                   handler_map={Ramp: RampHandler()}, handlelength=3.4 if ramp else 2.0)
     lg.set_zorder(20)
     ax.add_artist(lg)                        # keep it when a second (size) legend is added
     return lg
@@ -701,7 +745,7 @@ def draw_maps(offices, c, S, out):
     # 3. hot spots
     fig, ax = plt.subplots(figsize=(10, 10))
     bm.frame(ax, REGION)
-    hc = {'hot99': '#b2182b', 'hot95': '#ef8a62', 'ns': '#ece8e1', 'cold': '#67a9cf'}
+    hc = HOT_COLORS
     for k, col in hc.items():
         g = Sp[Sp.hot == k]
         if len(g):
@@ -842,9 +886,9 @@ def draw_action_maps(bm, Sp, cp):
     sd_names, la_names = ['Chula Vista', 'Otay Mesa-Nestor', 'City Heights'], \
         ['Koreatown', 'Los Feliz', 'Highland Park', 'Glassell Park', 'Palms', 'Westwood']
     # label nudges (points) so names clear each other and the office marker
-    nudge = {'Chula Vista': (20, 0), 'Otay Mesa-Nestor': (30, -16), 'City Heights': (60, 12),
-             'Koreatown': (0, -30), 'Los Feliz': (0, 40), 'Highland Park': (46, -18), 'Glassell Park': (34, 30),
-             'Palms': (-6, -26), 'Westwood': (-16, 30)}
+    nudge = {'Chula Vista': (20, 0), 'Otay Mesa-Nestor': (30, -16), 'City Heights': (0, 22),
+             'Koreatown': (0, -14), 'Los Feliz': (0, 40), 'Highland Park': (46, -18), 'Glassell Park': (34, 30),
+             'Palms': (-6, -26), 'Westwood': (-6, 18)}
 
     def targets(ax, names):
         t = tg[tg.Name.isin(names)]
@@ -871,14 +915,14 @@ def draw_action_maps(bm, Sp, cp):
     sbins, scols = [0, 15, 30, 45, 60, 101], ['#f3eef6', '#d6c6e4', '#b09bd0', '#8966d1', '#56379e']
     scm = ListedColormap(scols)
     Sp[Sp.office == 'San Diego'].plot(ax=ax, column='span_pct', cmap=scm, norm=BoundaryNorm(sbins, scm.N),
-                                      edgecolor='white', linewidth=.3, alpha=.75, zorder=2,
+                                      edgecolor='white', linewidth=.9, alpha=.75, zorder=2,
                                       missing_kwds={'color': '#ece8e1'})
     ring_set(ax, 'San Diego')
-    bm.overlay(ax, ext, labels=False, office_labels=False)
+    bm.overlay(ax, ext, labels=False, fs=9.5)
     targets(ax, sd_names)
     sc = cp[cp.spanish & (cp.office == 'San Diego') & (cp.dist <= STUDY_MILES)]
     sc.plot(ax=ax, color='#f2c14e', markersize=40, edgecolor='#5a4300', linewidth=.7, zorder=12)
-    h = [TARGET, Patch(color=scols[3], label='Speak Spanish at home: 45%+'),
+    h = [TARGET, Ramp(scols, 'Speak Spanish at home: <15% to 60%+'),
          Line2D([], [], marker='o', ls='', mfc='#f2c14e', mec='#5a4300', ms=7, label=f'Spanish-speaking client ({len(sc)})'),
          OFFICE, RING(RING_LABEL)]
     legend_box(ax, h, fs=8.5, anchor=(0.01, 0.02))
@@ -889,21 +933,21 @@ def draw_action_maps(bm, Sp, cp):
     ext = fit_32(list(t.geometry) + [off['Los Angeles'].buffer(3000)], pad_m=4500)
     fig, ax = plt.subplots(figsize=(7.5, 5))
     bm.frame(ax, ext)
-    Sp[Sp.office == 'Los Angeles'].plot(ax=ax, color='#ece8e1', edgecolor='white', linewidth=.3, zorder=1)
+    Sp[Sp.office == 'Los Angeles'].plot(ax=ax, color='#ece8e1', edgecolor='white', linewidth=.9, zorder=1)
     g = Sp[(Sp.office == 'Los Angeles') & (Sp.gap > 0)]
     ocols = ['#d4ecf1', '#8fcbdc', '#3f9dbd', '#1b6585']
     ocm = ListedColormap(ocols)
     g.plot(ax=ax, column='gap', cmap=ocm, norm=BoundaryNorm([0, 1, 2, 3, 1e9], ocm.N), edgecolor='white',
-           linewidth=.3, alpha=.8, zorder=2)
+           linewidth=.9, alpha=.8, zorder=2)
     ring_set(ax, 'Los Angeles')
-    bm.overlay(ax, ext, labels=False, office_labels=False)
+    bm.overlay(ax, ext, labels=False, fs=9.5)
     targets(ax, la_names)
     for _, v in Sp[Sp.opp_rank.notna() & (Sp.office == 'Los Angeles')].iterrows():
         p = v.geometry.representative_point()
         if ext[0] < p.x < ext[2] and ext[1] < p.y < ext[3]:
             ax.annotate(str(int(v.opp_rank)), (p.x, p.y), ha='center', va='center', fontsize=8, fontweight='bold',
                         color='white', zorder=13, bbox=dict(boxstyle='circle,pad=0.22', fc='#1a2d22', ec='white', lw=.8))
-    h = [TARGET, Patch(color=ocols[2], label='Missing clients: 2+'),
+    h = [TARGET, Ramp(ocols, 'Missing clients: <1 to 3+'),
          Line2D([], [], marker='o', ls='', mfc='#1a2d22', mec='white', ms=9, label='Top-10 target ZIP area'),
          OFFICE, RING(RING_LABEL)]
     legend_box(ax, h, fs=9, loc='lower right', anchor=(0.99, 0.02))
@@ -912,10 +956,12 @@ def draw_action_maps(bm, Sp, cp):
     # C. 126 dormant lucrative clients within 10 miles: LA + Ontario, San Diego as an inset
     d = cp[cp.luc & ((SNAPSHOT - cp['last']).dt.days > DORMANT_DAYS) & (cp.dist <= 10)]
     ten = 10 * 1609.34
-    ext = fit_32([off['Los Angeles'].buffer(ten), off['Ontario'].buffer(ten)], pad_m=2500)
+    la, on = off['Los Angeles'], off['Ontario']
+    ext = fit_32([la.buffer(ten), on.buffer(ten), Point(on.x, on.y + ten + 5000),   # room for the count labels
+                  Point(la.x - ten, min(la.y, on.y) - ten - 30000)], pad_m=2500)
     fig, ax = plt.subplots(figsize=(7.5, 5))
 
-    def dormant_layer(a, extent):
+    def dormant_layer(a, extent, fs=9, label_left=('San Diego',)):
         bm.frame(a, extent)
         Sp.boundary.plot(ax=a, color='#e2ddd4', linewidth=.3, zorder=1)
         for o in off:
@@ -925,17 +971,17 @@ def draw_action_maps(bm, Sp, cp):
             gg = d[d.tier == tier].sort_values('net_revenue', ascending=False)
             gg.plot(ax=a, color=TIER_COLORS[tier], markersize=dormant_size(gg.net_revenue), alpha=.85,
                     edgecolor='white', linewidth=.4, zorder=5)
-        bm.overlay(a, extent, labels=False, office_labels=False)
+        bm.overlay(a, extent, labels=False, fs=fs, label_left=label_left)
 
     dormant_layer(ax, ext)
     for name in ('Los Angeles', 'Ontario'):
         n = int((d.office == name).sum())
         o = off[name]
         thumb_label(ax, f'{name}: {n}', Point(o.x, o.y + ten + 2200), 0, 0, fs=11)   # just above the 10-mi ring
-    ins = ax.inset_axes([0.375, 0.52, 0.25, 0.45])   # the empty strip between the two rings
+    ins = ax.inset_axes([0.015, 0.02, 0.27, 0.40])   # bottom left: San Diego lies south of the other two
     sext = (off['San Diego'].x - ten * 1.25, off['San Diego'].y - ten * 1.25, off['San Diego'].x + ten * 1.25,
             off['San Diego'].y + ten * 1.25)
-    dormant_layer(ins, sext)
+    dormant_layer(ins, sext, fs=7, label_left=())   # inset edge is close on the left
     ins.text(.5, .94, f"San Diego: {int((d.office == 'San Diego').sum())}", transform=ins.transAxes, ha='center',
              va='top', fontsize=10, fontweight='bold', color='#3d2c10', zorder=14,
              path_effects=[matplotlib.patheffects.withStroke(linewidth=3, foreground='white')])
@@ -945,7 +991,7 @@ def draw_action_maps(bm, Sp, cp):
     h = [Line2D([], [], marker='o', ls='', color=TIER_COLORS[k], ms=8, label=f'{k} ({counts.get(k, 0)})')
          for k in ['Star', 'High Value', 'Efficient']]
     h += [Patch(facecolor=TARGET_FILL + '22', edgecolor=TARGET_EDGE, ls='--', label='Within 10 mi of an office'), OFFICE]
-    legend_box(ax, h, fs=8.5, loc='lower center', anchor=(0.5, 0.02), ncol=2)
+    legend_box(ax, h, fs=8.5, loc='lower right', anchor=(0.99, 0.02), ncol=2)
     save(fig, 'action_dormant.png')
 
     # D. Inland Empire core: the hot spots at 99% around Ontario
@@ -953,16 +999,18 @@ def draw_action_maps(bm, Sp, cp):
     ext = fit_32(list(core.geometry), pad_m=4000)
     fig, ax = plt.subplots(figsize=(7.5, 5))
     bm.frame(ax, ext)
-    Sp.plot(ax=ax, color='#ece8e1', edgecolor='white', linewidth=.3, zorder=1)
-    Sp[(Sp.office == 'Ontario') & (Sp.hot == 'hot95')].plot(ax=ax, color='#ef8a62', alpha=.55, edgecolor='white',
-                                                             linewidth=.3, zorder=2)
-    core.plot(ax=ax, facecolor=TARGET_FILL + '55', edgecolor='white', linewidth=.4, zorder=3)
-    gpd.GeoSeries([core.union_all()], crs=3310).boundary.plot(ax=ax, color=TARGET_EDGE, linewidth=1.8, zorder=8)
+    Sp.plot(ax=ax, color=HOT_COLORS['ns'], edgecolor='white', linewidth=.9, zorder=1)
+    for k in ('cold', 'hot95', 'hot99'):
+        Sp[Sp.hot == k].plot(ax=ax, color=HOT_COLORS[k], edgecolor='white', linewidth=.9, zorder=2)
+    edge = gpd.GeoSeries([core.union_all()], crs=3310).boundary
+    edge.plot(ax=ax, color='white', linewidth=4.2, zorder=8)      # same gold outline as the other target maps
+    edge.plot(ax=ax, color=TARGET_FILL, linewidth=2.4, zorder=8)
     ring_set(ax, 'Ontario')
-    bm.overlay(ax, ext, labels=True, city_min_pop=60000, office_labels=False, fs=11, office_gap=4000)
-    h = [Patch(facecolor=TARGET_FILL + '55', edgecolor=TARGET_EDGE, lw=1.6, label=f'Core: hot spot at 99% ({len(core)} ZIP areas)'),
-         Patch(color='#ef8a62', alpha=.55, label='Hot spot at 95%'), OFFICE, RING(RING_LABEL)]
-    legend_box(ax, h, fs=9, loc='lower right', anchor=(0.99, 0.02))
+    bm.overlay(ax, ext, labels=True, city_min_pop=60000, fs=11, office_gap=4000, declutter=True, label_z=15)
+    h = [Patch(facecolor=HOT_COLORS['hot99'], edgecolor=TARGET_FILL, lw=2.4, label=f'Core: 99% hot spot ({len(core)} ZIPs)'),
+         Patch(color=HOT_COLORS['hot95'], label='Hot spot (95%)'), Patch(color=HOT_COLORS['ns'], label='Not significant'),
+         OFFICE, RING(RING_LABEL)]       # no cold spots in this frame
+    legend_box(ax, h, fs=8.5, loc='upper left', anchor=(0.01, 0.98))   # the open ground north-west of the core
     save(fig, 'action_ie.png')
 
 
